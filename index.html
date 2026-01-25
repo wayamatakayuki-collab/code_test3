@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>休暇時間計算（事務向け：職員別・月別・年別／種別別）</title>
+  <title>休暇時間計算（事務向け：職員別・月別・年度別／種別カスタム）</title>
 
   <link rel="apple-touch-icon" href="icon-180.png">
   <link rel="icon" type="image/png" href="icon-180.png">
@@ -19,6 +19,8 @@
       --ok:#10b981;
       --ring: 0 0 0 3px rgba(37,99,235,.25);
       --radius: 1.25rem;
+      --soft:#f8fafc;
+      --line:#e5e7eb;
     }
     *{box-sizing:border-box}
     html,body{height:100%}
@@ -30,7 +32,7 @@
       padding: 20px;
     }
     .app{
-      width:min(1250px, 100%);
+      width:min(1300px, 100%);
       margin:0 auto;
       background:var(--card);
       border-radius:var(--radius);
@@ -40,12 +42,12 @@
     header{padding:18px 20px 12px; border-bottom:1px solid #eee;}
     header h1{margin:0 0 6px; font-size: clamp(18px, 3.4vw, 22px);}
     .wrap{padding: 16px 18px;}
-    .grid{display:grid; grid-template-columns: 1.1fr 1fr; gap: 16px;}
+    .grid{display:grid; grid-template-columns: 1.05fr 1fr; gap: 16px;}
     .card{border:1px solid #eee; border-radius:18px; padding:14px; background:#fff;}
     .field label{font-size:12px;color:var(--muted); display:block; margin-bottom:6px}
     input[type=number], input[type=text], input[type=date], input[type=month], input[type=number].year, select{
       width:100%;
-      border:1px solid #e5e7eb;
+      border:1px solid var(--line);
       border-radius:12px;
       padding:10px 12px;
       font-size:16px;
@@ -59,31 +61,30 @@
     button{
       appearance:none; border:0; cursor:pointer;
       padding:10px 14px; border-radius:12px;
-      font-size:15px; background:var(--brand); color:white; font-weight:600
+      font-size:15px; background:var(--brand); color:white; font-weight:700
     }
-    button.secondary{background:#e5e7eb; color:#111827; font-weight:500}
+    button.secondary{background:#e5e7eb; color:#111827; font-weight:600}
     button.ghost{background:transparent; color:#2563eb}
     button.danger{background:var(--danger); color:white}
     button.ok{background:var(--ok); color:white}
     button:disabled{opacity:.55; cursor:not-allowed}
-    .badge{display:inline-flex; gap:6px; align-items:center; background:#eef2ff; color:#3730a3; font-weight:600; padding:6px 10px; border-radius:999px; font-size:12px}
-    .pill{display:inline-flex; gap:8px; align-items:center; padding:7px 10px; border:1px solid #e5e7eb; background:#fafafa; border-radius:999px; font-size:12px; color:#374151}
+    .badge{display:inline-flex; gap:6px; align-items:center; background:#eef2ff; color:#3730a3; font-weight:700; padding:6px 10px; border-radius:999px; font-size:12px}
+    .pill{display:inline-flex; gap:8px; align-items:center; padding:7px 10px; border:1px solid var(--line); background:#fafafa; border-radius:999px; font-size:12px; color:#374151}
     .result{border:1px dashed #d1d5db; border-radius:14px; padding:12px 14px; background:#fafafa}
     .muted{color:var(--muted)}
     .list{border:1px solid #eee; border-radius:14px; overflow:hidden}
     table{width:100%; border-collapse:collapse; font-size:14px}
     th, td{padding:10px 10px; border-bottom:1px solid #f1f5f9; text-align:left; vertical-align:top}
-    th{background:#f8fafc; font-weight:700; font-size:13px}
+    th{background:#f8fafc; font-weight:800; font-size:13px}
     tr:hover td{background:#fafafa}
     .center{text-align:center}
     .nowrap{white-space:nowrap}
-    .chip{display:inline-block; background:#f3f4f6; border:1px solid #e5e7eb; color:#374151; border-radius:999px; padding:4px 10px; font-size:12px; margin-right:6px}
     .tabs{display:flex; gap:8px; flex-wrap:wrap}
     .tab{
-      border:1px solid #e5e7eb;
+      border:1px solid var(--line);
       background:#fff;
       color:#111827;
-      font-weight:800;
+      font-weight:900;
       padding:8px 10px;
       border-radius:999px;
       cursor:pointer;
@@ -102,38 +103,107 @@
     .right{margin-left:auto}
     .kpi{display:flex; gap:10px; align-items:stretch; flex-wrap:wrap}
     .kpi .box{
-      border:1px solid #e5e7eb; background:#fff; border-radius:14px; padding:10px 12px;
-      min-width: 220px;
+      border:1px solid var(--line);
+      background:#fff;
+      border-radius:14px;
+      padding:10px 12px;
+      min-width: 260px;
       flex: 1;
     }
     .kpi .box .t{color:var(--muted); font-size:12px}
-    .kpi .box .v{font-size:18px; font-weight:900; line-height:1.25}
-    .kpi .box .sub{margin-top:6px}
-    .tag{
-      display:inline-flex; align-items:center; gap:6px;
-      border:1px solid #e5e7eb; background:#fff; border-radius:999px;
-      padding:4px 10px; font-size:12px; font-weight:800;
+    .kpi .box .v{font-size:18px; font-weight:950; line-height:1.25}
+    .kpi .box .sub{margin-top:8px}
+    .kpiList{margin-top:8px; display:grid; gap:6px}
+    .kpiItem{
+      display:flex; justify-content:space-between; gap:10px; align-items:center;
+      border:1px solid var(--line);
+      background: var(--soft);
+      padding:8px 10px;
+      border-radius:12px;
+      font-size:13px;
     }
-    .tag.annual{background:#eef2ff; border-color:#c7d2fe; color:#3730a3}
-    .tag.special{background:#ecfeff; border-color:#a5f3fc; color:#155e75}
-  </style>
+    .kpiItem b{font-weight:950}
+    .tag{
+      display:inline-flex; align-items:center; gap:8px;
+      border:1px solid var(--line);
+      background:#fff;
+      border-radius:999px;
+      padding:4px 10px;
+      font-size:12px;
+      font-weight:950;
+      max-width: 220px;
+    }
+    .dot{width:10px; height:10px; border-radius:999px; background:#94a3b8; flex:0 0 auto}
+    .chip{
+      display:inline-flex; align-items:center; gap:8px;
+      background:#f3f4f6; border:1px solid var(--line);
+      color:#374151; border-radius:999px; padding:4px 10px; font-size:12px;
+      margin-right:6px; margin-bottom:6px;
+    }
+    .chip strong{font-weight:950}
 
-  <!-- Responsive enhancement injected (kept) -->
-  <style>
+    .panelHeader{
+      display:flex; gap:10px; flex-wrap:wrap; align-items:center;
+      padding:10px;
+      border:1px solid var(--line);
+      background:#fbfbfd;
+      border-radius:14px;
+    }
+
+    .searchRow{
+      display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end;
+      padding:10px;
+      border:1px solid var(--line);
+      background:#fff;
+      border-radius:14px;
+    }
+    .quick{
+      display:flex; gap:8px; flex-wrap:wrap;
+    }
+    .miniBtn{
+      padding:8px 10px;
+      border-radius:999px;
+      font-size:13px;
+      font-weight:900;
+      background:#e5e7eb;
+      color:#111827;
+    }
+    .miniBtn.primary{background:var(--brand); color:#fff}
+    .miniBtn.ghost{background:#fff; border:1px solid var(--line); color:#111827}
+    .miniBtn:disabled{opacity:.55; cursor:not-allowed}
+
+    .bottom-bar {
+      position: sticky;
+      bottom: 0;
+      z-index: 10;
+      background: rgba(255,255,255,.92);
+      backdrop-filter: saturate(140%) blur(8px);
+      padding: 10px;
+      border-top: 1px solid var(--line);
+      border-radius: 14px;
+      margin-top: 10px;
+    }
+
+    .noteBox{
+      border:1px solid var(--line);
+      background:#fff;
+      border-radius:14px;
+      padding:10px 12px;
+      font-size:12px;
+      color:var(--muted);
+      line-height:1.5;
+    }
+
+    /* Responsive enhancement */
     input[type="number"], input[type="text"], select, button { font-size: 16px; line-height: 1.3; }
-    button { cursor: pointer; }
     .table-wrap, .table-container { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-    table { border-collapse: collapse; width: 100%; }
-    th, td { padding: 10px; }
     @media (max-width: 720px) {
       .grid, .row, .wrap, .container, .content, .main, .columns, .flex { display: block !important; }
-      .card, .panel, .section, .box { width: 100% !important; max-width: 100% !important; margin: 0 0 12px 0 !important; }
-      .group, .fields, .controls { display: grid !important; grid-template-columns: 1fr !important; gap: 10px !important; }
-      .actions, .buttons { display: grid !important; grid-template-columns: 1fr 1fr; gap: 10px !important; }
-      .actions .full, .buttons .full { grid-column: 1 / -1; }
-      input, select, button, .btn { width: 100% !important; box-sizing: border-box; }
-      [class*="container"], [class*="wrap"] { padding-left: 12px !important; padding-right: 12px !important; }
-      .bottom-bar { position: sticky; bottom: 0; z-index: 10; background: rgba(255,255,255,.9); backdrop-filter: saturate(140%) blur(6px); padding: 10px; border-top: 1px solid #e5e7eb; }
+      .card { width: 100% !important; max-width: 100% !important; margin: 0 0 12px 0 !important; }
+      .group { grid-template-columns: 1fr !important; }
+      .actions { display: grid !important; grid-template-columns: 1fr 1fr; gap: 10px !important; }
+      .actions .full { grid-column: 1 / -1; }
+      input, select, button { width: 100% !important; box-sizing: border-box; }
       thead th { position: sticky; top: 0; background: #fff; }
     }
   </style>
@@ -147,45 +217,44 @@
     <header>
       <div class="row" style="align-items:center">
         <div style="flex:1; min-width:240px">
-          <h1 style="margin:0;">休暇時間計算アプリ（職員別・月別・年別／種別別）</h1>
-          <div class="muted small">職員登録（最大50）／年次休暇・特別休暇の別集計／月一覧・年一覧／CSV・Excel出力</div>
+          <h1 style="margin:0;">休暇時間計算アプリ（職員別・月別・年度別／種別カスタム）</h1>
+          <div class="muted small">クラウド不要（localStorage保存）／職員・休暇種別は「設定」タブで管理／年度は4月始まり（4〜翌3月）</div>
         </div>
         <span class="badge">1日 = 7時間45分（465分）</span>
       </div>
     </header>
 
     <div class="wrap grid">
-      <!-- 左：入力＆職員管理 -->
+      <!-- 左：入力（見やすさ強化） -->
       <section class="card">
         <div class="row" style="align-items:flex-end">
-          <div class="field" style="flex:1; min-width:220px">
-            <label>職員（入力先）</label>
+          <div class="field" style="flex:1; min-width:240px">
+            <label>職員（検索して選択）</label>
+            <input type="text" id="staffSearch" placeholder="例）山田 / やまだ / 事務 など" />
+            <div class="hint">下の候補から選択すると、入力先が切り替わります。</div>
+          </div>
+          <div class="field" style="min-width:220px">
+            <label>職員（選択）</label>
             <select id="staffSelect"></select>
           </div>
-          <div class="field" style="min-width:200px">
-            <label>休暇種別（累計は別で集計）</label>
-            <select id="leaveTypeSelect">
-              <option value="annual">年次休暇</option>
-              <option value="special">特別休暇</option>
-            </select>
+        </div>
+
+        <div class="row" style="margin-top:10px; align-items:flex-end">
+          <div class="field" style="min-width:240px">
+            <label>休暇種別（設定で追加できます）</label>
+            <select id="leaveTypeSelect"></select>
           </div>
           <div class="field" style="min-width:180px">
             <label>日付（この日付の月に計上）</label>
             <input type="date" id="dateInput" />
           </div>
-        </div>
-
-        <div class="row" style="margin-top:10px; align-items:flex-end">
           <div class="field" style="min-width:180px">
             <label>表示中の月</label>
             <input type="month" id="monthInput" />
           </div>
           <div class="field" style="min-width:140px">
-            <label>表示中の年</label>
-            <input class="year" type="number" id="yearInput" min="2000" max="2100" step="1" />
-          </div>
-          <div class="pill right">
-            <span class="muted">保存先：</span><b>ブラウザ（localStorage）</b>
+            <label>表示中の年度（4月始まり）</label>
+            <input class="year" type="number" id="fyInput" min="2000" max="2100" step="1" />
           </div>
         </div>
 
@@ -198,103 +267,95 @@
           <div class="field"><label>分</label><input type="number" id="in_m" inputmode="numeric" min="0" value="0"></div>
         </div>
 
-        <div class="actions bottom-bar" style="margin-top:12px">
-          <button id="addBtn" class="full">追加（この職員に合算）</button>
-          <button class="secondary" id="undoBtn">元に戻す</button>
-          <button class="secondary" id="clearInputBtn">入力クリア</button>
-          <button class="ghost" id="copyBtn">月累計をコピー</button>
-          <button class="danger full" id="resetAllBtn">全データ初期化</button>
+        <div class="divider"></div>
+
+        <div class="row" style="align-items:center">
+          <div class="muted small">よく使う追加（ワンタップ）</div>
+          <div class="right quick">
+            <button class="miniBtn ghost" id="presetHalf">0.5日</button>
+            <button class="miniBtn ghost" id="preset1d">1日</button>
+            <button class="miniBtn ghost" id="preset1h">1時間</button>
+            <button class="miniBtn ghost" id="preset30m">30分</button>
+            <button class="miniBtn ghost" id="preset15m">15分</button>
+          </div>
+        </div>
+
+        <div class="bottom-bar">
+          <div class="actions">
+            <button id="addBtn" class="full">追加（この職員に合算）</button>
+            <button class="secondary" id="undoBtn">元に戻す</button>
+            <button class="secondary" id="clearInputBtn">入力クリア</button>
+            <button class="ghost" id="copyBtn">月累計をコピー</button>
+            <button class="danger full" id="resetAllBtn">全データ初期化</button>
+          </div>
         </div>
 
         <div class="result" style="margin-top:12px">
           <div class="kpi">
             <div class="box">
               <div class="t">この職員の月累計（種別別）</div>
-              <div class="sub">
-                <span class="tag annual">年次休暇</span>
-                <span id="myMonthAnnual" style="font-weight:900; margin-left:8px">0日 0時間 0分</span>
-              </div>
-              <div class="sub" style="margin-top:6px">
-                <span class="tag special">特別休暇</span>
-                <span id="myMonthSpecial" style="font-weight:900; margin-left:8px">0日 0時間 0分</span>
-              </div>
+              <div id="myMonthList" class="kpiList"></div>
             </div>
             <div class="box">
-              <div class="t">全職員の月累計（種別別・合計）</div>
-              <div class="sub">
-                <span class="tag annual">年次休暇</span>
-                <span id="allMonthAnnual" style="font-weight:900; margin-left:8px">0日 0時間 0分</span>
-              </div>
-              <div class="sub" style="margin-top:6px">
-                <span class="tag special">特別休暇</span>
-                <span id="allMonthSpecial" style="font-weight:900; margin-left:8px">0日 0時間 0分</span>
-              </div>
+              <div class="t">全職員の月累計（種別別）</div>
+              <div id="allMonthList" class="kpiList"></div>
             </div>
           </div>
 
-          <div id="totalChips" style="margin-top:10px">
-            <span class="chip" id="chipMonth">月=----</span>
-            <span class="chip" id="chipYear">年=----</span>
-            <span class="chip" id="chipStaff">職員=----</span>
+          <div style="margin-top:10px">
+            <span class="chip"><strong>月</strong> <span id="chipMonth">----</span></span>
+            <span class="chip"><strong>年度</strong> <span id="chipFY">----</span></span>
+            <span class="chip"><strong>職員</strong> <span id="chipStaff">----</span></span>
+            <span class="chip"><strong>保存</strong> localStorage</span>
           </div>
 
-          <div class="hint">
-            ・追加時の「休暇種別」は記録に保存されます（後から変更したい場合は削除→再入力）<br>
-            ・年表示は「表示中の年」で集計します（年＝YYYY）
-          </div>
-        </div>
-
-        <div class="divider"></div>
-
-        <!-- 職員登録 -->
-        <div class="row" style="align-items:flex-end">
-          <div class="field" style="flex:1; min-width:240px">
-            <label>職員を追加（最大50人）</label>
-            <input type="text" id="newStaffName" placeholder="例）山田 太郎" maxlength="30" />
-          </div>
-          <button class="ok" id="addStaffBtn" style="min-width:160px">職員を登録</button>
-        </div>
-        <div class="hint" id="staffCountHint">登録数：0 / 50</div>
-
-        <div class="list" style="margin-top:10px">
-          <div class="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th class="center">#</th>
-                  <th>職員名</th>
-                  <th class="center nowrap">操作</th>
-                </tr>
-              </thead>
-              <tbody id="staffBody"></tbody>
-            </table>
+          <div class="noteBox" style="margin-top:10px">
+            ・「年度」は <b>4月〜翌年3月</b>（例：2025年度＝2025-04〜2026-03）<br>
+            ・種別は「設定」タブで追加・名称変更・削除ができます（記録には種別IDで保持）<br>
+            ・クラウド機能はありません（端末・ブラウザごとにデータが保持されます）
           </div>
         </div>
+
+        <div class="hint">Enterキーで追加（職員検索・設定入力中は除外）。</div>
       </section>
 
-      <!-- 右：一覧（個別 / 全職員 / 年間） -->
+      <!-- 右：一覧（個別 / 全職員 / 年度 / 設定） -->
       <section class="card">
         <div class="row" style="justify-content:space-between; align-items:center">
           <div class="tabs" role="tablist" aria-label="表示切替">
             <button class="tab active" id="tabIndividual" data-tab="individual" type="button">個別（履歴）</button>
             <button class="tab" id="tabAll" data-tab="all" type="button">全職員（月一覧）</button>
-            <button class="tab" id="tabYear" data-tab="year" type="button">年間（一覧）</button>
+            <button class="tab" id="tabFY" data-tab="fy" type="button">年度（一覧）</button>
+            <button class="tab" id="tabSettings" data-tab="settings" type="button">設定</button>
           </div>
           <div class="muted small">
-            月：<span id="monthLabel">----</span> ／ 年：<span id="yearLabel">----</span>
+            月：<span id="monthLabel">----</span> ／ 年度：<span id="fyLabel">----</span>
           </div>
         </div>
 
-        <!-- 個別：履歴 -->
+        <!-- 個別：履歴（検索強化） -->
         <div id="panelIndividual" style="margin-top:10px">
-          <div class="row" style="align-items:center">
+          <div class="panelHeader">
             <div class="pill"><span class="muted">職員：</span><b id="indStaffName">-</b></div>
             <div class="pill"><span class="muted">月：</span><b id="indMonth">-</b></div>
-            <div class="pill"><span class="muted">年次：</span><b id="indMonthAnnual">0日 0時間 0分</b></div>
-            <div class="pill"><span class="muted">特別：</span><b id="indMonthSpecial">0日 0時間 0分</b></div>
+            <div class="pill"><span class="muted">合計：</span><b id="indMonthTotal">0日 0時間 0分</b></div>
             <div class="actions right">
               <button class="secondary" id="exportIndividualBtn">個別CSV</button>
               <button class="secondary" id="exportIndividualXlsxBtn">個別Excel</button>
+            </div>
+          </div>
+
+          <div class="searchRow" style="margin-top:10px">
+            <div class="field" style="flex:1; min-width:240px">
+              <label>履歴検索（この月内）</label>
+              <input type="text" id="histQuery" placeholder="例）2026-01-15 / 年次 / 特別 / 30分 など" />
+            </div>
+            <div class="field" style="min-width:220px">
+              <label>種別で絞り込み</label>
+              <select id="histTypeFilter"></select>
+            </div>
+            <div class="actions right">
+              <button class="secondary" id="histClearBtn">検索クリア</button>
             </div>
           </div>
 
@@ -307,7 +368,7 @@
                     <th class="nowrap">日付</th>
                     <th class="nowrap">種別</th>
                     <th>追加</th>
-                    <th>月内累計（種別別）</th>
+                    <th class="nowrap">分</th>
                     <th class="center">操作</th>
                   </tr>
                 </thead>
@@ -315,15 +376,14 @@
               </table>
             </div>
           </div>
-          <div class="hint">※「削除」は月内の該当記録を削除し、月内累計（種別別）を再計算します。</div>
+          <div class="hint">※「削除」は該当記録を削除します（累計は自動で再計算）。</div>
         </div>
 
-        <!-- 全職員：月一覧 -->
+        <!-- 全職員：月一覧（種別別） -->
         <div id="panelAll" style="margin-top:10px; display:none">
-          <div class="row" style="align-items:center">
+          <div class="panelHeader">
             <div class="pill"><span class="muted">月：</span><b id="allMonth">-</b></div>
-            <div class="pill"><span class="muted">年次合計：</span><b id="allMonthAnnual2">0日 0時間 0分</b></div>
-            <div class="pill"><span class="muted">特別合計：</span><b id="allMonthSpecial2">0日 0時間 0分</b></div>
+            <div class="pill"><span class="muted">全職員合計：</span><b id="allMonthTotal">0日 0時間 0分</b></div>
             <div class="actions right">
               <button class="secondary" id="exportAllBtn">全職員CSV</button>
               <button class="secondary" id="exportAllXlsxBtn">全職員Excel</button>
@@ -333,50 +393,32 @@
           <div class="list" style="margin-top:10px">
             <div class="table-wrap">
               <table>
-                <thead>
-                  <tr>
-                    <th class="center">#</th>
-                    <th>職員名</th>
-                    <th class="nowrap">年次（表示）</th>
-                    <th class="nowrap muted">年次（分）</th>
-                    <th class="nowrap">特別（表示）</th>
-                    <th class="nowrap muted">特別（分）</th>
-                  </tr>
-                </thead>
+                <thead id="allThead"></thead>
                 <tbody id="allBody"></tbody>
               </table>
             </div>
           </div>
+          <div class="hint">※列は「設定」の休暇種別に連動します。</div>
         </div>
 
-        <!-- 年間：一覧 -->
-        <div id="panelYear" style="margin-top:10px; display:none">
-          <div class="row" style="align-items:center">
-            <div class="pill"><span class="muted">年：</span><b id="yearPanelYear">-</b></div>
-            <div class="pill"><span class="muted">年次合計：</span><b id="allYearAnnual">0日 0時間 0分</b></div>
-            <div class="pill"><span class="muted">特別合計：</span><b id="allYearSpecial">0日 0時間 0分</b></div>
+        <!-- 年度：一覧（4月始まり / 月別内訳も4月→翌3月） -->
+        <div id="panelFY" style="margin-top:10px; display:none">
+          <div class="panelHeader">
+            <div class="pill"><span class="muted">年度：</span><b id="fyPanelFY">-</b></div>
+            <div class="pill"><span class="muted">全職員合計：</span><b id="allFYTotal">0日 0時間 0分</b></div>
             <div class="actions right">
-              <button class="secondary" id="exportYearXlsxBtn">年間Excel</button>
+              <button class="secondary" id="exportFYXlsxBtn">年度Excel</button>
             </div>
           </div>
 
           <div class="divider"></div>
 
-          <div class="muted small">全職員：年合計（種別別）</div>
+          <div class="muted small">全職員：年度合計（種別別）</div>
           <div class="list" style="margin-top:8px">
             <div class="table-wrap">
               <table>
-                <thead>
-                  <tr>
-                    <th class="center">#</th>
-                    <th>職員名</th>
-                    <th class="nowrap">年次（表示）</th>
-                    <th class="nowrap muted">年次（分）</th>
-                    <th class="nowrap">特別（表示）</th>
-                    <th class="nowrap muted">特別（分）</th>
-                  </tr>
-                </thead>
-                <tbody id="yearAllBody"></tbody>
+                <thead id="fyAllThead"></thead>
+                <tbody id="fyAllBody"></tbody>
               </table>
             </div>
           </div>
@@ -384,30 +426,135 @@
           <div class="divider"></div>
 
           <div class="row" style="align-items:center">
-            <div class="muted small">選択職員：月別内訳（種別別）</div>
-            <div class="pill right"><span class="muted">職員：</span><b id="yearStaffName">-</b></div>
+            <div class="muted small">選択職員：月別内訳（種別別）※4月始まり</div>
+            <div class="pill right"><span class="muted">職員：</span><b id="fyStaffName">-</b></div>
           </div>
 
           <div class="list" style="margin-top:8px">
             <div class="table-wrap">
               <table>
+                <thead id="fyStaffThead"></thead>
+                <tbody id="fyStaffBody"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="divider"></div>
+
+          <div class="muted small">選択職員：年度内履歴（検索）</div>
+          <div class="searchRow" style="margin-top:8px">
+            <div class="field" style="flex:1; min-width:240px">
+              <label>履歴検索（年度内）</label>
+              <input type="text" id="fyHistQuery" placeholder="例）2026-02 / 年次 / 465 / 1日 など" />
+            </div>
+            <div class="field" style="min-width:220px">
+              <label>種別で絞り込み</label>
+              <select id="fyHistTypeFilter"></select>
+            </div>
+            <div class="actions right">
+              <button class="secondary" id="fyHistClearBtn">検索クリア</button>
+            </div>
+          </div>
+
+          <div class="list" style="margin-top:10px">
+            <div class="table-wrap">
+              <table>
                 <thead>
                   <tr>
-                    <th class="center">月</th>
-                    <th class="nowrap">年次（表示）</th>
-                    <th class="nowrap muted">年次（分）</th>
-                    <th class="nowrap">特別（表示）</th>
-                    <th class="nowrap muted">特別（分）</th>
+                    <th class="center">#</th>
+                    <th class="nowrap">日付</th>
+                    <th class="nowrap">月</th>
+                    <th class="nowrap">種別</th>
+                    <th>追加</th>
+                    <th class="nowrap">分</th>
                   </tr>
                 </thead>
-                <tbody id="yearStaffBody"></tbody>
+                <tbody id="fyHistBody"></tbody>
               </table>
             </div>
           </div>
 
           <div class="hint">
-            ・年間は「YYYY-01」〜「YYYY-12」を集計します。<br>
-            ・年間Excelは「全職員 年合計」「選択職員 月別内訳」「選択職員 年内履歴」の3シートで出力します。
+            ・年度は <b>4月〜翌3月</b> を集計します。<br>
+            ・年度Excelは「全職員 年度合計」「選択職員 月別内訳」「選択職員 年度内履歴」の3シートです。
+          </div>
+        </div>
+
+        <!-- 設定：職員登録／種別追加（後から追加可能） -->
+        <div id="panelSettings" style="margin-top:10px; display:none">
+          <div class="panelHeader">
+            <div class="pill"><b>設定</b></div>
+            <div class="pill"><span class="muted">職員：</span><b id="staffCount">0</b></div>
+            <div class="pill"><span class="muted">種別：</span><b id="typeCount">0</b></div>
+          </div>
+
+          <div class="divider"></div>
+
+          <div class="row" style="align-items:flex-start">
+            <div style="flex:1; min-width:280px">
+              <div class="muted small" style="font-weight:900; margin-bottom:8px">職員の登録（最大50）</div>
+              <div class="searchRow">
+                <div class="field" style="flex:1; min-width:220px">
+                  <label>追加する職員名</label>
+                  <input type="text" id="newStaffName" placeholder="例）山田 太郎" maxlength="30" />
+                </div>
+                <button class="ok" id="addStaffBtn" style="min-width:160px">職員を登録</button>
+              </div>
+
+              <div class="list" style="margin-top:10px">
+                <div class="table-wrap">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th class="center">#</th>
+                        <th>職員名（名称変更可）</th>
+                        <th class="center nowrap">操作</th>
+                      </tr>
+                    </thead>
+                    <tbody id="staffBody"></tbody>
+                  </table>
+                </div>
+              </div>
+              <div class="hint">※最低1人は必要です。削除するとその職員の記録も削除されます。</div>
+            </div>
+
+            <div style="flex:1; min-width:280px">
+              <div class="muted small" style="font-weight:900; margin-bottom:8px">休暇種別の管理（後から追加できます）</div>
+              <div class="searchRow">
+                <div class="field" style="flex:1; min-width:220px">
+                  <label>追加する種別名</label>
+                  <input type="text" id="newTypeName" placeholder="例）介護休暇 / 病気休暇 など" maxlength="40" />
+                </div>
+                <button class="ok" id="addTypeBtn" style="min-width:160px">種別を追加</button>
+              </div>
+
+              <div class="list" style="margin-top:10px">
+                <div class="table-wrap">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th class="center">#</th>
+                        <th>種別名（名称変更可）</th>
+                        <th class="center nowrap">操作</th>
+                      </tr>
+                    </thead>
+                    <tbody id="typeBody"></tbody>
+                  </table>
+                </div>
+              </div>
+              <div class="hint">※「年次休暇」「特別休暇」は初期で入っています（削除可）。削除するとその種別の記録は「不明」として扱われます。</div>
+            </div>
+          </div>
+
+          <div class="divider"></div>
+
+          <div class="row">
+            <div class="noteBox" style="flex:1">
+              <b style="color:#111827">おすすめ運用</b><br>
+              ・最初に職員と種別を登録 → 以後は入力が早くなります。<br>
+              ・月末に「全職員Excel」／年度末に「年度Excel」を出力して保管すると安心です。<br>
+              ・このアプリはクラウド同期をしません（端末移行時はExcel出力でバックアップ推奨）。
+            </div>
           </div>
         </div>
       </section>
@@ -422,9 +569,11 @@
     // =========================
     const DAY_MIN = 465;
 
-    // 旧v1（単一累計）→ v2（職員・月別）→ v3（種別別・年別）
+    // 旧 v1/v2/v3 を同じ key で保持してきた前提（機能削除なしで拡張）
     const KEY_V1 = 'worktime_accum_v1';
-    const KEY_V2 = 'worktime_accum_staff_v2'; // 既存キーは維持（機能を削らず移行）
+    const KEY_MAIN = 'worktime_accum_staff_v2'; // 既存キー維持
+    const VERSION = 4;
+
     const $ = (id)=>document.getElementById(id);
     const toInt = (v)=>{ const n=parseInt(v,10); return isNaN(n)?0:Math.max(0,n); };
     const totalMinutes = (d,h,m)=> toInt(d)*DAY_MIN + toInt(h)*60 + toInt(m);
@@ -441,8 +590,6 @@
       const n = normalize(t);
       return fmt(n.d,n.h,n.m);
     };
-
-    const typeLabel = (t)=> (t==='special' ? '特別休暇' : '年次休暇');
 
     const todayStr = ()=>{
       const d = new Date();
@@ -463,6 +610,7 @@
     const yearNowStr = ()=> yearFromDate(todayStr());
 
     const uuid = ()=> (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()+Math.random()));
+    const shortId = ()=> uuid().replace(/-/g,'').slice(0,10);
 
     function escapeHtml(s){
       return String(s ?? '')
@@ -473,56 +621,107 @@
         .replaceAll("'","&#039;");
     }
 
+    function normalizeText(s){
+      return String(s||'')
+        .toLowerCase()
+        .replace(/\s+/g,'')
+        .replace(/[ぁ-ん]/g, (ch)=> String.fromCharCode(ch.charCodeAt(0)+0x60)); // ひら→カナ(ゆる)
+    }
+
     // =========================
-    // 状態（localStorage）
+    // データモデル（v4）
+    // state = {
+    //   version:4,
+    //   staff:[{id,name}],
+    //   leaveTypes:[{id,name}],
+    //   entries:[{id, staffId, date, month, leaveTypeId, d,h,m, delta, createdAt}],
+    //   currentStaffId, currentMonth, currentFY, currentLeaveTypeId,
+    //   currentTab, histQuery, histTypeFilter, staffSearch
+    // }
     // =========================
+    function defaultTypes(){
+      // idは固定（過去互換のため）
+      return [
+        {id:'annual', name:'年次休暇'},
+        {id:'special', name:'特別休暇'}
+      ];
+    }
+
     function loadState(){
-      // v2/v3 を同じKEYで保持（versionで分岐）
+      // 1) main key から読み込み（v2/v3/v4）
       try{
-        const raw = localStorage.getItem(KEY_V2);
+        const raw = localStorage.getItem(KEY_MAIN);
         if(raw){
           const obj = JSON.parse(raw);
-          if(obj && (obj.version===2 || obj.version===3) && Array.isArray(obj.staff) && Array.isArray(obj.entries)){
-            // 最低1名は確保
+
+          if(obj && (obj.version===2 || obj.version===3 || obj.version===4) && Array.isArray(obj.staff) && Array.isArray(obj.entries)){
+            // staff最低1名
             if(obj.staff.length===0){
-              const def = {id: uuid(), name:'（未設定）'};
-              obj.staff = [def];
+              obj.staff = [{id: uuid(), name:'（未設定）'}];
             }
-            // currentStaffIdが無効なら先頭
             if(!obj.currentStaffId || !obj.staff.some(s=>s.id===obj.currentStaffId)){
               obj.currentStaffId = obj.staff[0].id;
             }
+
+            // v4へ段階移行（機能削除なし）
+            if(obj.version===2){
+              // v2: leaveType未導入 → 全て年次
+              obj.leaveTypes = defaultTypes();
+              obj.entries = obj.entries.map(e=>({
+                ...e,
+                month: e.month || (e.date ? monthFromDate(e.date) : monthNowStr()),
+                leaveTypeId: 'annual'
+              }));
+              obj.version = 4;
+            } else if(obj.version===3){
+              // v3: leaveType(annual/special) → leaveTypeIdへ
+              obj.leaveTypes = obj.leaveTypes && Array.isArray(obj.leaveTypes) ? obj.leaveTypes : defaultTypes();
+              const haveAnnual = obj.leaveTypes.some(t=>t.id==='annual');
+              const haveSpecial = obj.leaveTypes.some(t=>t.id==='special');
+              if(!haveAnnual) obj.leaveTypes.unshift({id:'annual', name:'年次休暇'});
+              if(!haveSpecial) obj.leaveTypes.push({id:'special', name:'特別休暇'});
+              obj.entries = obj.entries.map(e=>({
+                ...e,
+                month: e.month || (e.date ? monthFromDate(e.date) : monthNowStr()),
+                leaveTypeId: e.leaveTypeId || e.leaveType || 'annual'
+              }));
+              obj.version = 4;
+            } else {
+              // v4: leaveTypes/leaveTypeId を補完
+              if(!Array.isArray(obj.leaveTypes) || obj.leaveTypes.length===0){
+                obj.leaveTypes = defaultTypes();
+              }
+              if(!obj.leaveTypes.some(t=>t.id==='annual')) obj.leaveTypes.unshift({id:'annual', name:'年次休暇'});
+              if(!obj.leaveTypes.some(t=>t.id==='special')) obj.leaveTypes.push({id:'special', name:'特別休暇'});
+
+              let changed = false;
+              obj.entries = obj.entries.map(e=>{
+                let x = e;
+                if(!x.month && x.date){ x = {...x, month: monthFromDate(x.date)}; changed = true; }
+                if(!x.leaveTypeId){ x = {...x, leaveTypeId: 'annual'}; changed = true; }
+                return x;
+              });
+              if(changed) obj.version = 4;
+            }
+
             // defaults
             if(!obj.currentTab) obj.currentTab = 'individual';
             if(!obj.currentMonth) obj.currentMonth = monthNowStr();
-            if(!obj.currentYear) obj.currentYear = Number(yearNowStr());
-            if(!obj.currentLeaveType) obj.currentLeaveType = 'annual';
+            if(!obj.currentFY) obj.currentFY = Number(yearNowStr()); // 年度(4月始まり)の基準年
+            if(!obj.currentLeaveTypeId) obj.currentLeaveTypeId = 'annual';
+            if(obj.staffSearch==null) obj.staffSearch = '';
+            if(obj.histQuery==null) obj.histQuery = '';
+            if(obj.histTypeFilter==null) obj.histTypeFilter = 'all';
+            if(obj.fyHistQuery==null) obj.fyHistQuery = '';
+            if(obj.fyHistTypeFilter==null) obj.fyHistTypeFilter = 'all';
 
-            // v3へ補完（既存データを壊さずに拡張）
-            if(obj.version===2){
-              obj.entries = obj.entries.map(e=>({
-                ...e,
-                leaveType: e.leaveType || 'annual',
-                month: e.month || (e.date ? monthFromDate(e.date) : obj.currentMonth)
-              }));
-              obj.version = 3;
-              saveState(obj);
-            }else{
-              // v3でも leaveType 未設定があれば補完
-              let changed = false;
-              obj.entries = obj.entries.map(e=>{
-                if(!e.leaveType){ changed = true; return {...e, leaveType:'annual'}; }
-                if(!e.month && e.date){ changed = true; return {...e, month: monthFromDate(e.date)}; }
-                return e;
-              });
-              if(changed) saveState(obj);
-            }
+            saveState(obj);
             return obj;
           }
         }
       }catch(e){}
 
-      // v1があれば移行（※日付情報が無いので「今日」で計上、種別は年次として扱う）
+      // 2) v1 があれば移行（今日・年次として）
       try{
         const raw1 = localStorage.getItem(KEY_V1);
         if(raw1){
@@ -531,13 +730,13 @@
             const staffId = uuid();
             const date = todayStr();
             const month = monthFromDate(date);
-            const year = Number(yearFromDate(date));
+            const fy = Number(yearFromDate(date)); // とりあえず当年
             const entries = v1.items.map((it, idx)=>({
               id: it.id || uuid(),
               staffId,
               date,
               month,
-              leaveType: 'annual',
+              leaveTypeId: 'annual',
               d: toInt(it.d),
               h: toInt(it.h),
               m: toInt(it.m),
@@ -545,14 +744,20 @@
               createdAt: Date.now() + idx
             }));
             const migrated = {
-              version: 3,
+              version: 4,
               staff: [{id: staffId, name: '（旧データ）'}],
+              leaveTypes: defaultTypes(),
               entries,
               currentStaffId: staffId,
               currentMonth: monthNowStr(),
-              currentYear: year,
-              currentLeaveType: 'annual',
-              currentTab: 'individual'
+              currentFY: fy,
+              currentLeaveTypeId: 'annual',
+              currentTab: 'individual',
+              staffSearch: '',
+              histQuery: '',
+              histTypeFilter: 'all',
+              fyHistQuery: '',
+              fyHistTypeFilter: 'all'
             };
             saveState(migrated);
             return migrated;
@@ -560,24 +765,52 @@
         }
       }catch(e){}
 
-      // 新規
+      // 3) 新規
       const def = {id: uuid(), name:'（未設定）'};
       const init = {
-        version: 3,
+        version: VERSION,
         staff: [def],
+        leaveTypes: defaultTypes(),
         entries: [],
         currentStaffId: def.id,
         currentMonth: monthNowStr(),
-        currentYear: Number(yearNowStr()),
-        currentLeaveType: 'annual',
-        currentTab: 'individual'
+        currentFY: Number(yearNowStr()),
+        currentLeaveTypeId: 'annual',
+        currentTab: 'individual',
+        staffSearch: '',
+        histQuery: '',
+        histTypeFilter: 'all',
+        fyHistQuery: '',
+        fyHistTypeFilter: 'all'
       };
       saveState(init);
       return init;
     }
 
     function saveState(state){
-      localStorage.setItem(KEY_V2, JSON.stringify(state));
+      localStorage.setItem(KEY_MAIN, JSON.stringify(state));
+    }
+
+    // =========================
+    // 種別ヘルパ
+    // =========================
+    function getType(st, id){
+      return st.leaveTypes.find(t=>t.id===id) || {id, name:'（不明）'};
+    }
+    function typeColor(id){
+      // UI用の簡易カラー（固定＆安定）
+      if(id==='annual') return '#4f46e5';
+      if(id==='special') return '#0891b2';
+      // hash
+      let h = 0;
+      for(const c of String(id)) h = (h*31 + c.charCodeAt(0)) >>> 0;
+      const hue = h % 360;
+      return `hsl(${hue} 60% 45%)`;
+    }
+    function typeBadgeHtml(st, id){
+      const t = getType(st, id);
+      const color = typeColor(id);
+      return `<span class="tag" title="${escapeHtml(t.name)}"><span class="dot" style="background:${color}"></span>${escapeHtml(t.name)}</span>`;
     }
 
     // =========================
@@ -586,56 +819,82 @@
     function entriesForMonth(st, staffId, month){
       return st.entries
         .filter(e=> e.staffId===staffId && e.month===month)
-        .sort((a,b)=> (a.createdAt||0) - (b.createdAt||0));
+        .sort((a,b)=> (b.createdAt||0) - (a.createdAt||0)); // 新しい順で見やすく
     }
-    function entriesForMonthByType(st, staffId, month, leaveType){
-      return entriesForMonth(st, staffId, month).filter(e=> (e.leaveType||'annual')===leaveType);
-    }
-    function totalForMonth(st, staffId, month, leaveType){
-      const list = leaveType ? entriesForMonthByType(st, staffId, month, leaveType) : entriesForMonth(st, staffId, month);
-      return list.reduce((acc,e)=> acc + toInt(e.delta), 0);
-    }
-    function totalAllStaffMonth(st, month, leaveType){
-      return st.staff.reduce((acc,s)=> acc + totalForMonth(st, s.id, month, leaveType), 0);
-    }
-
-    function entriesForYear(st, staffId, year){
-      const y = String(year);
+    function totalForMonthType(st, staffId, month, typeId){
       return st.entries
-        .filter(e=> e.staffId===staffId && e.date && e.date.startsWith(y + '-'))
-        .sort((a,b)=> (a.createdAt||0) - (b.createdAt||0));
+        .filter(e=> e.staffId===staffId && e.month===month && (e.leaveTypeId||'annual')===typeId)
+        .reduce((acc,e)=> acc + toInt(e.delta), 0);
     }
-    function totalForYear(st, staffId, year, leaveType){
-      const list = entriesForYear(st, staffId, year).filter(e=> (leaveType ? (e.leaveType||'annual')===leaveType : true));
-      return list.reduce((acc,e)=> acc + toInt(e.delta), 0);
+    function totalForMonthAllTypes(st, staffId, month){
+      return st.entries
+        .filter(e=> e.staffId===staffId && e.month===month)
+        .reduce((acc,e)=> acc + toInt(e.delta), 0);
     }
-    function totalAllStaffYear(st, year, leaveType){
-      return st.staff.reduce((acc,s)=> acc + totalForYear(st, s.id, year, leaveType), 0);
+    function totalAllStaffMonthType(st, month, typeId){
+      return st.staff.reduce((acc,s)=> acc + totalForMonthType(st, s.id, month, typeId), 0);
+    }
+    function totalAllStaffMonthAllTypes(st, month){
+      return st.staff.reduce((acc,s)=> acc + totalForMonthAllTypes(st, s.id, month), 0);
     }
 
-    function monthKeysInYear(year){
-      const y = String(year);
-      const arr = [];
-      for(let m=1;m<=12;m++){
-        arr.push(`${y}-${String(m).padStart(2,'0')}`);
+    // 年度（FY: 4月〜翌3月）
+    function fyMonthKeys(fy){
+      const y = Number(fy);
+      const months = [];
+      for(let m=4;m<=12;m++){
+        months.push(`${y}-${String(m).padStart(2,'0')}`);
       }
-      return arr;
+      for(let m=1;m<=3;m++){
+        months.push(`${y+1}-${String(m).padStart(2,'0')}`);
+      }
+      return months;
+    }
+    function isMonthInFY(month, fy){
+      const keys = fyMonthKeys(fy);
+      return keys.includes(month);
+    }
+    function entriesForFY(st, staffId, fy){
+      const keys = new Set(fyMonthKeys(fy));
+      return st.entries
+        .filter(e=> e.staffId===staffId && keys.has(e.month))
+        .sort((a,b)=> (b.createdAt||0) - (a.createdAt||0));
+    }
+    function totalForFYType(st, staffId, fy, typeId){
+      const keys = new Set(fyMonthKeys(fy));
+      return st.entries
+        .filter(e=> e.staffId===staffId && keys.has(e.month) && (e.leaveTypeId||'annual')===typeId)
+        .reduce((acc,e)=> acc + toInt(e.delta), 0);
+    }
+    function totalForFYAllTypes(st, staffId, fy){
+      const keys = new Set(fyMonthKeys(fy));
+      return st.entries
+        .filter(e=> e.staffId===staffId && keys.has(e.month))
+        .reduce((acc,e)=> acc + toInt(e.delta), 0);
+    }
+    function totalAllStaffFYAllTypes(st, fy){
+      return st.staff.reduce((acc,s)=> acc + totalForFYAllTypes(st, s.id, fy), 0);
+    }
+    function totalAllStaffFYType(st, fy, typeId){
+      return st.staff.reduce((acc,s)=> acc + totalForFYType(st, s.id, fy, typeId), 0);
     }
 
     // =========================
-    // タブ
+    // UI: タブ
     // =========================
     function setTab(tab, persist=true){
       const st = loadState();
-      const t = (tab==='all') ? 'all' : (tab==='year' ? 'year' : 'individual');
+      const t = ['individual','all','fy','settings'].includes(tab) ? tab : 'individual';
 
       $('tabIndividual').classList.toggle('active', t==='individual');
       $('tabAll').classList.toggle('active', t==='all');
-      $('tabYear').classList.toggle('active', t==='year');
+      $('tabFY').classList.toggle('active', t==='fy');
+      $('tabSettings').classList.toggle('active', t==='settings');
 
       $('panelIndividual').style.display = (t==='individual') ? '' : 'none';
       $('panelAll').style.display = (t==='all') ? '' : 'none';
-      $('panelYear').style.display = (t==='year') ? '' : 'none';
+      $('panelFY').style.display = (t==='fy') ? '' : 'none';
+      $('panelSettings').style.display = (t==='settings') ? '' : 'none';
 
       if(persist){
         st.currentTab = t;
@@ -649,22 +908,23 @@
     function render(){
       const st = loadState();
 
-      // inputs default
+      // 入力デフォルト
       if(!$('dateInput').value) $('dateInput').value = todayStr();
       if(!$('monthInput').value) $('monthInput').value = st.currentMonth || monthNowStr();
-      if(!$('yearInput').value) $('yearInput').value = st.currentYear || Number(yearNowStr());
-      if(!$('leaveTypeSelect').value) $('leaveTypeSelect').value = st.currentLeaveType || 'annual';
+      if(!$('fyInput').value) $('fyInput').value = st.currentFY || Number(yearNowStr());
+      if($('staffSearch').value !== st.staffSearch) $('staffSearch').value = st.staffSearch || '';
+      if($('histQuery').value !== st.histQuery) $('histQuery').value = st.histQuery || '';
+      if($('fyHistQuery').value !== st.fyHistQuery) $('fyHistQuery').value = st.fyHistQuery || '';
 
       const month = $('monthInput').value || monthNowStr();
-      const year = Number($('yearInput').value || yearNowStr());
+      const fy = Number($('fyInput').value || yearNowStr());
 
       st.currentMonth = month;
-      st.currentYear = year;
-      st.currentLeaveType = $('leaveTypeSelect').value || 'annual';
+      st.currentFY = fy;
       saveState(st);
 
       $('monthLabel').textContent = month;
-      $('yearLabel').textContent = String(year);
+      $('fyLabel').textContent = `${fy}年度`;
 
       // staff select
       $('staffSelect').innerHTML = '';
@@ -675,162 +935,499 @@
         if(s.id===st.currentStaffId) opt.selected = true;
         $('staffSelect').appendChild(opt);
       });
-
-      // staff count
-      $('staffCountHint').textContent = `登録数：${st.staff.length} / 50`;
-
       const staff = st.staff.find(x=>x.id===st.currentStaffId) || st.staff[0];
       const staffId = staff.id;
 
-      // chips
-      $('chipMonth').textContent = `月=${month}`;
-      $('chipYear').textContent = `年=${year}`;
-      $('chipStaff').textContent = `職員=${staff.name}`;
-
-      // month totals (staff)
-      const myAnnualMin = totalForMonth(st, staffId, month, 'annual');
-      const mySpecialMin = totalForMonth(st, staffId, month, 'special');
-      $('myMonthAnnual').textContent = fmtMin(myAnnualMin);
-      $('myMonthSpecial').textContent = fmtMin(mySpecialMin);
-
-      // month totals (all staff)
-      const allAnnualMin = totalAllStaffMonth(st, month, 'annual');
-      const allSpecialMin = totalAllStaffMonth(st, month, 'special');
-      $('allMonthAnnual').textContent = fmtMin(allAnnualMin);
-      $('allMonthSpecial').textContent = fmtMin(allSpecialMin);
-
-      // left staff list
-      const sb = $('staffBody');
-      sb.innerHTML = '';
-      st.staff.forEach((s, idx)=>{
-        const tr = document.createElement('tr');
-        const delDisabled = (st.staff.length<=1);
-        tr.innerHTML = `
-          <td class="center">${idx+1}</td>
-          <td>
-            <div style="font-weight:900">${escapeHtml(s.name)}</div>
-            <div class="muted small">ID: ${escapeHtml(String(s.id).slice(0,8))}...</div>
-          </td>
-          <td class="center nowrap">
-            <button class="secondary" data-act="pick" data-id="${s.id}">選択</button>
-            <button class="danger" data-act="delstaff" data-id="${s.id}" ${delDisabled?'disabled':''}>削除</button>
-          </td>
-        `;
-        sb.appendChild(tr);
+      // leave type select
+      $('leaveTypeSelect').innerHTML = '';
+      st.leaveTypes.forEach(t=>{
+        const opt = document.createElement('option');
+        opt.value = t.id;
+        opt.textContent = t.name;
+        $('leaveTypeSelect').appendChild(opt);
       });
+      if(!st.leaveTypes.some(t=>t.id===st.currentLeaveTypeId)){
+        st.currentLeaveTypeId = st.leaveTypes[0]?.id || 'annual';
+        saveState(st);
+      }
+      $('leaveTypeSelect').value = st.currentLeaveTypeId;
 
-      // tab
-      setTab(st.currentTab || 'individual', false);
+      // filter selects (history)
+      fillTypeFilterSelect('histTypeFilter', st, st.histTypeFilter);
+      fillTypeFilterSelect('fyHistTypeFilter', st, st.fyHistTypeFilter);
 
-      // ========== 個別（履歴） ==========
+      // chips
+      $('chipMonth').textContent = month;
+      $('chipFY').textContent = `${fy}年度`;
+      $('chipStaff').textContent = staff.name;
+
+      // KPI lists
+      renderKpiLists(st, staffId, month);
+
+      // Left staff quick search suggestions (update select list based on search)
+      applyStaffSearchToSelect(st);
+
+      // Panel: Individual
       $('indStaffName').textContent = staff.name;
       $('indMonth').textContent = month;
-      $('indMonthAnnual').textContent = fmtMin(myAnnualMin);
-      $('indMonthSpecial').textContent = fmtMin(mySpecialMin);
+      $('indMonthTotal').textContent = fmtMin(totalForMonthAllTypes(st, staffId, month));
 
-      const body = $('histBody');
-      body.innerHTML = '';
+      renderIndividualHistory(st, staffId, month);
 
-      const listAll = entriesForMonth(st, staffId, month);
-      let accAnnual = 0, accSpecial = 0;
-      listAll.forEach((e, i)=>{
-        const lt = (e.leaveType || 'annual');
-        if(lt==='special') accSpecial += toInt(e.delta);
-        else accAnnual += toInt(e.delta);
+      // Panel: All month
+      $('allMonth').textContent = month;
+      $('allMonthTotal').textContent = fmtMin(totalAllStaffMonthAllTypes(st, month));
+      renderAllMonthTable(st, month);
 
+      // Panel: FY
+      $('fyPanelFY').textContent = `${fy}年度`;
+      $('fyStaffName').textContent = staff.name;
+      $('allFYTotal').textContent = fmtMin(totalAllStaffFYAllTypes(st, fy));
+      renderAllFYTable(st, fy);
+      renderFYStaffMonthlyBreakdown(st, staffId, fy); // ★4月始まり
+      renderFYHistory(st, staffId, fy);
+
+      // Panel: Settings
+      $('staffCount').textContent = `${st.staff.length} / 50`;
+      $('typeCount').textContent = `${st.leaveTypes.length}`;
+      renderSettingsStaff(st);
+      renderSettingsTypes(st);
+
+      // enable/disable undo: staff has any entry at all
+      $('undoBtn').disabled = !st.entries.some(e=>e.staffId===staffId);
+
+      // tab reflect
+      setTab(st.currentTab || 'individual', false);
+    }
+
+    function renderKpiLists(st, staffId, month){
+      const myWrap = $('myMonthList');
+      const allWrap = $('allMonthList');
+      myWrap.innerHTML = '';
+      allWrap.innerHTML = '';
+
+      // staff month totals per type
+      st.leaveTypes.forEach(t=>{
+        const v = totalForMonthType(st, staffId, month, t.id);
+        const item = document.createElement('div');
+        item.className = 'kpiItem';
+        item.innerHTML = `
+          <div style="display:flex; gap:10px; align-items:center; min-width:0">
+            <span class="dot" style="background:${typeColor(t.id)}"></span>
+            <div style="font-weight:950; white-space:nowrap; overflow:hidden; text-overflow:ellipsis">${escapeHtml(t.name)}</div>
+          </div>
+          <b>${fmtMin(v)}</b>
+        `;
+        myWrap.appendChild(item);
+      });
+
+      // all staff month totals per type
+      st.leaveTypes.forEach(t=>{
+        const v = totalAllStaffMonthType(st, month, t.id);
+        const item = document.createElement('div');
+        item.className = 'kpiItem';
+        item.innerHTML = `
+          <div style="display:flex; gap:10px; align-items:center; min-width:0">
+            <span class="dot" style="background:${typeColor(t.id)}"></span>
+            <div style="font-weight:950; white-space:nowrap; overflow:hidden; text-overflow:ellipsis">${escapeHtml(t.name)}</div>
+          </div>
+          <b>${fmtMin(v)}</b>
+        `;
+        allWrap.appendChild(item);
+      });
+    }
+
+    function fillTypeFilterSelect(selectId, st, selected){
+      const sel = $(selectId);
+      sel.innerHTML = '';
+      const optAll = document.createElement('option');
+      optAll.value = 'all';
+      optAll.textContent = 'すべて';
+      sel.appendChild(optAll);
+      st.leaveTypes.forEach(t=>{
+        const o = document.createElement('option');
+        o.value = t.id;
+        o.textContent = t.name;
+        sel.appendChild(o);
+      });
+      sel.value = selected && (selected==='all' || st.leaveTypes.some(t=>t.id===selected)) ? selected : 'all';
+    }
+
+    function applyStaffSearchToSelect(st){
+      const q = (st.staffSearch || '').trim();
+      if(!q){
+        // 何もしない（全員選べる）
+        return;
+      }
+      const qn = normalizeText(q);
+      const match = st.staff.find(s=> normalizeText(s.name).includes(qn));
+      if(match){
+        // 候補を先頭に持ってくる（視認性のため）
+        const sel = $('staffSelect');
+        const opts = Array.from(sel.options);
+        const idx = opts.findIndex(o=>o.value===match.id);
+        if(idx>0){
+          sel.insertBefore(opts[idx], opts[0]);
+        }
+      }
+    }
+
+    function renderIndividualHistory(st, staffId, month){
+      const tbody = $('histBody');
+      tbody.innerHTML = '';
+
+      const q = (st.histQuery || '').trim().toLowerCase();
+      const typeFilter = st.histTypeFilter || 'all';
+
+      const list = entriesForMonth(st, staffId, month).filter(e=>{
+        const typeId = e.leaveTypeId || 'annual';
+        const typeName = getType(st, typeId).name.toLowerCase();
+        const base = [
+          e.date || '',
+          e.month || '',
+          typeName,
+          String(e.delta||''),
+          `${e.d||0}日${e.h||0}時間${e.m||0}分`,
+          `${e.d||0} ${e.h||0} ${e.m||0}`
+        ].join(' ').toLowerCase();
+
+        const okType = (typeFilter==='all') ? true : (typeId===typeFilter);
+        const okQ = q ? base.includes(q) : true;
+        return okType && okQ;
+      });
+
+      list.forEach((e, i)=>{
+        const typeId = e.leaveTypeId || 'annual';
         const tr = document.createElement('tr');
         tr.innerHTML = `
           <td class="center">${i+1}</td>
-          <td class="nowrap">${escapeHtml(e.date || '')}</td>
-          <td class="nowrap">
-            ${lt==='special'
-              ? `<span class="tag special">${typeLabel(lt)}</span>`
-              : `<span class="tag annual">${typeLabel(lt)}</span>`}
-          </td>
+          <td class="nowrap">${escapeHtml(e.date||'')}</td>
+          <td class="nowrap">${typeBadgeHtml(st, typeId)}</td>
           <td>${fmt(toInt(e.d),toInt(e.h),toInt(e.m))}</td>
-          <td>
-            <div class="small"><span class="tag annual">年次</span> <b>${fmtMin(accAnnual)}</b></div>
-            <div class="small" style="margin-top:4px"><span class="tag special">特別</span> <b>${fmtMin(accSpecial)}</b></div>
-          </td>
+          <td class="nowrap">${toInt(e.delta)}</td>
           <td class="center">
             <button class="secondary" data-act="delete" data-id="${e.id}">削除</button>
           </td>
         `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function renderAllMonthTable(st, month){
+      // thead (dynamic by types)
+      const thead = $('allThead');
+      const cols = st.leaveTypes;
+      thead.innerHTML = `
+        <tr>
+          <th class="center">#</th>
+          <th>職員名</th>
+          ${cols.map(t=> `<th class="nowrap">${escapeHtml(t.name)}（表示）</th><th class="nowrap muted">${escapeHtml(t.name)}（分）</th>`).join('')}
+          <th class="nowrap">合計（表示）</th>
+          <th class="nowrap muted">合計（分）</th>
+        </tr>
+      `;
+
+      const body = $('allBody');
+      body.innerHTML = '';
+      st.staff.forEach((s, idx)=>{
+        const parts = cols.map(t=>{
+          const v = totalForMonthType(st, s.id, month, t.id);
+          return {id:t.id, name:t.name, v};
+        });
+        const sum = parts.reduce((acc,x)=>acc+x.v,0);
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td class="center">${idx+1}</td>
+          <td style="font-weight:950">${escapeHtml(s.name)}</td>
+          ${parts.map(p=> `<td class="nowrap">${fmtMin(p.v)}</td><td class="nowrap muted">${p.v}</td>`).join('')}
+          <td class="nowrap" style="font-weight:950">${fmtMin(sum)}</td>
+          <td class="nowrap muted">${sum}</td>
+        `;
         body.appendChild(tr);
       });
+    }
 
-      // ========== 全職員（月一覧） ==========
-      $('allMonth').textContent = month;
-      $('allMonthAnnual2').textContent = fmtMin(allAnnualMin);
-      $('allMonthSpecial2').textContent = fmtMin(allSpecialMin);
+    function renderAllFYTable(st, fy){
+      const thead = $('fyAllThead');
+      const cols = st.leaveTypes;
+      thead.innerHTML = `
+        <tr>
+          <th class="center">#</th>
+          <th>職員名</th>
+          ${cols.map(t=> `<th class="nowrap">${escapeHtml(t.name)}（表示）</th><th class="nowrap muted">${escapeHtml(t.name)}（分）</th>`).join('')}
+          <th class="nowrap">合計（表示）</th>
+          <th class="nowrap muted">合計（分）</th>
+        </tr>
+      `;
 
-      const ab = $('allBody');
-      ab.innerHTML = '';
+      const body = $('fyAllBody');
+      body.innerHTML = '';
       st.staff.forEach((s, idx)=>{
-        const tA = totalForMonth(st, s.id, month, 'annual');
-        const tS = totalForMonth(st, s.id, month, 'special');
+        const parts = cols.map(t=>{
+          const v = totalForFYType(st, s.id, fy, t.id);
+          return {id:t.id, name:t.name, v};
+        });
+        const sum = parts.reduce((acc,x)=>acc+x.v,0);
+
         const tr = document.createElement('tr');
         tr.innerHTML = `
           <td class="center">${idx+1}</td>
-          <td style="font-weight:900">${escapeHtml(s.name)}</td>
-          <td class="nowrap">${fmtMin(tA)}</td>
-          <td class="muted nowrap">${tA}</td>
-          <td class="nowrap">${fmtMin(tS)}</td>
-          <td class="muted nowrap">${tS}</td>
+          <td style="font-weight:950">${escapeHtml(s.name)}</td>
+          ${parts.map(p=> `<td class="nowrap">${fmtMin(p.v)}</td><td class="nowrap muted">${p.v}</td>`).join('')}
+          <td class="nowrap" style="font-weight:950">${fmtMin(sum)}</td>
+          <td class="nowrap muted">${sum}</td>
         `;
-        ab.appendChild(tr);
+        body.appendChild(tr);
       });
+    }
 
-      // ========== 年間（一覧） ==========
-      $('yearPanelYear').textContent = String(year);
-      $('yearStaffName').textContent = staff.name;
+    function renderFYStaffMonthlyBreakdown(st, staffId, fy){
+      // ★4月始まりの月別内訳（種別別）
+      const thead = $('fyStaffThead');
+      const cols = st.leaveTypes;
+      thead.innerHTML = `
+        <tr>
+          <th class="center nowrap">月</th>
+          ${cols.map(t=> `<th class="nowrap">${escapeHtml(t.name)}（表示）</th><th class="nowrap muted">${escapeHtml(t.name)}（分）</th>`).join('')}
+          <th class="nowrap">合計（表示）</th>
+          <th class="nowrap muted">合計（分）</th>
+        </tr>
+      `;
 
-      const yearAllA = totalAllStaffYear(st, year, 'annual');
-      const yearAllS = totalAllStaffYear(st, year, 'special');
-      $('allYearAnnual').textContent = fmtMin(yearAllA);
-      $('allYearSpecial').textContent = fmtMin(yearAllS);
+      const body = $('fyStaffBody');
+      body.innerHTML = '';
+      const months = fyMonthKeys(fy); // 4→翌3
 
-      const yb = $('yearAllBody');
-      yb.innerHTML = '';
-      st.staff.forEach((s, idx)=>{
-        const tA = totalForYear(st, s.id, year, 'annual');
-        const tS = totalForYear(st, s.id, year, 'special');
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td class="center">${idx+1}</td>
-          <td style="font-weight:900">${escapeHtml(s.name)}</td>
-          <td class="nowrap">${fmtMin(tA)}</td>
-          <td class="muted nowrap">${tA}</td>
-          <td class="nowrap">${fmtMin(tS)}</td>
-          <td class="muted nowrap">${tS}</td>
-        `;
-        yb.appendChild(tr);
-      });
-
-      const ys = $('yearStaffBody');
-      ys.innerHTML = '';
-      const months = monthKeysInYear(year);
       months.forEach(mkey=>{
-        const tA = totalForMonth(st, staffId, mkey, 'annual');
-        const tS = totalForMonth(st, staffId, mkey, 'special');
+        const parts = cols.map(t=>{
+          const v = totalForMonthType(st, staffId, mkey, t.id);
+          return {id:t.id, v};
+        });
+        const sum = parts.reduce((acc,x)=>acc+x.v,0);
+        const label = mkey; // YYYY-MM 表示（間違いが起きにくい）
+
         const tr = document.createElement('tr');
         tr.innerHTML = `
-          <td class="center">${escapeHtml(mkey.split('-')[1])}</td>
-          <td class="nowrap">${fmtMin(tA)}</td>
-          <td class="muted nowrap">${tA}</td>
-          <td class="nowrap">${fmtMin(tS)}</td>
-          <td class="muted nowrap">${tS}</td>
+          <td class="center nowrap" style="font-weight:950">${escapeHtml(label)}</td>
+          ${parts.map(p=> `<td class="nowrap">${fmtMin(p.v)}</td><td class="nowrap muted">${p.v}</td>`).join('')}
+          <td class="nowrap" style="font-weight:950">${fmtMin(sum)}</td>
+          <td class="nowrap muted">${sum}</td>
         `;
-        ys.appendChild(tr);
+        body.appendChild(tr);
+      });
+    }
+
+    function renderFYHistory(st, staffId, fy){
+      const tbody = $('fyHistBody');
+      tbody.innerHTML = '';
+
+      const q = (st.fyHistQuery || '').trim().toLowerCase();
+      const typeFilter = st.fyHistTypeFilter || 'all';
+
+      const list = entriesForFY(st, staffId, fy).filter(e=>{
+        const typeId = e.leaveTypeId || 'annual';
+        const typeName = getType(st, typeId).name.toLowerCase();
+        const base = [
+          e.date || '',
+          e.month || '',
+          typeName,
+          String(e.delta||''),
+          `${e.d||0}日${e.h||0}時間${e.m||0}分`
+        ].join(' ').toLowerCase();
+
+        const okType = (typeFilter==='all') ? true : (typeId===typeFilter);
+        const okQ = q ? base.includes(q) : true;
+        return okType && okQ;
       });
 
-      // undo enable
-      const hasAnyForStaff = st.entries.some(e=>e.staffId===staffId);
-      $('undoBtn').disabled = !hasAnyForStaff;
+      list.forEach((e, i)=>{
+        const typeId = e.leaveTypeId || 'annual';
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td class="center">${i+1}</td>
+          <td class="nowrap">${escapeHtml(e.date||'')}</td>
+          <td class="nowrap">${escapeHtml(e.month||'')}</td>
+          <td class="nowrap">${typeBadgeHtml(st, typeId)}</td>
+          <td>${fmt(toInt(e.d),toInt(e.h),toInt(e.m))}</td>
+          <td class="nowrap">${toInt(e.delta)}</td>
+        `;
+        tbody.appendChild(tr);
+      });
     }
 
     // =========================
-    // 操作：職員
+    // 設定タブ描画
+    // =========================
+    function renderSettingsStaff(st){
+      const tbody = $('staffBody');
+      tbody.innerHTML = '';
+      st.staff.forEach((s, idx)=>{
+        const delDisabled = (st.staff.length<=1);
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td class="center">${idx+1}</td>
+          <td>
+            <input type="text" value="${escapeHtml(s.name)}" data-staff-name="${s.id}" />
+            <div class="muted small">ID: ${escapeHtml(String(s.id).slice(0,8))}...</div>
+          </td>
+          <td class="center nowrap">
+            <button class="secondary" data-act="savestaff" data-id="${s.id}">保存</button>
+            <button class="danger" data-act="delstaff" data-id="${s.id}" ${delDisabled?'disabled':''}>削除</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function renderSettingsTypes(st){
+      const tbody = $('typeBody');
+      tbody.innerHTML = '';
+      st.leaveTypes.forEach((t, idx)=>{
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td class="center">${idx+1}</td>
+          <td>
+            <div style="display:flex; gap:10px; align-items:center">
+              <span class="dot" style="background:${typeColor(t.id)}"></span>
+              <input type="text" value="${escapeHtml(t.name)}" data-type-name="${t.id}" />
+            </div>
+            <div class="muted small">ID: ${escapeHtml(t.id)}</div>
+          </td>
+          <td class="center nowrap">
+            <button class="secondary" data-act="savetype" data-id="${t.id}">保存</button>
+            <button class="danger" data-act="deltype" data-id="${t.id}">削除</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    // =========================
+    // 操作：入力
+    // =========================
+    function addEntry(){
+      const st = loadState();
+      const staffId = $('staffSelect').value;
+      const date = $('dateInput').value || todayStr();
+      const month = monthFromDate(date) || ($('monthInput').value || monthNowStr());
+      const leaveTypeId = $('leaveTypeSelect').value || 'annual';
+
+      const d = toInt($('in_d').value);
+      const h = toInt($('in_h').value);
+      const m = toInt($('in_m').value);
+      const delta = totalMinutes(d,h,m);
+
+      if(delta===0){ alert('0は追加されません'); return; }
+
+      st.currentStaffId = staffId;
+      st.currentMonth = $('monthInput').value || monthNowStr();
+      st.currentFY = Number($('fyInput').value || yearNowStr());
+      st.currentLeaveTypeId = leaveTypeId;
+
+      st.entries.push({
+        id: uuid(),
+        staffId,
+        date,
+        month,
+        leaveTypeId,
+        d,h,m,
+        delta,
+        createdAt: Date.now()
+      });
+
+      saveState(st);
+      clearInput(false);
+      render();
+    }
+
+    function undoLastForStaff(){
+      const st = loadState();
+      const staffId = $('staffSelect').value;
+      const idx = st.entries
+        .map((e,i)=>({e,i}))
+        .filter(x=>x.e.staffId===staffId)
+        .sort((a,b)=> (b.e.createdAt||0) - (a.e.createdAt||0))[0]?.i;
+
+      if(idx==null) return;
+      st.entries.splice(idx,1);
+      saveState(st);
+      render();
+    }
+
+    function deleteEntry(id){
+      const st = loadState();
+      const idx = st.entries.findIndex(e=>e.id===id);
+      if(idx<0) return;
+      st.entries.splice(idx, 1);
+      saveState(st);
+      render();
+    }
+
+    function clearInput(focus=true){
+      ['in_d','in_h','in_m'].forEach(id=> $(id).value='0');
+      if(focus) $('in_d').focus();
+    }
+
+    function resetAll(){
+      if(!confirm('全職員の履歴をすべて初期化します。よろしいですか？')) return;
+      const st = loadState();
+      st.entries = [];
+      saveState(st);
+      render();
+    }
+
+    function copyMonthTotal(){
+      const st = loadState();
+      const staffId = $('staffSelect').value;
+      const staff = st.staff.find(s=>s.id===staffId) || {name:'（不明）'};
+      const month = $('monthInput').value || monthNowStr();
+
+      const lines = [];
+      lines.push(`【${month}】${staff.name}`);
+      st.leaveTypes.forEach(t=>{
+        const v = totalForMonthType(st, staffId, month, t.id);
+        lines.push(`${t.name}：${fmtMin(v)}`);
+      });
+      lines.push(`合計：${fmtMin(totalForMonthAllTypes(st, staffId, month))}`);
+
+      navigator.clipboard.writeText(lines.join('\n')).then(()=>{
+        const btn = $('copyBtn'); const old=btn.textContent;
+        btn.textContent='コピーしました';
+        setTimeout(()=>btn.textContent=old, 1200);
+      }).catch(()=>{});
+    }
+
+    // =========================
+    // 便利：プリセット
+    // =========================
+    function setPreset(d,h,m){
+      $('in_d').value = String(d);
+      $('in_h').value = String(h);
+      $('in_m').value = String(m);
+    }
+
+    // =========================
+    // 操作：職員検索
+    // =========================
+    function onStaffSearchInput(){
+      const st = loadState();
+      st.staffSearch = $('staffSearch').value || '';
+      // 先頭マッチがあれば自動選択（任意：早くなる）
+      const q = st.staffSearch.trim();
+      if(q){
+        const qn = normalizeText(q);
+        const match = st.staff.find(s=> normalizeText(s.name).includes(qn));
+        if(match){
+          st.currentStaffId = match.id;
+        }
+      }
+      saveState(st);
+      render();
+    }
+
+    // =========================
+    // 設定：職員
     // =========================
     function addStaff(){
       const st = loadState();
@@ -843,15 +1440,20 @@
       const id = uuid();
       st.staff.push({id, name});
       st.currentStaffId = id;
-      saveState(st);
       $('newStaffName').value = '';
+      saveState(st);
       render();
     }
 
-    function pickStaff(id){
+    function saveStaffName(id){
       const st = loadState();
-      if(!st.staff.some(s=>s.id===id)) return;
-      st.currentStaffId = id;
+      const input = document.querySelector(`input[data-staff-name="${CSS.escape(id)}"]`);
+      if(!input) return;
+      const name = (input.value || '').trim();
+      if(!name){ alert('職員名は空にできません'); return; }
+      const staff = st.staff.find(s=>s.id===id);
+      if(!staff) return;
+      staff.name = name;
       saveState(st);
       render();
     }
@@ -879,96 +1481,90 @@
     }
 
     // =========================
-    // 操作：入力・履歴
+    // 設定：種別（後から追加）
     // =========================
-    function addEntry(){
+    function addType(){
       const st = loadState();
-      const staffId = $('staffSelect').value;
-      const date = $('dateInput').value || todayStr();
-      const month = monthFromDate(date) || ($('monthInput').value || monthNowStr());
-      const leaveType = $('leaveTypeSelect').value || 'annual';
+      const name = ($('newTypeName').value || '').trim();
+      if(!name){ alert('種別名を入力してください'); return; }
+      const dup = st.leaveTypes.some(t=> t.name===name);
+      if(dup && !confirm('同じ名称の種別が既にあります。追加しますか？')) return;
 
-      const d = toInt($('in_d').value);
-      const h = toInt($('in_h').value);
-      const m = toInt($('in_m').value);
-      const delta = totalMinutes(d,h,m);
-
-      if(delta===0){ alert('0は追加されません'); return; }
-
-      st.currentStaffId = staffId;
-      st.currentMonth = $('monthInput').value || monthNowStr();
-      st.currentYear = Number($('yearInput').value || yearNowStr());
-      st.currentLeaveType = leaveType;
-
-      st.entries.push({
-        id: uuid(),
-        staffId,
-        date,
-        month,
-        leaveType,
-        d,h,m,
-        delta,
-        createdAt: Date.now()
-      });
-
+      const id = 't_' + shortId();
+      st.leaveTypes.push({id, name});
+      st.currentLeaveTypeId = id;
+      $('newTypeName').value = '';
       saveState(st);
       render();
     }
 
-    function undoLastForStaff(){
+    function saveTypeName(id){
       const st = loadState();
-      const staffId = $('staffSelect').value;
-      const list = st.entries
-        .map((e, idx)=>({e, idx}))
-        .filter(x=> x.e.staffId===staffId)
-        .sort((a,b)=> (a.e.createdAt||0) - (b.e.createdAt||0));
-      if(list.length===0) return;
-
-      const last = list[list.length-1];
-      st.entries.splice(last.idx, 1);
+      const input = document.querySelector(`input[data-type-name="${CSS.escape(id)}"]`);
+      if(!input) return;
+      const name = (input.value || '').trim();
+      if(!name){ alert('種別名は空にできません'); return; }
+      const type = st.leaveTypes.find(t=>t.id===id);
+      if(!type) return;
+      type.name = name;
       saveState(st);
       render();
     }
 
-    function deleteEntry(id){
+    function deleteType(id){
       const st = loadState();
-      const idx = st.entries.findIndex(e=>e.id===id);
-      if(idx<0) return;
-      st.entries.splice(idx, 1);
+      const type = st.leaveTypes.find(t=>t.id===id);
+      if(!type) return;
+
+      const used = st.entries.some(e=> (e.leaveTypeId||'annual')===id);
+      const msg = used
+        ? `「${type.name}」を削除します。該当する記録は「不明」として扱われます（データ自体は残ります）。よろしいですか？`
+        : `「${type.name}」を削除します。よろしいですか？`;
+      if(!confirm(msg)) return;
+
+      st.leaveTypes = st.leaveTypes.filter(t=>t.id!==id);
+      // current が消えたら先頭へ
+      if(!st.leaveTypes.some(t=>t.id===st.currentLeaveTypeId)){
+        st.currentLeaveTypeId = st.leaveTypes[0]?.id || 'annual';
+      }
       saveState(st);
       render();
-    }
-
-    function clearInput(){
-      ['in_d','in_h','in_m'].forEach(id=> $(id).value='0');
-      $('in_d').focus();
-    }
-
-    function resetAll(){
-      if(!confirm('全職員の累計と履歴をすべて初期化します。よろしいですか？')) return;
-      const st = loadState();
-      st.entries = [];
-      saveState(st);
-      render();
-    }
-
-    function copyMonthTotal(){
-      const st = loadState();
-      const staffId = $('staffSelect').value;
-      const month = $('monthInput').value || monthNowStr();
-      const staff = st.staff.find(s=>s.id===staffId) || {name:'（不明）'};
-      const tA = totalForMonth(st, staffId, month, 'annual');
-      const tS = totalForMonth(st, staffId, month, 'special');
-      const text = `【${month}】${staff.name}\n年次休暇：${fmtMin(tA)}\n特別休暇：${fmtMin(tS)}`;
-      navigator.clipboard.writeText(text).then(()=>{
-        const btn = $('copyBtn'); const old=btn.textContent;
-        btn.textContent='コピーしました';
-        setTimeout(()=>btn.textContent=old, 1200);
-      }).catch(()=>{});
     }
 
     // =========================
-    // CSV（既存機能を保持：拡張）
+    // フィルタ（履歴）
+    // =========================
+    function updateHistFilters(){
+      const st = loadState();
+      st.histQuery = $('histQuery').value || '';
+      st.histTypeFilter = $('histTypeFilter').value || 'all';
+      saveState(st);
+      render();
+    }
+    function clearHistFilters(){
+      const st = loadState();
+      st.histQuery = '';
+      st.histTypeFilter = 'all';
+      saveState(st);
+      render();
+    }
+    function updateFYHistFilters(){
+      const st = loadState();
+      st.fyHistQuery = $('fyHistQuery').value || '';
+      st.fyHistTypeFilter = $('fyHistTypeFilter').value || 'all';
+      saveState(st);
+      render();
+    }
+    function clearFYHistFilters(){
+      const st = loadState();
+      st.fyHistQuery = '';
+      st.fyHistTypeFilter = 'all';
+      saveState(st);
+      render();
+    }
+
+    // =========================
+    // CSV / Excel（動的種別対応）
     // =========================
     function downloadCSV(csv, filename){
       const blob = new Blob([csv], {type:'text/csv'});
@@ -979,63 +1575,6 @@
       URL.revokeObjectURL(url);
     }
 
-    function exportIndividualCSV(){
-      const st = loadState();
-      const staffId = $('staffSelect').value;
-      const month = $('monthInput').value || monthNowStr();
-      const staff = st.staff.find(s=>s.id===staffId) || {name:'unknown'};
-      const list = entriesForMonth(st, staffId, month);
-
-      let accA = 0, accS = 0;
-      const rows = [
-        ['月', month],
-        ['職員名', staff.name],
-        [],
-        ['#','日付','種別','追加（日）','追加（時）','追加（分）','追加（分）','年次累計（分）','特別累計（分）','年次累計（表示）','特別累計（表示）']
-      ];
-
-      list.forEach((e, i)=>{
-        const lt = (e.leaveType||'annual');
-        if(lt==='special') accS += toInt(e.delta); else accA += toInt(e.delta);
-        rows.push([
-          i+1,
-          e.date || '',
-          typeLabel(lt),
-          toInt(e.d), toInt(e.h), toInt(e.m),
-          toInt(e.delta),
-          accA, accS,
-          fmtMin(accA), fmtMin(accS)
-        ]);
-      });
-
-      const csv = rows.map(r=> r.map(x=> `"${String(x).replace(/"/g,'""')}"`).join(',')).join('\r\n');
-      downloadCSV(csv, `leave_time_${month}_${staff.name}.csv`);
-    }
-
-    function exportAllCSV(){
-      const st = loadState();
-      const month = $('monthInput').value || monthNowStr();
-      const rows = [
-        ['月', month],
-        [],
-        ['#','職員名','年次（表示）','年次（分）','特別（表示）','特別（分）']
-      ];
-      st.staff.forEach((s, i)=>{
-        const tA = totalForMonth(st, s.id, month, 'annual');
-        const tS = totalForMonth(st, s.id, month, 'special');
-        rows.push([i+1, s.name, fmtMin(tA), tA, fmtMin(tS), tS]);
-      });
-      rows.push([]);
-      rows.push(['合計','', fmtMin(totalAllStaffMonth(st, month, 'annual')), totalAllStaffMonth(st, month, 'annual'),
-                      fmtMin(totalAllStaffMonth(st, month, 'special')), totalAllStaffMonth(st, month, 'special')]);
-
-      const csv = rows.map(r=> r.map(x=> `"${String(x).replace(/"/g,'""')}"`).join(',')).join('\r\n');
-      downloadCSV(csv, `leave_time_all_${month}.csv`);
-    }
-
-    // =========================
-    // Excel（追加機能）
-    // =========================
     function ensureXLSX(){
       if(typeof XLSX==='undefined'){
         alert('Excel出力ライブラリの読み込みに失敗しました。ネットワーク接続をご確認ください。');
@@ -1044,156 +1583,204 @@
       return true;
     }
 
+    // 個別CSV（この月）
+    function exportIndividualCSV(){
+      const st = loadState();
+      const staffId = $('staffSelect').value;
+      const staff = st.staff.find(s=>s.id===staffId) || {name:'unknown'};
+      const month = $('monthInput').value || monthNowStr();
+      const list = entriesForMonth(st, staffId, month).slice().reverse(); // 出力は古い→新しい
+
+      const rows = [
+        ['月', month],
+        ['職員名', staff.name],
+        [],
+        ['#','日付','種別','追加（日）','追加（時）','追加（分）','追加（分）']
+      ];
+      list.forEach((e,i)=>{
+        const t = getType(st, e.leaveTypeId||'annual').name;
+        rows.push([i+1, e.date||'', t, toInt(e.d), toInt(e.h), toInt(e.m), toInt(e.delta)]);
+      });
+
+      const csv = rows.map(r=> r.map(x=> `"${String(x).replace(/"/g,'""')}"`).join(',')).join('\r\n');
+      downloadCSV(csv, `leave_time_${month}_${staff.name}.csv`);
+    }
+
+    // 全職員CSV（月一覧：種別別）
+    function exportAllCSV(){
+      const st = loadState();
+      const month = $('monthInput').value || monthNowStr();
+      const cols = st.leaveTypes;
+
+      const header = ['#','職員名'];
+      cols.forEach(t=>{
+        header.push(`${t.name}（分）`);
+        header.push(`${t.name}（表示）`);
+      });
+      header.push('合計（分）','合計（表示）');
+
+      const rows = [
+        ['月', month],
+        [],
+        header
+      ];
+
+      st.staff.forEach((s,i)=>{
+        const parts = cols.map(t=> totalForMonthType(st, s.id, month, t.id));
+        const sum = parts.reduce((a,b)=>a+b,0);
+        const line = [i+1, s.name];
+        parts.forEach((v, idx)=>{
+          line.push(v);
+          line.push(fmtMin(v));
+        });
+        line.push(sum);
+        line.push(fmtMin(sum));
+        rows.push(line);
+      });
+
+      const csv = rows.map(r=> r.map(x=> `"${String(x).replace(/"/g,'""')}"`).join(',')).join('\r\n');
+      downloadCSV(csv, `leave_time_all_${month}.csv`);
+    }
+
+    // 個別Excel（月履歴＋年度月別内訳）
     function exportIndividualXlsx(){
       if(!ensureXLSX()) return;
       const st = loadState();
       const staffId = $('staffSelect').value;
-      const month = $('monthInput').value || monthNowStr();
-      const year = Number($('yearInput').value || yearNowStr());
       const staff = st.staff.find(s=>s.id===staffId) || {name:'unknown'};
+      const month = $('monthInput').value || monthNowStr();
+      const fy = Number($('fyInput').value || yearNowStr());
+      const cols = st.leaveTypes;
 
-      // sheet1: 月内履歴（種別別累計つき）
-      const list = entriesForMonth(st, staffId, month);
+      // sheet1: 月内履歴
+      const list = entriesForMonth(st, staffId, month).slice().reverse();
       const aoa1 = [
         ['月', month],
         ['職員名', staff.name],
         [],
-        ['#','日付','種別','追加（日）','追加（時）','追加（分）','追加（分）','年次累計（分）','特別累計（分）','年次累計（表示）','特別累計（表示）']
+        ['#','日付','種別','追加（日）','追加（時）','追加（分）','追加（分）']
       ];
-      let accA=0, accS=0;
       list.forEach((e,i)=>{
-        const lt=(e.leaveType||'annual');
-        if(lt==='special') accS += toInt(e.delta); else accA += toInt(e.delta);
-        aoa1.push([
-          i+1, e.date||'', typeLabel(lt),
-          toInt(e.d), toInt(e.h), toInt(e.m),
-          toInt(e.delta),
-          accA, accS,
-          fmtMin(accA), fmtMin(accS)
-        ]);
+        const t = getType(st, e.leaveTypeId||'annual').name;
+        aoa1.push([i+1, e.date||'', t, toInt(e.d), toInt(e.h), toInt(e.m), toInt(e.delta)]);
       });
 
-      // sheet2: 年間 月別内訳
+      // sheet2: 年度 月別内訳（4月始まり）
       const aoa2 = [
-        ['年', year],
+        ['年度', `${fy}年度`],
         ['職員名', staff.name],
         [],
-        ['月','年次（分）','年次（表示）','特別（分）','特別（表示）']
+        ['月', ...cols.flatMap(t=>[`${t.name}（分）`, `${t.name}（表示）`]), '合計（分）','合計（表示）']
       ];
-      monthKeysInYear(year).forEach(mkey=>{
-        const tA = totalForMonth(st, staffId, mkey, 'annual');
-        const tS = totalForMonth(st, staffId, mkey, 'special');
-        aoa2.push([mkey, tA, fmtMin(tA), tS, fmtMin(tS)]);
+      fyMonthKeys(fy).forEach(mkey=>{
+        const parts = cols.map(t=> totalForMonthType(st, staffId, mkey, t.id));
+        const sum = parts.reduce((a,b)=>a+b,0);
+        const row = [mkey];
+        parts.forEach(v=> row.push(v, fmtMin(v)));
+        row.push(sum, fmtMin(sum));
+        aoa2.push(row);
       });
-      aoa2.push([]);
-      aoa2.push(['年合計', totalForYear(st, staffId, year, 'annual'), fmtMin(totalForYear(st, staffId, year, 'annual')),
-                        totalForYear(st, staffId, year, 'special'), fmtMin(totalForYear(st, staffId, year, 'special'))]);
 
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(aoa1), '個別_月内履歴');
-      XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(aoa2), '個別_年間内訳');
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(aoa2), '個別_年度月別内訳');
       XLSX.writeFile(wb, `leave_time_${month}_${staff.name}.xlsx`);
     }
 
+    // 全職員Excel（月一覧）
     function exportAllXlsx(){
       if(!ensureXLSX()) return;
       const st = loadState();
       const month = $('monthInput').value || monthNowStr();
+      const cols = st.leaveTypes;
 
       const aoa = [
         ['月', month],
         [],
-        ['#','職員名','年次（分）','年次（表示）','特別（分）','特別（表示）']
+        ['#','職員名', ...cols.flatMap(t=>[`${t.name}（分）`, `${t.name}（表示）`]), '合計（分）','合計（表示）']
       ];
+
       st.staff.forEach((s,i)=>{
-        const tA = totalForMonth(st, s.id, month, 'annual');
-        const tS = totalForMonth(st, s.id, month, 'special');
-        aoa.push([i+1, s.name, tA, fmtMin(tA), tS, fmtMin(tS)]);
+        const parts = cols.map(t=> totalForMonthType(st, s.id, month, t.id));
+        const sum = parts.reduce((a,b)=>a+b,0);
+        const row = [i+1, s.name];
+        parts.forEach(v=> row.push(v, fmtMin(v)));
+        row.push(sum, fmtMin(sum));
+        aoa.push(row);
       });
-      aoa.push([]);
-      aoa.push(['合計','',
-        totalAllStaffMonth(st, month, 'annual'), fmtMin(totalAllStaffMonth(st, month, 'annual')),
-        totalAllStaffMonth(st, month, 'special'), fmtMin(totalAllStaffMonth(st, month, 'special'))
-      ]);
 
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(aoa), '全職員_月一覧');
       XLSX.writeFile(wb, `leave_time_all_${month}.xlsx`);
     }
 
-    function exportYearXlsx(){
+    // 年度Excel（全職員年度合計＋選択職員月別＋選択職員年度内履歴）
+    function exportFYXlsx(){
       if(!ensureXLSX()) return;
       const st = loadState();
-      const year = Number($('yearInput').value || yearNowStr());
+      const fy = Number($('fyInput').value || yearNowStr());
       const staffId = $('staffSelect').value;
       const staff = st.staff.find(s=>s.id===staffId) || {name:'unknown'};
+      const cols = st.leaveTypes;
 
-      // sheet1: 全職員 年合計
+      // sheet1: 全職員 年度合計
       const aoa1 = [
-        ['年', year],
+        ['年度', `${fy}年度`],
         [],
-        ['#','職員名','年次（分）','年次（表示）','特別（分）','特別（表示）']
+        ['#','職員名', ...cols.flatMap(t=>[`${t.name}（分）`, `${t.name}（表示）`]), '合計（分）','合計（表示）']
       ];
       st.staff.forEach((s,i)=>{
-        const tA = totalForYear(st, s.id, year, 'annual');
-        const tS = totalForYear(st, s.id, year, 'special');
-        aoa1.push([i+1, s.name, tA, fmtMin(tA), tS, fmtMin(tS)]);
+        const parts = cols.map(t=> totalForFYType(st, s.id, fy, t.id));
+        const sum = parts.reduce((a,b)=>a+b,0);
+        const row = [i+1, s.name];
+        parts.forEach(v=> row.push(v, fmtMin(v)));
+        row.push(sum, fmtMin(sum));
+        aoa1.push(row);
       });
-      aoa1.push([]);
-      aoa1.push(['合計','',
-        totalAllStaffYear(st, year, 'annual'), fmtMin(totalAllStaffYear(st, year, 'annual')),
-        totalAllStaffYear(st, year, 'special'), fmtMin(totalAllStaffYear(st, year, 'special'))
-      ]);
 
-      // sheet2: 選択職員 月別内訳
+      // sheet2: 選択職員 月別内訳（4月始まり）
       const aoa2 = [
-        ['年', year],
+        ['年度', `${fy}年度`],
         ['職員名', staff.name],
         [],
-        ['月','年次（分）','年次（表示）','特別（分）','特別（表示）']
+        ['月', ...cols.flatMap(t=>[`${t.name}（分）`, `${t.name}（表示）`]), '合計（分）','合計（表示）']
       ];
-      monthKeysInYear(year).forEach(mkey=>{
-        const tA = totalForMonth(st, staffId, mkey, 'annual');
-        const tS = totalForMonth(st, staffId, mkey, 'special');
-        aoa2.push([mkey, tA, fmtMin(tA), tS, fmtMin(tS)]);
+      fyMonthKeys(fy).forEach(mkey=>{
+        const parts = cols.map(t=> totalForMonthType(st, staffId, mkey, t.id));
+        const sum = parts.reduce((a,b)=>a+b,0);
+        const row = [mkey];
+        parts.forEach(v=> row.push(v, fmtMin(v)));
+        row.push(sum, fmtMin(sum));
+        aoa2.push(row);
       });
-      aoa2.push([]);
-      aoa2.push(['年合計',
-        totalForYear(st, staffId, year, 'annual'), fmtMin(totalForYear(st, staffId, year, 'annual')),
-        totalForYear(st, staffId, year, 'special'), fmtMin(totalForYear(st, staffId, year, 'special'))
-      ]);
 
-      // sheet3: 選択職員 年内履歴
-      const list = entriesForYear(st, staffId, year);
+      // sheet3: 選択職員 年度内履歴
+      const list = entriesForFY(st, staffId, fy).slice().reverse();
       const aoa3 = [
-        ['年', year],
+        ['年度', `${fy}年度`],
         ['職員名', staff.name],
         [],
         ['#','日付','月','種別','追加（日）','追加（時）','追加（分）','追加（分）']
       ];
       list.forEach((e,i)=>{
-        aoa3.push([
-          i+1,
-          e.date||'',
-          e.month||monthFromDate(e.date||''),
-          typeLabel(e.leaveType||'annual'),
-          toInt(e.d), toInt(e.h), toInt(e.m),
-          toInt(e.delta)
-        ]);
+        const t = getType(st, e.leaveTypeId||'annual').name;
+        aoa3.push([i+1, e.date||'', e.month||'', t, toInt(e.d), toInt(e.h), toInt(e.m), toInt(e.delta)]);
       });
 
       const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(aoa1), '全職員_年合計');
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(aoa1), '全職員_年度合計');
       XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(aoa2), '選択職員_月別内訳');
-      XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(aoa3), '選択職員_年内履歴');
-      XLSX.writeFile(wb, `leave_time_year_${year}.xlsx`);
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(aoa3), '選択職員_年度内履歴');
+      XLSX.writeFile(wb, `leave_time_fy_${fy}.xlsx`);
     }
 
     // =========================
     // イベント
     // =========================
-    $('addStaffBtn').addEventListener('click', addStaff);
-    $('newStaffName').addEventListener('keydown', (e)=>{ if(e.key==='Enter') addStaff(); });
+    $('tabIndividual').addEventListener('click', ()=> setTab('individual'));
+    $('tabAll').addEventListener('click', ()=> setTab('all'));
+    $('tabFY').addEventListener('click', ()=> setTab('fy'));
+    $('tabSettings').addEventListener('click', ()=> setTab('settings'));
 
     $('staffSelect').addEventListener('change', ()=>{
       const st = loadState();
@@ -1204,20 +1791,27 @@
 
     $('leaveTypeSelect').addEventListener('change', ()=>{
       const st = loadState();
-      st.currentLeaveType = $('leaveTypeSelect').value || 'annual';
+      st.currentLeaveTypeId = $('leaveTypeSelect').value || 'annual';
       saveState(st);
       render();
     });
 
     $('dateInput').addEventListener('change', ()=>{
-      // 日付を変えたら、月表示もその月に合わせる（使いやすさ優先）
       const m = monthFromDate($('dateInput').value);
-      const y = yearFromDate($('dateInput').value);
       if(m) $('monthInput').value = m;
-      if(y) $('yearInput').value = Number(y);
+
+      // 年度も追随（4月以降ならその年、1-3月なら前年）
+      const d = $('dateInput').value;
+      if(d){
+        const y = Number(d.slice(0,4));
+        const mm = Number(d.slice(5,7));
+        const fy = (mm>=4) ? y : (y-1);
+        $('fyInput').value = fy;
+      }
+
       const st = loadState();
       st.currentMonth = $('monthInput').value || monthNowStr();
-      st.currentYear = Number($('yearInput').value || yearNowStr());
+      st.currentFY = Number($('fyInput').value || yearNowStr());
       saveState(st);
       render();
     });
@@ -1225,49 +1819,46 @@
     $('monthInput').addEventListener('change', ()=>{
       const st = loadState();
       st.currentMonth = $('monthInput').value || monthNowStr();
-      // 月を変えたら年も追随
-      if(st.currentMonth) $('yearInput').value = Number(st.currentMonth.slice(0,4));
-      st.currentYear = Number($('yearInput').value || yearNowStr());
+      // 月を変えたら年度もそれっぽく追随（4月以上ならその年、1-3なら前年）
+      const y = Number(st.currentMonth.slice(0,4));
+      const m = Number(st.currentMonth.slice(5,7));
+      const fy = (m>=4) ? y : (y-1);
+      $('fyInput').value = fy;
+      st.currentFY = fy;
       saveState(st);
       render();
     });
 
-    $('yearInput').addEventListener('change', ()=>{
+    $('fyInput').addEventListener('change', ()=>{
       const st = loadState();
-      st.currentYear = Number($('yearInput').value || yearNowStr());
+      st.currentFY = Number($('fyInput').value || yearNowStr());
       saveState(st);
       render();
     });
+
+    $('staffSearch').addEventListener('input', onStaffSearchInput);
 
     $('addBtn').addEventListener('click', addEntry);
     $('undoBtn').addEventListener('click', undoLastForStaff);
-    $('clearInputBtn').addEventListener('click', clearInput);
+    $('clearInputBtn').addEventListener('click', ()=> clearInput(true));
     $('resetAllBtn').addEventListener('click', resetAll);
     $('copyBtn').addEventListener('click', copyMonthTotal);
 
-    // CSV（既存ボタン名は維持）
-    $('exportIndividualBtn').addEventListener('click', exportIndividualCSV);
-    $('exportAllBtn').addEventListener('click', exportAllCSV);
+    // presets
+    $('presetHalf').addEventListener('click', ()=> setPreset(0,3,53)); // 465/2=232.5 → 3:52.5 なので現場向けに3:53
+    $('preset1d').addEventListener('click', ()=> setPreset(1,0,0));
+    $('preset1h').addEventListener('click', ()=> setPreset(0,1,0));
+    $('preset30m').addEventListener('click', ()=> setPreset(0,0,30));
+    $('preset15m').addEventListener('click', ()=> setPreset(0,0,15));
 
-    // Excel（追加）
-    $('exportIndividualXlsxBtn').addEventListener('click', exportIndividualXlsx);
-    $('exportAllXlsxBtn').addEventListener('click', exportAllXlsx);
-    $('exportYearXlsxBtn').addEventListener('click', exportYearXlsx);
+    // history filters
+    $('histQuery').addEventListener('input', updateHistFilters);
+    $('histTypeFilter').addEventListener('change', updateHistFilters);
+    $('histClearBtn').addEventListener('click', clearHistFilters);
 
-    // tabs
-    $('tabIndividual').addEventListener('click', ()=> setTab('individual'));
-    $('tabAll').addEventListener('click', ()=> setTab('all'));
-    $('tabYear').addEventListener('click', ()=> setTab('year'));
-
-    // staff table actions
-    $('staffBody').addEventListener('click', (e)=>{
-      const btn = e.target.closest('button[data-act]');
-      if(!btn) return;
-      const act = btn.dataset.act;
-      const id = btn.dataset.id;
-      if(act==='pick') pickStaff(id);
-      if(act==='delstaff') deleteStaff(id);
-    });
+    $('fyHistQuery').addEventListener('input', updateFYHistFilters);
+    $('fyHistTypeFilter').addEventListener('change', updateFYHistFilters);
+    $('fyHistClearBtn').addEventListener('click', clearFYHistFilters);
 
     // history delete
     $('histBody').addEventListener('click', (e)=>{
@@ -1276,12 +1867,49 @@
       deleteEntry(btn.dataset.id);
     });
 
-    // Enter: add（職員名入力は除外）
+    // exports
+    $('exportIndividualBtn').addEventListener('click', exportIndividualCSV);
+    $('exportAllBtn').addEventListener('click', exportAllCSV);
+
+    $('exportIndividualXlsxBtn').addEventListener('click', exportIndividualXlsx);
+    $('exportAllXlsxBtn').addEventListener('click', exportAllXlsx);
+    $('exportFYXlsxBtn').addEventListener('click', exportFYXlsx);
+
+    // settings actions
+    $('addStaffBtn').addEventListener('click', addStaff);
+    $('newStaffName').addEventListener('keydown', (e)=>{ if(e.key==='Enter') addStaff(); });
+
+    $('staffBody').addEventListener('click', (e)=>{
+      const btn = e.target.closest('button[data-act]');
+      if(!btn) return;
+      const act = btn.dataset.act;
+      const id = btn.dataset.id;
+      if(act==='savestaff') saveStaffName(id);
+      if(act==='delstaff') deleteStaff(id);
+    });
+
+    $('addTypeBtn').addEventListener('click', addType);
+    $('newTypeName').addEventListener('keydown', (e)=>{ if(e.key==='Enter') addType(); });
+
+    $('typeBody').addEventListener('click', (e)=>{
+      const btn = e.target.closest('button[data-act]');
+      if(!btn) return;
+      const act = btn.dataset.act;
+      const id = btn.dataset.id;
+      if(act==='savetype') saveTypeName(id);
+      if(act==='deltype') deleteType(id);
+    });
+
+    // Enter: add（ただし検索・設定入力中は除外）
     document.addEventListener('keydown', (e)=>{
+      if(e.key!=='Enter') return;
       const active = document.activeElement;
-      if(e.key==='Enter' && active && active.id!=='newStaffName'){
-        addEntry();
-      }
+      const blockIds = new Set([
+        'staffSearch','newStaffName','newTypeName','histQuery','fyHistQuery'
+      ]);
+      if(active && active.id && blockIds.has(active.id)) return;
+      if(active && active.closest('#panelSettings')) return;
+      addEntry();
     });
 
     // 初期化
@@ -1289,8 +1917,8 @@
       const st = loadState();
       $('dateInput').value = todayStr();
       $('monthInput').value = st.currentMonth || monthNowStr();
-      $('yearInput').value = st.currentYear || Number(yearNowStr());
-      $('leaveTypeSelect').value = st.currentLeaveType || 'annual';
+      $('fyInput').value = st.currentFY || Number(yearNowStr());
+      $('staffSearch').value = st.staffSearch || '';
       setTab(st.currentTab || 'individual', false);
       render();
     })();
