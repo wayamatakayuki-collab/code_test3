@@ -83,7 +83,6 @@
       align-items:start;
     }
 
-    /* ★設定/一覧系タブで左を非表示 */
     body.settingsMode .grid,
     body.allMode .grid,
     body.fyMode .grid,
@@ -257,7 +256,6 @@
       line-height: 1.6;
     }
 
-    /* ★全タブ共通：アプリ上部（右ではなく上）に固定 */
     .tabsDock{
       position: sticky;
       top: 0;
@@ -391,7 +389,7 @@
       background: #fbfbfe;
     }
 
-    /* 年度：職員×月（年次/特別/その他/合計） */
+    /* 年度：職員×月（動的種別 + 合算/全合計） */
     .fyMatrix{
       display:grid;
       grid-template-columns: 1fr;
@@ -440,6 +438,42 @@
     .fyLine.total{font-size:12px; font-weight:950}
     .fyLine.total .k{color:#0f172a}
 
+    /* 個別月別一覧（カード式：横スクロールなし） */
+    .monthCards{ display:grid; gap:10px; }
+    .mcard{
+      border:1px solid var(--line);
+      background:#fff;
+      border-radius: 16px;
+      overflow:hidden;
+    }
+    .mcardHead{
+      padding:10px 12px;
+      background: var(--soft2);
+      border-bottom:1px solid var(--line);
+      display:flex;
+      gap:10px;
+      align-items:center;
+      flex-wrap:wrap;
+    }
+    .mcardHead .m{font-weight:950}
+    .mcardHead .r{margin-left:auto; display:flex; gap:8px; flex-wrap:wrap}
+    .mcardBody{padding:10px 12px}
+    .mgrid{display:grid; gap:6px}
+    .mrow{
+      display:flex; justify-content:space-between; gap:10px; align-items:center;
+      border:1px solid #eef2f7;
+      border-radius: 14px;
+      padding: 8px 10px;
+      background:#fff;
+      font-size:12px;
+      font-weight:900;
+      color:#0f172a;
+    }
+    .mrow .k{color:#64748b; font-weight:900; white-space:nowrap}
+    .mrow .v{white-space:nowrap}
+    .mrow.total{background:#fbfcff; border-color:#e7eefc; font-size:13px; font-weight:950}
+    .mrow.total .k{color:#0f172a}
+
     /* 複数月：チェックUI */
     .monthChecks{
       display:grid;
@@ -462,6 +496,7 @@
     .mchk input{ width:18px; height:18px; }
     .mchk .lab{font-weight:950; color:#0f172a}
     .mchk .sub{margin-left:auto; font-size:11px; color:#64748b; font-weight:900}
+
     @media (max-width: 980px){
       .grid{grid-template-columns: 1fr;}
       .badge{margin-left:0}
@@ -489,7 +524,7 @@
       }
       td::before{
         content: attr(data-label);
-        flex: 0 0 130px;
+        flex: 0 0 140px;
         color: #64748b;
         font-weight: 900;
         font-size: 12px;
@@ -520,7 +555,6 @@
       </div>
     </header>
 
-    <!-- ★タブをアプリ上部に統一（右側ではなく上） -->
     <div class="tabsDock">
       <div class="tabs" role="tablist" aria-label="表示切替">
         <button class="tab active" id="tabIndividual" data-tab="individual" type="button">個別（履歴）</button>
@@ -613,7 +647,7 @@
           <div class="noteBox">
             ・年度は <b>4月〜翌年3月</b>（例：2025年度＝2025-04〜2026-03）<br>
             ・種別は「設定」タブで追加・名称変更・削除ができます（記録は種別IDで保持）<br>
-            ・横スクロール不要：小画面では表がカード表示に切り替わります
+            ・「合算合計」は <b>設定でチェックした種別</b> だけを合計します（用途に合わせて調整できます）
           </div>
         </div>
       </section>
@@ -631,7 +665,8 @@
             <div class="panelHeader">
               <div class="pill"><span>職員</span><b id="indStaffName">-</b></div>
               <div class="pill"><span>月</span><b id="indMonth">-</b></div>
-              <div class="pill"><span>合計</span><b id="indMonthTotal">0日 0時間 0分</b></div>
+              <div class="pill"><span>合算合計</span><b id="indMonthTotal">0日 0時間 0分</b></div>
+              <div class="pill"><span>全合計</span><b id="indMonthTotalAll">0日 0時間 0分</b></div>
               <div class="actions right">
                 <button class="secondary" id="exportIndividualBtn" type="button">個別CSV</button>
                 <button class="secondary" id="exportIndividualXlsxBtn" type="button">個別Excel</button>
@@ -683,15 +718,10 @@
             </div>
 
             <div class="noteBox" style="margin-top:10px">
-              <b>4月始まり（4〜翌3月）</b>で、選択職員の各月を「年次休暇／特別休暇／その他／合計」で表示します。
+              <b>4月始まり（4〜翌3月）</b>で、各月を「種別ごと + 合算合計（チェック種別のみ）+ 全合計」で表示します。横スクロールは発生しないカード式です。
             </div>
 
-            <div class="list" style="margin-top:10px">
-              <table>
-                <thead id="staffMonthlyThead"></thead>
-                <tbody id="staffMonthlyBody"></tbody>
-              </table>
-            </div>
+            <div id="staffMonthlyCards" class="monthCards" style="margin-top:10px"></div>
           </div>
 
           <!-- 月別一覧 -->
@@ -709,7 +739,8 @@
                 <button class="secondary segBtn" id="monthNextBtnAll" type="button" aria-label="次の月">▶</button>
               </div>
 
-              <div class="pill"><span>全職員合計</span><b id="allMonthTotal">0日 0時間 0分</b></div>
+              <div class="pill"><span>全職員 合算合計</span><b id="allMonthTotal">0日 0時間 0分</b></div>
+              <div class="pill"><span>全職員 全合計</span><b id="allMonthTotalAll">0日 0時間 0分</b></div>
 
               <div class="actions right">
                 <button class="secondary" id="exportAllBtn" type="button">全職員CSV</button>
@@ -734,7 +765,7 @@
             </div>
           </div>
 
-          <!-- ★追加：複数月集計 -->
+          <!-- 複数月集計 -->
           <div id="panelMulti" style="display:none">
             <div class="panelHeader">
               <div class="pill"><span>対象</span></div>
@@ -757,7 +788,7 @@
             </div>
 
             <div class="noteBox" style="margin-top:10px">
-              チェックした月（例：4・5・6月）の合計をまとめて計算します。<b>年度は4月始まり</b>です。
+              チェックした月（例：4・5・6月）の合計をまとめて計算します。<b>合算合計</b>は設定でチェックした種別のみ。<b>全合計</b>は全種別です。
             </div>
 
             <div class="kpiCard" style="margin-top:10px">
@@ -779,7 +810,8 @@
             </div>
 
             <div class="panelHeader" style="margin-top:10px">
-              <div class="pill"><span>合計</span><b id="multiGrand">0日 0時間 0分</b></div>
+              <div class="pill"><span>合算合計</span><b id="multiGrand">0日 0時間 0分</b></div>
+              <div class="pill"><span>全合計</span><b id="multiGrandAll">0日 0時間 0分</b></div>
               <div class="actions right">
                 <button class="secondary" id="exportMultiXlsxBtn" type="button">この集計をExcel</button>
               </div>
@@ -798,7 +830,8 @@
             </div>
 
             <div class="noteBox" style="margin-top:10px">
-              <b>職員×月（年度内）</b>：各月を <b>年次休暇／特別休暇／その他／合計</b> で表示します（合計も表示）。
+              <b>職員×月（年度内）</b>：各月に、<b>登録した全ての種別</b>を表示します（「その他」扱いにしません）。<br>
+              「合算合計」は <b>設定でチェックした種別</b> のみ合計します（用途に合わせて調整可）。
             </div>
 
             <div id="fyMatrix" class="fyMatrix" style="margin-top:10px"></div>
@@ -808,7 +841,8 @@
           <div id="panelFYTotal" style="display:none">
             <div class="panelHeader">
               <div class="pill"><span>年度</span><b id="fyTotalLabel">-</b></div>
-              <div class="pill"><span>全職員合計</span><b id="allFYTotal">0日 0時間 0分</b></div>
+              <div class="pill"><span>全職員 合算合計</span><b id="allFYTotal">0日 0時間 0分</b></div>
+              <div class="pill"><span>全職員 全合計</span><b id="allFYTotalAll">0日 0時間 0分</b></div>
 
               <div class="row right" style="gap:8px; align-items:center">
                 <button class="secondary segBtn" id="fyPrevBtn2" type="button" aria-label="前年度">◀</button>
@@ -889,13 +923,14 @@
                       <tr>
                         <th style="width:52px" class="center">#</th>
                         <th>種別名（名称変更可）</th>
+                        <th style="width:180px" class="center nowrap">合算合計に含める</th>
                         <th style="width:220px" class="center nowrap">操作</th>
                       </tr>
                     </thead>
                     <tbody id="typeBody"></tbody>
                   </table>
                 </div>
-                <div class="hint">初期で「年次休暇」「特別休暇」。削除すると該当記録は「不明」扱い（データ自体は残ります）。</div>
+                <div class="hint">チェックONの種別だけ「合算合計」に加算します（OFFは個別累計のみ）。</div>
               </div>
             </div>
 
@@ -941,7 +976,7 @@
 
             <div class="noteBox">
               <b>追加した便利機能</b><br>
-              ・「直前を複製」／「この月を一括削除」／月・年度の移動／一覧列のカスタム／JSONバックアップ／複数月集計
+              ・「合算合計に含める」チェック（種別ごと）／追加種別も年度別・月別に表示／カード式月別一覧／複数月集計
             </div>
           </div>
 
@@ -957,7 +992,7 @@
 
     const KEY_V1 = 'worktime_accum_v1';
     const KEY_MAIN = 'worktime_accum_staff_v3_white';
-    const VERSION = 8;
+    const VERSION = 9;
 
     const $ = (id)=>document.getElementById(id);
     const toInt = (v)=>{ const n=parseInt(v,10); return isNaN(n)?0:Math.max(0,n); };
@@ -1010,13 +1045,26 @@
       return s;
     }
 
+    // ★ includeInTotal: 合算合計に含めるか
     function defaultTypes(){
       return [
-        {id:'annual', name:'年次休暇'},
-        {id:'special', name:'特別休暇'}
+        {id:'annual', name:'年次休暇', includeInTotal:true},
+        {id:'special', name:'特別休暇', includeInTotal:true}
       ];
     }
     function defaultVisibleTypes(){ return ['annual','special']; }
+
+    function ensureTypeFlags(st){
+      st.leaveTypes = (st.leaveTypes||[]).map(t=>({
+        ...t,
+        includeInTotal: (typeof t.includeInTotal === 'boolean') ? t.includeInTotal : true
+      }));
+      // 念のため年次・特別はONにしておく（必要なら後でOFFにできるが、初期はON）
+      const a = st.leaveTypes.find(t=>t.id==='annual');
+      if(a && typeof a.includeInTotal!=='boolean') a.includeInTotal=true;
+      const sp = st.leaveTypes.find(t=>t.id==='special');
+      if(sp && typeof sp.includeInTotal!=='boolean') sp.includeInTotal=true;
+    }
 
     function loadState(){
       try{
@@ -1025,8 +1073,9 @@
           const obj = JSON.parse(raw);
           if(obj && (obj.version>=3) && Array.isArray(obj.staff) && Array.isArray(obj.entries)){
             if(!Array.isArray(obj.leaveTypes) || obj.leaveTypes.length===0) obj.leaveTypes = defaultTypes();
-            if(!obj.leaveTypes.some(t=>t.id==='annual')) obj.leaveTypes.unshift({id:'annual', name:'年次休暇'});
-            if(!obj.leaveTypes.some(t=>t.id==='special')) obj.leaveTypes.push({id:'special', name:'特別休暇'});
+            if(!obj.leaveTypes.some(t=>t.id==='annual')) obj.leaveTypes.unshift({id:'annual', name:'年次休暇', includeInTotal:true});
+            if(!obj.leaveTypes.some(t=>t.id==='special')) obj.leaveTypes.push({id:'special', name:'特別休暇', includeInTotal:true});
+            ensureTypeFlags(obj);
 
             obj.entries = obj.entries.map(e=>({
               ...e,
@@ -1047,10 +1096,9 @@
             obj.visibleTypeIds = obj.visibleTypeIds.filter(id=> obj.leaveTypes.some(t=>t.id===id));
             if(obj.visibleTypeIds.length===0) obj.visibleTypeIds = defaultVisibleTypes().filter(id=> obj.leaveTypes.some(t=>t.id===id));
 
-            // ★複数月集計：初期化
             if(!obj.multi || typeof obj.multi!=='object') obj.multi = {};
             if(!obj.multi.fy) obj.multi.fy = obj.currentFY;
-            if(!obj.multi.targetId) obj.multi.targetId = obj.currentStaffId; // staffId or "__all__"
+            if(!obj.multi.targetId) obj.multi.targetId = obj.currentStaffId;
             if(!Array.isArray(obj.multi.months)) obj.multi.months = [obj.currentMonth];
 
             obj.version = VERSION;
@@ -1121,7 +1169,11 @@
 
     function saveState(state){ localStorage.setItem(KEY_MAIN, JSON.stringify(state)); }
 
-    function getType(st, id){ return st.leaveTypes.find(t=>t.id===id) || {id, name:'（不明）'}; }
+    function getType(st, id){ return st.leaveTypes.find(t=>t.id===id) || {id, name:'（不明）', includeInTotal:false}; }
+    function isIncluded(st, id){
+      const t = st.leaveTypes.find(x=>x.id===id);
+      return !!(t && t.includeInTotal);
+    }
     function typeColor(id){
       if(id==='annual') return '#2563eb';
       if(id==='special') return '#10b981';
@@ -1132,7 +1184,9 @@
     function typeBadgeHtml(st, id){
       const t = getType(st, id);
       const color = typeColor(id);
-      return `<span class="tag" title="${escapeHtml(t.name)}"><span class="dot2" style="background:${color}"></span>${escapeHtml(t.name)}</span>`;
+      const mark = (t.includeInTotal ? '✓' : '—');
+      const markTitle = t.includeInTotal ? '合算合計に含む' : '合算合計に含めない';
+      return `<span class="tag" title="${escapeHtml(t.name)}"><span class="dot2" style="background:${color}"></span>${escapeHtml(t.name)} <span style="margin-left:6px;color:#94a3b8;font-weight:950" title="${markTitle}">[${mark}]</span></span>`;
     }
 
     function entriesForMonth(st, staffId, month){
@@ -1156,11 +1210,22 @@
         .reduce((acc,e)=> acc + toInt(e.delta), 0);
     }
 
+    // ★合算合計（includeInTotal=true の種別のみ）
+    function totalForMonthIncluded(st, staffId, month){
+      const mk = normalizeMonthKey(month);
+      return st.entries
+        .filter(e=> e.staffId===staffId && normalizeMonthKey(e.month)===mk && isIncluded(st, (e.leaveTypeId||'annual')))
+        .reduce((acc,e)=> acc + toInt(e.delta), 0);
+    }
+
     function totalAllStaffMonthType(st, month, typeId){
       return st.staff.reduce((acc,s)=> acc + totalForMonthType(st, s.id, month, typeId), 0);
     }
     function totalAllStaffMonthAllTypes(st, month){
       return st.staff.reduce((acc,s)=> acc + totalForMonthAllTypes(st, s.id, month), 0);
+    }
+    function totalAllStaffMonthIncluded(st, month){
+      return st.staff.reduce((acc,s)=> acc + totalForMonthIncluded(st, s.id, month), 0);
     }
 
     function fyMonthKeys(fy){
@@ -1183,23 +1248,42 @@
         .filter(e=> e.staffId===staffId && keys.has(normalizeMonthKey(e.month)))
         .reduce((acc,e)=> acc + toInt(e.delta), 0);
     }
+    function totalForFYIncluded(st, staffId, fy){
+      const keys = new Set(fyMonthKeys(fy));
+      return st.entries
+        .filter(e=> e.staffId===staffId && keys.has(normalizeMonthKey(e.month)) && isIncluded(st, (e.leaveTypeId||'annual')))
+        .reduce((acc,e)=> acc + toInt(e.delta), 0);
+    }
     function totalAllStaffFYAllTypes(st, fy){
       return st.staff.reduce((acc,s)=> acc + totalForFYAllTypes(st, s.id, fy), 0);
     }
-
-    function month4BucketsForStaff(st, staffId, month){
-      const annual = totalForMonthType(st, staffId, month, 'annual');
-      const special = totalForMonthType(st, staffId, month, 'special');
-      const total = totalForMonthAllTypes(st, staffId, month);
-      const other = Math.max(0, total - annual - special);
-      return {annual, special, other, total};
+    function totalAllStaffFYIncluded(st, fy){
+      return st.staff.reduce((acc,s)=> acc + totalForFYIncluded(st, s.id, fy), 0);
     }
-    function fy4BucketsForStaff(st, staffId, fy){
-      const annual = totalForFYType(st, staffId, fy, 'annual');
-      const special = totalForFYType(st, staffId, fy, 'special');
-      const total = totalForFYAllTypes(st, staffId, fy);
-      const other = Math.max(0, total - annual - special);
-      return {annual, special, other, total};
+
+    // ★月・年度の種別別Mapを返す
+    function monthTypeMapForStaff(st, staffId, month){
+      const map = new Map();
+      st.leaveTypes.forEach(t=> map.set(t.id, 0));
+      st.entries
+        .filter(e=> e.staffId===staffId && normalizeMonthKey(e.month)===normalizeMonthKey(month))
+        .forEach(e=>{
+          const tid = e.leaveTypeId || 'annual';
+          map.set(tid, (map.get(tid)||0) + toInt(e.delta));
+        });
+      return map;
+    }
+    function fyTypeMapForStaff(st, staffId, fy){
+      const keys = new Set(fyMonthKeys(fy));
+      const map = new Map();
+      st.leaveTypes.forEach(t=> map.set(t.id, 0));
+      st.entries
+        .filter(e=> e.staffId===staffId && keys.has(normalizeMonthKey(e.month)))
+        .forEach(e=>{
+          const tid = e.leaveTypeId || 'annual';
+          map.set(tid, (map.get(tid)||0) + toInt(e.delta));
+        });
+      return map;
     }
 
     function setCellLabels(tbody, labels){
@@ -1230,7 +1314,7 @@
         item.innerHTML = `
           <div class="left">
             <span class="dot2" style="background:${typeColor(t.id)}"></span>
-            <div class="name">${escapeHtml(t.name)}</div>
+            <div class="name">${escapeHtml(t.name)} ${t.includeInTotal ? '<span style="color:#94a3b8;font-weight:950">[✓]</span>' : '<span style="color:#94a3b8;font-weight:950">[—]</span>'}</div>
           </div>
           <b>${fmtMin(v)}</b>
         `;
@@ -1248,7 +1332,7 @@
         item.innerHTML = `
           <div class="left">
             <span class="dot2" style="background:${typeColor(t.id)}"></span>
-            <div class="name">${escapeHtml(t.name)}</div>
+            <div class="name">${escapeHtml(t.name)} ${t.includeInTotal ? '<span style="color:#94a3b8;font-weight:950">[✓]</span>' : '<span style="color:#94a3b8;font-weight:950">[—]</span>'}</div>
           </div>
           <b>${fmtMin(v)}</b>
         `;
@@ -1291,7 +1375,8 @@
           <th style="width:56px" class="center">#</th>
           <th style="width:220px">職員名</th>
           ${cols.map(t=> `<th class="nowrap" style="width:150px">${escapeHtml(t.name)}</th>`).join('')}
-          <th class="nowrap" style="width:160px">合計</th>
+          <th class="nowrap" style="width:160px">合算合計</th>
+          <th class="nowrap" style="width:160px">全合計</th>
         </tr>
       `;
 
@@ -1299,19 +1384,21 @@
       body.innerHTML = '';
       st.staff.forEach((s, idx)=>{
         const parts = colIds.map(id=> totalForMonthType(st, s.id, month, id));
-        const sum = totalForMonthAllTypes(st, s.id, month);
+        const sumIncluded = totalForMonthIncluded(st, s.id, month);
+        const sumAll = totalForMonthAllTypes(st, s.id, month);
 
         const tr = document.createElement('tr');
         tr.innerHTML = `
           <td class="center">${idx+1}</td>
           <td style="font-weight:950; max-width:220px; overflow:hidden; text-overflow:ellipsis">${escapeHtml(s.name)}</td>
           ${parts.map(v=> `<td class="nowrap">${fmtMin(v)}</td>`).join('')}
-          <td class="nowrap" style="font-weight:950">${fmtMin(sum)}</td>
+          <td class="nowrap" style="font-weight:950">${fmtMin(sumIncluded)}</td>
+          <td class="nowrap" style="font-weight:950">${fmtMin(sumAll)}</td>
         `;
         body.appendChild(tr);
       });
 
-      setCellLabels(body, ['#','職員名', ...cols.map(t=>t.name), '合計']);
+      setCellLabels(body, ['#','職員名', ...cols.map(t=>t.name), '合算合計','全合計']);
     }
 
     function renderAllFYTable(st, fy){
@@ -1324,7 +1411,8 @@
           <th style="width:56px" class="center">#</th>
           <th style="width:220px">職員名</th>
           ${cols.map(t=> `<th class="nowrap" style="width:150px">${escapeHtml(t.name)}</th>`).join('')}
-          <th class="nowrap" style="width:160px">合計</th>
+          <th class="nowrap" style="width:160px">合算合計</th>
+          <th class="nowrap" style="width:160px">全合計</th>
         </tr>
       `;
 
@@ -1332,21 +1420,24 @@
       body.innerHTML = '';
       st.staff.forEach((s, idx)=>{
         const parts = colIds.map(id=> totalForFYType(st, s.id, fy, id));
-        const sum = totalForFYAllTypes(st, s.id, fy);
+        const sumIncluded = totalForFYIncluded(st, s.id, fy);
+        const sumAll = totalForFYAllTypes(st, s.id, fy);
 
         const tr = document.createElement('tr');
         tr.innerHTML = `
           <td class="center">${idx+1}</td>
           <td style="font-weight:950; max-width:220px; overflow:hidden; text-overflow:ellipsis">${escapeHtml(s.name)}</td>
           ${parts.map(v=> `<td class="nowrap">${fmtMin(v)}</td>`).join('')}
-          <td class="nowrap" style="font-weight:950">${fmtMin(sum)}</td>
+          <td class="nowrap" style="font-weight:950">${fmtMin(sumIncluded)}</td>
+          <td class="nowrap" style="font-weight:950">${fmtMin(sumAll)}</td>
         `;
         body.appendChild(tr);
       });
 
-      setCellLabels(body, ['#','職員名', ...cols.map(t=>t.name), '合計']);
+      setCellLabels(body, ['#','職員名', ...cols.map(t=>t.name), '合算合計','全合計']);
     }
 
+    // ★年度別一覧：セル内に「全種別 + 合算/全合計」を表示（その他にしない）
     function renderFYMatrix(st, fy){
       const wrap = $('fyMatrix');
       wrap.innerHTML = '';
@@ -1357,7 +1448,9 @@
       ];
 
       st.staff.forEach(s=>{
-        const bFY = fy4BucketsForStaff(st, s.id, fy);
+        const includedFY = totalForFYIncluded(st, s.id, fy);
+        const allFY = totalForFYAllTypes(st, s.id, fy);
+
         const card = document.createElement('div');
         card.className = 'fyStaffCard';
 
@@ -1365,32 +1458,49 @@
         head.className = 'fyStaffHead';
         head.innerHTML = `
           <div class="name" title="${escapeHtml(s.name)}">${escapeHtml(s.name)}</div>
-          <div class="sum">年度合計：${fmtMin(bFY.total)}（年次 ${fmtMin(bFY.annual)} / 特別 ${fmtMin(bFY.special)} / その他 ${fmtMin(bFY.other)}）</div>
+          <div class="sum">年度 合算合計：${fmtMin(includedFY)} ／ 全合計：${fmtMin(allFY)}</div>
         `;
 
         const grid = document.createElement('div');
         grid.className = 'fyGrid12';
 
         months.forEach((mkey, i)=>{
-          const b = month4BucketsForStaff(st, s.id, mkey);
+          const map = monthTypeMapForStaff(st, s.id, mkey);
+          let sumAll = 0;
+          let sumIncluded = 0;
+
           const cell = document.createElement('div');
           cell.className = 'fyCell';
+
+          const lines = [];
+          st.leaveTypes.forEach(tp=>{
+            const v = map.get(tp.id) || 0;
+            sumAll += v;
+            if(tp.includeInTotal) sumIncluded += v;
+
+            const zero = (v===0) ? 'zero' : '';
+            lines.push(`
+              <div class="fyLine ${zero}">
+                <span class="k">${escapeHtml(tp.name)}${tp.includeInTotal ? '' : '（別）'}</span>
+                <span class="v">${v===0?'0':fmtMin(v)}</span>
+              </div>
+            `);
+          });
+
+          lines.push(`
+            <div class="fyLine total ${sumIncluded===0?'zero':''}">
+              <span class="k">合算合計</span><span class="v">${sumIncluded===0?'0':fmtMin(sumIncluded)}</span>
+            </div>
+          `);
+          lines.push(`
+            <div class="fyLine total ${sumAll===0?'zero':''}">
+              <span class="k">全合計</span><span class="v">${sumAll===0?'0':fmtMin(sumAll)}</span>
+            </div>
+          `);
+
           cell.innerHTML = `
             <div class="m">${escapeHtml(labels[i])}</div>
-            <div class="lines">
-              <div class="fyLine ${b.annual===0?'zero':''}">
-                <span class="k">年次</span><span class="v">${b.annual===0?'0':fmtMin(b.annual)}</span>
-              </div>
-              <div class="fyLine ${b.special===0?'zero':''}">
-                <span class="k">特別</span><span class="v">${b.special===0?'0':fmtMin(b.special)}</span>
-              </div>
-              <div class="fyLine ${b.other===0?'zero':''}">
-                <span class="k">その他</span><span class="v">${b.other===0?'0':fmtMin(b.other)}</span>
-              </div>
-              <div class="fyLine total ${b.total===0?'zero':''}">
-                <span class="k">合計</span><span class="v">${b.total===0?'0':fmtMin(b.total)}</span>
-              </div>
-            </div>
+            <div class="lines">${lines.join('')}</div>
           `;
           grid.appendChild(cell);
         });
@@ -1401,49 +1511,105 @@
       });
     }
 
-    function renderStaffMonthlyTable(st, staffId, fy){
-      const thead = $('staffMonthlyThead');
-      thead.innerHTML = `
-        <tr>
-          <th class="center nowrap" style="width:120px">月</th>
-          <th class="nowrap" style="width:180px">年次休暇</th>
-          <th class="nowrap" style="width:180px">特別休暇</th>
-          <th class="nowrap" style="width:180px">その他</th>
-          <th class="nowrap" style="width:180px">合計</th>
-        </tr>
-      `;
-      const body = $('staffMonthlyBody');
-      body.innerHTML = '';
-
+    // ★個別月別一覧：カード式で「全種別 + 合算/全合計」
+    function renderStaffMonthlyCards(st, staffId, fy){
+      const wrap = $('staffMonthlyCards');
+      wrap.innerHTML = '';
       const months = fyMonthKeys(fy);
-      months.forEach(mkey=>{
-        const b = month4BucketsForStaff(st, staffId, mkey);
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td class="center nowrap" style="font-weight:950">${escapeHtml(mkey)}</td>
-          <td class="nowrap">${fmtMin(b.annual)}</td>
-          <td class="nowrap">${fmtMin(b.special)}</td>
-          <td class="nowrap">${fmtMin(b.other)}</td>
-          <td class="nowrap" style="font-weight:950">${fmtMin(b.total)}</td>
+      const labels = [
+        `${fy}年度 4月`,`5月`,`6月`,`7月`,`8月`,`9月`,
+        `10月`,`11月`,`12月`,`${fy+1}年 1月`,`2月`,`3月`
+      ];
+
+      months.forEach((mkey, idx)=>{
+        const map = monthTypeMapForStaff(st, staffId, mkey);
+        let sumAll = 0;
+        let sumIncluded = 0;
+
+        const rows = [];
+        st.leaveTypes.forEach(tp=>{
+          const v = map.get(tp.id) || 0;
+          sumAll += v;
+          if(tp.includeInTotal) sumIncluded += v;
+          rows.push(`
+            <div class="mrow">
+              <span class="k">${escapeHtml(tp.name)}${tp.includeInTotal ? '' : '（別）'}</span>
+              <span class="v">${v===0 ? '0' : fmtMin(v)}</span>
+            </div>
+          `);
+        });
+
+        rows.push(`
+          <div class="mrow total">
+            <span class="k">合算合計</span>
+            <span class="v">${sumIncluded===0 ? '0' : fmtMin(sumIncluded)}</span>
+          </div>
+        `);
+        rows.push(`
+          <div class="mrow total">
+            <span class="k">全合計</span>
+            <span class="v">${sumAll===0 ? '0' : fmtMin(sumAll)}</span>
+          </div>
+        `);
+
+        const card = document.createElement('div');
+        card.className = 'mcard';
+        card.innerHTML = `
+          <div class="mcardHead">
+            <div class="m">${escapeHtml(labels[idx])}</div>
+            <div class="r">
+              <span class="chip"><strong>${escapeHtml(mkey)}</strong></span>
+            </div>
+          </div>
+          <div class="mcardBody">
+            <div class="mgrid">${rows.join('')}</div>
+          </div>
         `;
-        body.appendChild(tr);
+        wrap.appendChild(card);
       });
 
-      const bFY = fy4BucketsForStaff(st, staffId, fy);
-      const trSum = document.createElement('tr');
-      trSum.innerHTML = `
-        <td class="center nowrap" style="font-weight:950">年度合計</td>
-        <td class="nowrap" style="font-weight:950">${fmtMin(bFY.annual)}</td>
-        <td class="nowrap" style="font-weight:950">${fmtMin(bFY.special)}</td>
-        <td class="nowrap" style="font-weight:950">${fmtMin(bFY.other)}</td>
-        <td class="nowrap" style="font-weight:950">${fmtMin(bFY.total)}</td>
-      `;
-      body.appendChild(trSum);
+      // 年度合計カード
+      const mapFY = fyTypeMapForStaff(st, staffId, fy);
+      let fyAll = 0, fyIncluded = 0;
+      const fyRows = [];
+      st.leaveTypes.forEach(tp=>{
+        const v = mapFY.get(tp.id) || 0;
+        fyAll += v;
+        if(tp.includeInTotal) fyIncluded += v;
+        fyRows.push(`
+          <div class="mrow">
+            <span class="k">${escapeHtml(tp.name)}${tp.includeInTotal ? '' : '（別）'}</span>
+            <span class="v">${v===0 ? '0' : fmtMin(v)}</span>
+          </div>
+        `);
+      });
+      fyRows.push(`
+        <div class="mrow total">
+          <span class="k">年度 合算合計</span>
+          <span class="v">${fyIncluded===0 ? '0' : fmtMin(fyIncluded)}</span>
+        </div>
+      `);
+      fyRows.push(`
+        <div class="mrow total">
+          <span class="k">年度 全合計</span>
+          <span class="v">${fyAll===0 ? '0' : fmtMin(fyAll)}</span>
+        </div>
+      `);
 
-      setCellLabels(body, ['月','年次休暇','特別休暇','その他','合計']);
+      const sumCard = document.createElement('div');
+      sumCard.className = 'mcard';
+      sumCard.innerHTML = `
+        <div class="mcardHead">
+          <div class="m">${fy}年度 合計</div>
+        </div>
+        <div class="mcardBody">
+          <div class="mgrid">${fyRows.join('')}</div>
+        </div>
+      `;
+      wrap.appendChild(sumCard);
     }
 
-    // ★複数月集計（対象：職員 or 全職員）
+    // 複数月集計
     function totalsForTargetMonths(st, targetId, months){
       const keys = new Set((months||[]).map(normalizeMonthKey).filter(Boolean));
       const byType = new Map();
@@ -1462,11 +1628,14 @@
         st.entries.filter(e=> e.staffId===targetId).forEach(addEntry);
       }
 
-      // 合計
-      let total = 0;
-      for(const v of byType.values()) total += v;
+      let totalAll = 0;
+      let totalIncluded = 0;
+      for(const [tid, v] of byType.entries()){
+        totalAll += v;
+        if(isIncluded(st, tid)) totalIncluded += v;
+      }
 
-      return { byType, total };
+      return { byType, totalAll, totalIncluded };
     }
 
     function renderMulti(st){
@@ -1474,7 +1643,6 @@
       const fy = Number(multi.fy || st.currentFY);
       const monthsFY = fyMonthKeys(fy);
 
-      // 対象（全職員 + 個別）
       const sel = $('multiTargetSelect');
       sel.innerHTML = '';
       const optAll = document.createElement('option');
@@ -1491,12 +1659,9 @@
       if(multi.targetId !== '__all__' && !st.staff.some(s=>s.id===multi.targetId)) multi.targetId = st.currentStaffId;
       sel.value = multi.targetId;
 
-      // 年度
       $('fyInputMulti').value = fy;
 
-      // 月チェック
       const chosen = new Set((multi.months||[]).map(normalizeMonthKey));
-      // FY外の月が入っていたら除外
       const fySet = new Set(monthsFY);
       const cleaned = Array.from(chosen).filter(m=>fySet.has(m));
       if(cleaned.length !== (multi.months||[]).length){
@@ -1523,14 +1688,13 @@
         box.appendChild(wrap);
       });
 
-      // 表示：選択中
       const selectedMonths = monthsFY.filter(m=>chosen.has(m));
       $('multiCount').textContent = String(selectedMonths.length);
       $('multiLabel').textContent = selectedMonths.length ? selectedMonths.join(' / ') : '（未選択）';
 
-      // 集計
       const t = totalsForTargetMonths(st, multi.targetId, selectedMonths);
-      $('multiGrand').textContent = fmtMin(t.total);
+      $('multiGrand').textContent = fmtMin(t.totalIncluded);
+      $('multiGrandAll').textContent = fmtMin(t.totalAll);
 
       const list = $('multiTotals');
       list.innerHTML = '';
@@ -1541,14 +1705,13 @@
         item.innerHTML = `
           <div class="left">
             <span class="dot2" style="background:${typeColor(tp.id)}"></span>
-            <div class="name">${escapeHtml(tp.name)}</div>
+            <div class="name">${escapeHtml(tp.name)} ${tp.includeInTotal ? '<span style="color:#94a3b8;font-weight:950">[✓]</span>' : '<span style="color:#94a3b8;font-weight:950">[—]</span>'}</div>
           </div>
           <b>${fmtMin(v)}</b>
         `;
         list.appendChild(item);
       });
 
-      // state反映
       st.multi = multi;
       saveState(st);
     }
@@ -1590,13 +1753,16 @@
             <div class="small" style="color:#94a3b8; margin-top:6px">ID: ${escapeHtml(t.id)}</div>
           </td>
           <td class="center nowrap">
+            <input type="checkbox" data-act="toggleInclude" data-id="${t.id}" ${t.includeInTotal?'checked':''} />
+          </td>
+          <td class="center nowrap">
             <button class="secondary" data-act="savetype" data-id="${t.id}" type="button">保存</button>
             <button class="danger" data-act="deltype" data-id="${t.id}" type="button">削除</button>
           </td>
         `;
         tbody.appendChild(tr);
       });
-      setCellLabels(tbody, ['#','種別','操作']);
+      setCellLabels(tbody, ['#','種別','合算合計に含める','操作']);
     }
 
     function renderVisibleTypeSettings(st){
@@ -1657,7 +1823,6 @@
       $('monthInput').value = mk;
       $('monthInputAll').value = mk;
 
-      // FYも追従
       const y = Number(mk.slice(0,4));
       const mm = Number(mk.slice(5,7));
       const fy = (mm>=4) ? y : (y-1);
@@ -1726,10 +1891,7 @@
       $('fyTotalLabel').textContent = `${fy}年度`;
       $('fyPanelFY').textContent = `${fy}年度`;
 
-      // 左入力の職員
       fillStaffSelect($('staffSelect'), st, st.currentStaffId);
-
-      // 各タブの職員選択（左非表示時）
       fillStaffSelect($('staffSelectAll'), st, st.currentStaffId);
       fillStaffSelect($('staffSelectMonthly'), st, st.currentStaffId);
 
@@ -1738,7 +1900,6 @@
 
       $('chipStaffTop').textContent = staff.name;
 
-      // 種別
       $('leaveTypeSelect').innerHTML = '';
       st.leaveTypes.forEach(t=>{
         const opt = document.createElement('option');
@@ -1755,18 +1916,20 @@
       $('chipMonth').textContent = month;
       $('chipFY').textContent = `${fy}年度`;
 
-      // 個別
+      // 個別：合算合計／全合計
       $('indStaffName').textContent = staff.name;
       $('indMonth').textContent = month;
-      $('indMonthTotal').textContent = fmtMin(totalForMonthAllTypes(st, staffId, month));
+      $('indMonthTotal').textContent = fmtMin(totalForMonthIncluded(st, staffId, month));
+      $('indMonthTotalAll').textContent = fmtMin(totalForMonthAllTypes(st, staffId, month));
       renderKpiMyMonth(st, staffId, month);
       renderIndividualHistory(st, staffId, month);
 
-      // 個別月別一覧
-      renderStaffMonthlyTable(st, staffId, Number($('fyInputSM').value||fy));
+      // 個別月別一覧（カード式）
+      renderStaffMonthlyCards(st, staffId, Number($('fyInputSM').value||fy));
 
       // 月別一覧
-      $('allMonthTotal').textContent = fmtMin(totalAllStaffMonthAllTypes(st, month));
+      $('allMonthTotal').textContent = fmtMin(totalAllStaffMonthIncluded(st, month));
+      $('allMonthTotalAll').textContent = fmtMin(totalAllStaffMonthAllTypes(st, month));
       renderKpiAllMonth(st, month);
       renderAllMonthTable(st, month);
 
@@ -1777,7 +1940,8 @@
       renderFYMatrix(st, fy);
 
       // 年度合計タブ
-      $('allFYTotal').textContent = fmtMin(totalAllStaffFYAllTypes(st, fy));
+      $('allFYTotal').textContent = fmtMin(totalAllStaffFYIncluded(st, fy));
+      $('allFYTotalAll').textContent = fmtMin(totalAllStaffFYAllTypes(st, fy));
       renderAllFYTable(st, fy);
 
       // 設定
@@ -1931,7 +2095,6 @@
       const st = loadState();
       st.multi = st.multi || {};
       st.multi.fy = fy;
-      // 年度変更時は、その年度の「表示中の月」を選択に寄せる（存在しないなら4月）
       const mk = normalizeMonthKey($('monthInput').value || monthNowStr());
       const list = fyMonthKeys(fy);
       st.multi.months = list.includes(mk) ? [mk] : [list[0]];
@@ -2003,7 +2166,7 @@
       if(dup && !confirm('同じ名称の種別が既にあります。追加しますか？')) return;
 
       const id = 't_' + shortId();
-      st.leaveTypes.push({id, name});
+      st.leaveTypes.push({id, name, includeInTotal:true}); // ★追加時はON（必要なら後でOFF）
       const vis = visibleCols(st);
       if(vis.length < 4) st.visibleTypeIds = [...vis, id];
       st.currentLeaveTypeId = id;
@@ -2021,6 +2184,14 @@
       const type = st.leaveTypes.find(t=>t.id===id);
       if(!type) return;
       type.name = name;
+      saveState(st);
+      render();
+    }
+    function toggleIncludeInTotal(id, checked){
+      const st = loadState();
+      const type = st.leaveTypes.find(t=>t.id===id);
+      if(!type) return;
+      type.includeInTotal = !!checked;
       saveState(st);
       render();
     }
@@ -2063,7 +2234,7 @@
       render();
     }
 
-    // CSV/Excel/JSON
+    // CSV/Excel/JSON（ここは前版のまま：必要最小限の変更のみ。Excelの「合計」は分の列も含める）
     function ensureXLSX(){
       if(typeof XLSX==='undefined'){
         alert('Excel出力ライブラリの読み込みに失敗しました。ネットワーク接続をご確認ください。');
@@ -2090,6 +2261,8 @@
       const rows = [
         ['月', month],
         ['職員名', staff.name],
+        ['合算合計', fmtMin(totalForMonthIncluded(st, staffId, month))],
+        ['全合計', fmtMin(totalForMonthAllTypes(st, staffId, month))],
         [],
         ['#','日付','種別','追加（日）','追加（時）','追加（分）','合計（分）']
       ];
@@ -2107,7 +2280,7 @@
       const month = normalizeMonthKey($('monthInput').value || monthNowStr());
       const cols = st.leaveTypes;
 
-      const header = ['#','職員名', ...cols.map(t=>`${t.name}（分）`), '合計（分）', '合計（表示）'];
+      const header = ['#','職員名', ...cols.map(t=>`${t.name}（分）`), '合算合計（分）','全合計（分）'];
       const rows = [
         ['月', month],
         [],
@@ -2116,8 +2289,9 @@
 
       st.staff.forEach((s,i)=>{
         const parts = cols.map(t=> totalForMonthType(st, s.id, month, t.id));
-        const sum = parts.reduce((a,b)=>a+b,0);
-        rows.push([i+1, s.name, ...parts, sum, fmtMin(sum)]);
+        const sumAll = parts.reduce((a,b)=>a+b,0);
+        const sumInc = cols.reduce((acc,t,idx)=> acc + (t.includeInTotal ? parts[idx] : 0), 0);
+        rows.push([i+1, s.name, ...parts, sumInc, sumAll]);
       });
 
       const csv = rows.map(r=> r.map(x=> `"${String(x).replace(/"/g,'""')}"`).join(',')).join('\r\n');
@@ -2137,6 +2311,8 @@
       const aoa1 = [
         ['月', month],
         ['職員名', staff.name],
+        ['合算合計', fmtMin(totalForMonthIncluded(st, staffId, month))],
+        ['全合計', fmtMin(totalForMonthAllTypes(st, staffId, month))],
         [],
         ['#','日付','種別','追加（日）','追加（時）','追加（分）','合計（分）']
       ];
@@ -2149,20 +2325,21 @@
         ['年度', `${fy}年度`],
         ['職員名', staff.name],
         [],
-        ['月', ...cols.flatMap(t=>[`${t.name}（分）`, `${t.name}（表示）`]), '合計（分）','合計（表示）']
+        ['月', ...cols.flatMap(t=>[`${t.name}（分）`, `${t.name}（表示）`]), '合算合計（分）','合算合計（表示）','全合計（分）','全合計（表示）']
       ];
       fyMonthKeys(fy).forEach(mkey=>{
         const parts = cols.map(t=> totalForMonthType(st, staffId, mkey, t.id));
-        const sum = parts.reduce((a,b)=>a+b,0);
+        const sumAll = parts.reduce((a,b)=>a+b,0);
+        const sumInc = cols.reduce((acc,t,idx)=> acc + (t.includeInTotal ? parts[idx] : 0), 0);
         const row = [mkey];
         parts.forEach(v=> row.push(v, fmtMin(v)));
-        row.push(sum, fmtMin(sum));
+        row.push(sumInc, fmtMin(sumInc), sumAll, fmtMin(sumAll));
         aoa2.push(row);
       });
 
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(aoa1), '個別_月内履歴');
-      XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(aoa2), '個別_年度月別内訳');
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(aoa2), '個別_年度月別');
       XLSX.writeFile(wb, `leave_time_${month}_${staff.name}.xlsx`);
     }
 
@@ -2175,15 +2352,16 @@
       const aoa = [
         ['月', month],
         [],
-        ['#','職員名', ...cols.flatMap(t=>[`${t.name}（分）`, `${t.name}（表示）`]), '合計（分）','合計（表示）']
+        ['#','職員名', ...cols.flatMap(t=>[`${t.name}（分）`, `${t.name}（表示）`]), '合算合計（分）','合算合計（表示）','全合計（分）','全合計（表示）']
       ];
 
       st.staff.forEach((s,i)=>{
         const parts = cols.map(t=> totalForMonthType(st, s.id, month, t.id));
-        const sum = parts.reduce((a,b)=>a+b,0);
+        const sumAll = parts.reduce((a,b)=>a+b,0);
+        const sumInc = cols.reduce((acc,t,idx)=> acc + (t.includeInTotal ? parts[idx] : 0), 0);
         const row = [i+1, s.name];
         parts.forEach(v=> row.push(v, fmtMin(v)));
-        row.push(sum, fmtMin(sum));
+        row.push(sumInc, fmtMin(sumInc), sumAll, fmtMin(sumAll));
         aoa.push(row);
       });
 
@@ -2203,14 +2381,15 @@
       const aoa1 = [
         ['年度', `${fy}年度`],
         [],
-        ['#','職員名', ...cols.flatMap(t=>[`${t.name}（分）`, `${t.name}（表示）`]), '合計（分）','合計（表示）']
+        ['#','職員名', ...cols.flatMap(t=>[`${t.name}（分）`, `${t.name}（表示）`]), '合算合計（分）','合算合計（表示）','全合計（分）','全合計（表示）']
       ];
       st.staff.forEach((s,i)=>{
         const parts = cols.map(t=> totalForFYType(st, s.id, fy, t.id));
-        const sum = parts.reduce((a,b)=>a+b,0);
+        const sumAll = parts.reduce((a,b)=>a+b,0);
+        const sumInc = cols.reduce((acc,t,idx)=> acc + (t.includeInTotal ? parts[idx] : 0), 0);
         const row = [i+1, s.name];
         parts.forEach(v=> row.push(v, fmtMin(v)));
-        row.push(sum, fmtMin(sum));
+        row.push(sumInc, fmtMin(sumInc), sumAll, fmtMin(sumAll));
         aoa1.push(row);
       });
 
@@ -2218,20 +2397,21 @@
         ['年度', `${fy}年度`],
         ['職員名', staff.name],
         [],
-        ['月', ...cols.flatMap(t=>[`${t.name}（分）`, `${t.name}（表示）`]), '合計（分）','合計（表示）']
+        ['月', ...cols.flatMap(t=>[`${t.name}（分）`, `${t.name}（表示）`]), '合算合計（分）','合算合計（表示）','全合計（分）','全合計（表示）']
       ];
       fyMonthKeys(fy).forEach(mkey=>{
         const parts = cols.map(t=> totalForMonthType(st, staffId, mkey, t.id));
-        const sum = parts.reduce((a,b)=>a+b,0);
+        const sumAll = parts.reduce((a,b)=>a+b,0);
+        const sumInc = cols.reduce((acc,t,idx)=> acc + (t.includeInTotal ? parts[idx] : 0), 0);
         const row = [mkey];
         parts.forEach(v=> row.push(v, fmtMin(v)));
-        row.push(sum, fmtMin(sum));
+        row.push(sumInc, fmtMin(sumInc), sumAll, fmtMin(sumAll));
         aoa2.push(row);
       });
 
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(aoa1), '全職員_年度合計');
-      XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(aoa2), '選択職員_月別内訳');
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(aoa2), '選択職員_月別');
       XLSX.writeFile(wb, `leave_time_fy_${fy}.xlsx`);
     }
 
@@ -2241,26 +2421,37 @@
       const staffId = st.currentStaffId;
       const staff = st.staff.find(s=>s.id===staffId) || {name:'unknown'};
       const fy = Number($('fyInputSM').value || yearNowStr());
+      const cols = st.leaveTypes;
 
       const aoa = [
         ['年度', `${fy}年度`],
         ['職員名', staff.name],
         [],
-        ['月','年次休暇（分）','特別休暇（分）','その他（分）','合計（分）','年次（表示）','特別（表示）','その他（表示）','合計（表示）']
+        ['月', ...cols.flatMap(t=>[`${t.name}（分）`, `${t.name}（表示）`]), '合算合計（分）','合算合計（表示）','全合計（分）','全合計（表示）']
       ];
       fyMonthKeys(fy).forEach(mkey=>{
-        const b = month4BucketsForStaff(st, staffId, mkey);
-        aoa.push([mkey, b.annual, b.special, b.other, b.total, fmtMin(b.annual), fmtMin(b.special), fmtMin(b.other), fmtMin(b.total)]);
+        const parts = cols.map(t=> totalForMonthType(st, staffId, mkey, t.id));
+        const sumAll = parts.reduce((a,b)=>a+b,0);
+        const sumInc = cols.reduce((acc,t,idx)=> acc + (t.includeInTotal ? parts[idx] : 0), 0);
+        const row = [mkey];
+        parts.forEach(v=> row.push(v, fmtMin(v)));
+        row.push(sumInc, fmtMin(sumInc), sumAll, fmtMin(sumAll));
+        aoa.push(row);
       });
-      const bFY = fy4BucketsForStaff(st, staffId, fy);
-      aoa.push(['年度合計', bFY.annual, bFY.special, bFY.other, bFY.total, fmtMin(bFY.annual), fmtMin(bFY.special), fmtMin(bFY.other), fmtMin(bFY.total)]);
+
+      const partsFY = cols.map(t=> totalForFYType(st, staffId, fy, t.id));
+      const fyAll = partsFY.reduce((a,b)=>a+b,0);
+      const fyInc = cols.reduce((acc,t,idx)=> acc + (t.includeInTotal ? partsFY[idx] : 0), 0);
+      const rowFY = ['年度合計'];
+      partsFY.forEach(v=> rowFY.push(v, fmtMin(v)));
+      rowFY.push(fyInc, fmtMin(fyInc), fyAll, fmtMin(fyAll));
+      aoa.push(rowFY);
 
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(aoa), '個別月別一覧');
       XLSX.writeFile(wb, `leave_time_staff_monthly_${fy}_${staff.name}.xlsx`);
     }
 
-    // ★複数月集計をExcel出力
     function exportMultiXlsx(){
       if(!ensureXLSX()) return;
       const st = loadState();
@@ -2283,13 +2474,14 @@
         ['対象', targetName],
         ['選択月', selectedMonths.join(' / ') || '（未選択）'],
         [],
-        ['種別','合計（分）','合計（表示）']
+        ['種別','合計（分）','合計（表示）','合算合計に含める']
       ];
       st.leaveTypes.forEach(tp=>{
         const v = t.byType.get(tp.id) || 0;
-        aoa.push([tp.name, v, fmtMin(v)]);
+        aoa.push([tp.name, v, fmtMin(v), tp.includeInTotal ? '✓' : '—']);
       });
-      aoa.push(['合計', t.total, fmtMin(t.total)]);
+      aoa.push(['合算合計', t.totalIncluded, fmtMin(t.totalIncluded), '']);
+      aoa.push(['全合計', t.totalAll, fmtMin(t.totalAll), '']);
 
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(aoa), '複数月集計');
@@ -2320,6 +2512,10 @@
 
           obj.version = VERSION;
           if(!Array.isArray(obj.leaveTypes) || obj.leaveTypes.length===0) obj.leaveTypes = defaultTypes();
+          if(!obj.leaveTypes.some(t=>t.id==='annual')) obj.leaveTypes.unshift({id:'annual', name:'年次休暇', includeInTotal:true});
+          if(!obj.leaveTypes.some(t=>t.id==='special')) obj.leaveTypes.push({id:'special', name:'特別休暇', includeInTotal:true});
+          ensureTypeFlags(obj);
+
           obj.entries = obj.entries.map(e=>({
             ...e,
             month: normalizeMonthKey(e.month || (e.date ? monthFromDate(e.date) : monthNowStr())),
@@ -2497,6 +2693,7 @@
     // 設定：種別
     $('addTypeBtn').addEventListener('click', addType);
     $('newTypeName').addEventListener('keydown', (e)=>{ if(e.key==='Enter') addType(); });
+
     $('typeBody').addEventListener('click', (e)=>{
       const btn = e.target.closest('button[data-act]');
       if(!btn) return;
@@ -2504,6 +2701,11 @@
       const id = btn.dataset.id;
       if(act==='savetype') saveTypeName(id);
       if(act==='deltype') deleteType(id);
+    });
+    $('typeBody').addEventListener('change', (e)=>{
+      const cb = e.target.closest('input[type="checkbox"][data-act="toggleInclude"]');
+      if(!cb) return;
+      toggleIncludeInTotal(cb.dataset.id, cb.checked);
     });
 
     // 設定：一覧表示種別
@@ -2513,12 +2715,14 @@
       toggleVisibleType(cb.dataset.id, cb.checked);
     });
 
-    // ★複数月集計：操作
+    // 複数月集計：操作
     $('fyPrevBtnMulti').addEventListener('click', ()=> shiftFYMulti(-1));
     $('fyNextBtnMulti').addEventListener('click', ()=> shiftFYMulti(1));
     $('fyInputMulti').addEventListener('change', ()=>{
       const fy = Number($('fyInputMulti').value || yearNowStr());
-      shiftFYMulti(fy - Number(loadState().multi?.fy || fy));
+      const st = loadState();
+      const cur = Number(st.multi?.fy || fy);
+      shiftFYMulti(fy - cur);
     });
 
     $('multiTargetSelect').addEventListener('change', ()=>{
@@ -2577,7 +2781,6 @@
       if(e.key!=='Enter') return;
       const active = document.activeElement;
       if(active && (active.closest('#panelSettings') || active.id==='newStaffName' || active.id==='newTypeName')) return;
-      // multiのチェック操作中にEnterで追加しない
       if(active && active.closest('#panelMulti')) return;
       addEntry();
     });
