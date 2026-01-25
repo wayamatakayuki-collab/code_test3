@@ -657,7 +657,6 @@
               <div class="pill"><span id="labelG2a">合算②</span><b id="indMonthG2">0日 0時間 0分</b></div>
               <div class="pill"><span>全合計</span><b id="indMonthAll">0日 0時間 0分</b></div>
               <div class="actions right">
-                <!-- ★CSV削除／Excelボタン位置統一 -->
                 <button class="secondary" id="exportIndividualXlsxBtn" type="button">個別Excel</button>
                 <button class="danger" id="bulkDeleteMyMonthBtn" type="button">この月を一括削除</button>
               </div>
@@ -707,7 +706,6 @@
               </div>
 
               <div class="actions right">
-                <!-- （元からExcelのみ） -->
                 <button class="secondary" id="exportStaffMonthlyXlsxBtn" type="button">この一覧をExcel</button>
               </div>
             </div>
@@ -739,7 +737,6 @@
               <div class="pill"><span>全職員 全合計</span><b id="allMonthAll">0日 0時間 0分</b></div>
 
               <div class="actions right">
-                <!-- ★CSV削除／Excelボタン位置統一 -->
                 <button class="secondary" id="exportAllXlsxBtn" type="button">全職員Excel</button>
               </div>
             </div>
@@ -2898,16 +2895,20 @@
       const st = loadState();
       st.multi = st.multi || {};
       const mk = normalizeMonthKey($('monthInput').value || monthNowStr());
-      st.multi.months = mk ? [mk] : [];
+      const fy = Number(st.multi.fy || $('fyInputMulti').value || yearNowStr());
+      const list = fyMonthKeys(fy);
+      st.multi.months = list.includes(mk) ? [mk] : [list[0]];
       saveState(st);
       render();
     });
 
-    // 設定：職員／種別 追加
+    // 設定：職員追加
     $('addStaffBtn').addEventListener('click', addStaff);
+
+    // 設定：種別追加
     $('addTypeBtn').addEventListener('click', addType);
 
-    // 設定：職員表（委譲）
+    // 設定：職員テーブル 操作（委譲）
     $('staffBody').addEventListener('click', (ev)=>{
       const btn = ev.target.closest('button');
       if(!btn) return;
@@ -2917,7 +2918,7 @@
       if(act==='delstaff' && id) deleteStaff(id);
     });
 
-    // 設定：種別表（委譲 + 変更）
+    // 設定：種別テーブル 操作（委譲）
     $('typeBody').addEventListener('click', (ev)=>{
       const btn = ev.target.closest('button');
       if(!btn) return;
@@ -2927,8 +2928,8 @@
       if(act==='deltype' && id) deleteType(id);
     });
     $('typeBody').addEventListener('change', (ev)=>{
-      const sel = ev.target.closest('select[data-act="setGroup"][data-id]');
-      if(!sel) return;
+      const sel = ev.target;
+      if(!(sel && sel.matches('select[data-act="setGroup"][data-id]'))) return;
       const id = sel.getAttribute('data-id');
       const group = sel.value;
       const st = loadState();
@@ -2953,34 +2954,40 @@
       render();
     });
 
-    // JSONバックアップ/復元
+    // JSON
     $('exportJsonBtn').addEventListener('click', exportJSON);
     $('importJsonInput').addEventListener('change', (ev)=>{
-      const file = ev.target.files && ev.target.files[0];
-      if(file) importJSON(file);
+      const f = ev.target.files && ev.target.files[0];
+      if(!f) return;
+      importJSON(f);
       ev.target.value = '';
     });
     $('wipeOnlyEntriesBtn').addEventListener('click', wipeOnlyEntries);
 
-    // Enterで追加（設定入力中は除外）
+    // Enterキーで「追加」（設定やテーブル入力中は除外）
     document.addEventListener('keydown', (ev)=>{
       if(ev.key !== 'Enter') return;
-      const st = loadState();
-      const tab = st.currentTab || 'individual';
-      if(tab === 'settings') return;
-
-      const el = document.activeElement;
-      if(el && (el.tagName==='TEXTAREA')) return;
-      // ボタンにフォーカス中のEnterは既定動作に任せる
-      if(el && el.tagName==='BUTTON') return;
-
-      // セレクト/入力中でも Enter で追加（ただし設定タブは除外）
+      const t = ev.target;
+      if(!t) return;
+      const tag = (t.tagName||'').toLowerCase();
+      const inSettings = document.body.classList.contains('settingsMode');
+      if(inSettings) return;
+      if(tag === 'textarea') return;
+      if(tag === 'input' || tag === 'select'){
+        const type = (t.getAttribute('type')||'').toLowerCase();
+        if(type === 'file') return;
+      }
       ev.preventDefault();
       addEntry();
     });
 
-    // 初期表示
-    render();
+    // 初期化
+    (function init(){
+      const st = loadState();
+      setMonthAndSync(st.currentMonth || monthNowStr());
+      setFYAndSync(st.currentFY || Number(yearNowStr()));
+      render();
+    })();
   </script>
 </body>
 </html>
