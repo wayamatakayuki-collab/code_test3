@@ -418,7 +418,7 @@
       border-radius: 14px;
       padding: 10px 10px;
       display:flex;
-      align-items:flex-start; /* ★2行表示に合わせて上寄せ */
+      align-items:flex-start;
       gap:10px;
       cursor:pointer;
       user-select:none;
@@ -429,7 +429,7 @@
       font-weight:950;
       color:#0f172a;
       display:flex;
-      flex-direction:column; /* ★年度/年月を2行化 */
+      flex-direction:column;
       line-height:1.15;
       min-width:0;
       flex:1;
@@ -657,7 +657,7 @@
               <div class="pill"><span id="labelG2a">合算②</span><b id="indMonthG2">0日 0時間 0分</b></div>
               <div class="pill"><span>全合計</span><b id="indMonthAll">0日 0時間 0分</b></div>
               <div class="actions right">
-                <button class="secondary" id="exportIndividualBtn" type="button">個別CSV</button>
+                <!-- ★CSV削除／Excelボタン位置統一 -->
                 <button class="secondary" id="exportIndividualXlsxBtn" type="button">個別Excel</button>
                 <button class="danger" id="bulkDeleteMyMonthBtn" type="button">この月を一括削除</button>
               </div>
@@ -707,6 +707,7 @@
               </div>
 
               <div class="actions right">
+                <!-- （元からExcelのみ） -->
                 <button class="secondary" id="exportStaffMonthlyXlsxBtn" type="button">この一覧をExcel</button>
               </div>
             </div>
@@ -738,7 +739,7 @@
               <div class="pill"><span>全職員 全合計</span><b id="allMonthAll">0日 0時間 0分</b></div>
 
               <div class="actions right">
-                <button class="secondary" id="exportAllBtn" type="button">全職員CSV</button>
+                <!-- ★CSV削除／Excelボタン位置統一 -->
                 <button class="secondary" id="exportAllXlsxBtn" type="button">全職員Excel</button>
               </div>
             </div>
@@ -2050,79 +2051,13 @@
       s2.value = String(clampPos(st.sumConfig.g2.pos, st.leaveTypes.length));
     }
 
-    // ===== CSV/Excel/JSON =====
+    // ===== Excel/JSON =====
     function ensureXLSX(){
       if(typeof XLSX==='undefined'){
         alert('Excel出力ライブラリの読み込みに失敗しました。ネットワーク接続をご確認ください。');
         return false;
       }
       return true;
-    }
-    function downloadCSV(csv, filename){
-      const blob = new Blob([csv], {type:'text/csv'});
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url; a.download = filename;
-      document.body.appendChild(a); a.click(); a.remove();
-      URL.revokeObjectURL(url);
-    }
-
-    function exportIndividualCSV(){
-      const st = loadState();
-      const staffId = st.currentStaffId;
-      const staff = st.staff.find(s=>s.id===staffId) || {name:'unknown'};
-      const month = normalizeMonthKey($('monthInput').value || monthNowStr());
-      const list = st.entries
-        .filter(e=> e.staffId===staffId && normalizeMonthKey(e.month)===month)
-        .sort((a,b)=> (a.createdAt||0)-(b.createdAt||0));
-
-      const g1 = sumOfTypesForMonth(st, staffId, month, groupTypeIds(st,'g1'));
-      const g2 = sumOfTypesForMonth(st, staffId, month, groupTypeIds(st,'g2'));
-      const all = totalForMonthAllTypes(st, staffId, month);
-
-      const rows = [
-        ['月', month],
-        ['職員名', staff.name],
-        [st.sumConfig.g1.label, fmtMin(g1)],
-        [st.sumConfig.g2.label, fmtMin(g2)],
-        ['全合計', fmtMin(all)],
-        [],
-        ['#','日付','種別','追加（日）','追加（時）','追加（分）','合計（分）']
-      ];
-      list.forEach((e,i)=>{
-        const t = getType(st, e.leaveTypeId||'annual').name;
-        rows.push([i+1, e.date||'', t, toInt(e.d), toInt(e.h), toInt(e.m), toInt(e.delta)]);
-      });
-
-      const csv = rows.map(r=> r.map(x=> `"${String(x).replace(/"/g,'""')}"`).join(',')).join('\r\n');
-      downloadCSV(csv, `leave_time_${month}_${staff.name}.csv`);
-    }
-
-    function exportAllCSV(){
-      const st = loadState();
-      const month = normalizeMonthKey($('monthInput').value || monthNowStr());
-      const cols = st.leaveTypes;
-
-      const header = ['#','職員名', ...cols.map(t=>`${t.name}（分）`), `${st.sumConfig.g1.label}（分）`, `${st.sumConfig.g2.label}（分）`, '全合計（分）'];
-      const rows = [
-        ['月', month],
-        [],
-        header
-      ];
-
-      const g1Ids = groupTypeIds(st,'g1');
-      const g2Ids = groupTypeIds(st,'g2');
-
-      st.staff.forEach((s,i)=>{
-        const parts = cols.map(t=> totalForMonthType(st, s.id, month, t.id));
-        const g1 = sumOfTypesForMonth(st, s.id, month, g1Ids);
-        const g2 = sumOfTypesForMonth(st, s.id, month, g2Ids);
-        const sumAll = parts.reduce((a,b)=>a+b,0);
-        rows.push([i+1, s.name, ...parts, g1, g2, sumAll]);
-      });
-
-      const csv = rows.map(r=> r.map(x=> `"${String(x).replace(/"/g,'""')}"`).join(',')).join('\r\n');
-      downloadCSV(csv, `leave_time_all_${month}.csv`);
     }
 
     function exportIndividualXlsx(){
@@ -2320,7 +2255,6 @@
         const v = t.byType.get(tp.id) || 0;
         aoa.push([tp.name, v, fmtMin(v)]);
       });
-      // 合算は「なし」でもExcelは出力は残す（0として）
       aoa.push([st.sumConfig.g1.label, t.g1, fmtMin(t.g1)]);
       aoa.push([st.sumConfig.g2.label, t.g2, fmtMin(t.g2)]);
       aoa.push(['全合計', t.totalAll, fmtMin(t.totalAll)]);
@@ -2697,12 +2631,9 @@
       togglePillBySpanId('labelG1d', hasG1);
       togglePillBySpanId('labelG2d', hasG2);
 
-      // 個別の合算説明ボックスも、なしなら行ごと隠す
       $('sumDescLine1_lbl').textContent = st.sumConfig.g1.label;
       $('sumDescLine2_lbl').textContent = st.sumConfig.g2.label;
-      // 2行の表示制御（brがあるので簡易に全体は表示し、文言は無しのとき非表示）
-      // ここは見た目崩れを避けるため、全体を出しつつ（なし）の説明自体が出ないように制御
-      // → もっと厳密に行単位のDOM分割も可能だが、今回は最小変更で対応
+
       if(!hasG1 && hasG2){
         $('sumDescLine1_lbl').style.display = 'none';
         $('g1Desc_ind').style.display = 'none';
@@ -2718,7 +2649,6 @@
         $('g2Desc_ind').style.display = '';
       }
       if(!hasG1 && !hasG2){
-        // 両方なしなら説明box自体を隠す
         $('sumDescBox_ind').style.display = 'none';
       }else{
         $('sumDescBox_ind').style.display = '';
@@ -2749,7 +2679,6 @@
       $('chipMonth').textContent = month;
       $('chipFY').textContent = `${fy}年度`;
 
-      // 個別：合算①/②/全合計
       $('indStaffName').textContent = staff.name;
       $('indMonth').textContent = month;
 
@@ -2764,10 +2693,8 @@
       renderKpiMyMonth(st, staffId, month);
       renderIndividualHistory(st, staffId, month);
 
-      // 個別月別一覧（★合算位置反映済み）
       renderStaffMonthlyCards(st, staffId, Number($('fyInputSM').value||fy));
 
-      // 月別一覧：全職員合計
       const allG1 = totalAllStaffMonth(st, month, (s, sid, mo)=> sumOfTypesForMonth(s, sid, mo, groupTypeIds(s,'g1')));
       const allG2 = totalAllStaffMonth(st, month, (s, sid, mo)=> sumOfTypesForMonth(s, sid, mo, groupTypeIds(s,'g2')));
       const allAll = totalAllStaffMonth(st, month, (s, sid, mo)=> totalForMonthAllTypes(s, sid, mo));
@@ -2778,13 +2705,10 @@
 
       renderAllMonthCards(st, month);
 
-      // 複数月集計
       renderMulti(st);
 
-      // 年度別一覧（★合算位置反映済み）
       renderFYMatrix(st, fy);
 
-      // 年度合計：全職員合計
       const fyG1 = totalAllStaffFY(st, fy, (s, sid, fyy)=> sumOfTypesForFY(s, sid, fyy, groupTypeIds(s,'g1')));
       const fyG2 = totalAllStaffFY(st, fy, (s, sid, fyy)=> sumOfTypesForFY(s, sid, fyy, groupTypeIds(s,'g2')));
       const fyAll = totalAllStaffFY(st, fy, (s, sid, fyy)=> totalForFYAllTypes(s, sid, fyy));
@@ -2795,7 +2719,6 @@
 
       renderFYTotalCards(st, fy);
 
-      // 設定
       $('staffCount').textContent = `${st.staff.length} / 50`;
       renderSettingsStaff(st);
       renderSettingsTypes(st);
@@ -2870,6 +2793,14 @@
       setFYAndSync($('fyInputSM').value || yearNowStr());
       render();
     });
+    $('fyInputMulti').addEventListener('change', ()=>{
+      const st = loadState();
+      st.multi = st.multi || {};
+      st.multi.fy = Number($('fyInputMulti').value || yearNowStr());
+      saveState(st);
+      setFYAndSync(st.multi.fy);
+      render();
+    });
 
     $('monthPrevBtn').addEventListener('click', ()=> addMonthsToMonthInput(-1));
     $('monthNextBtn').addEventListener('click', ()=> addMonthsToMonthInput(1));
@@ -2882,7 +2813,10 @@
     $('fyNextBtn2').addEventListener('click', ()=> shiftFY2(1));
     $('fyPrevBtnSM').addEventListener('click', ()=> shiftFYSM(-1));
     $('fyNextBtnSM').addEventListener('click', ()=> shiftFYSM(1));
+    $('fyPrevBtnMulti').addEventListener('click', ()=> shiftFYMulti(-1));
+    $('fyNextBtnMulti').addEventListener('click', ()=> shiftFYMulti(1));
 
+    // 入力系ボタン
     $('addBtn').addEventListener('click', addEntry);
     $('undoBtn').addEventListener('click', undoLastForStaff);
     $('duplicateBtn').addEventListener('click', duplicateLast);
@@ -2898,6 +2832,7 @@
     $('preset6h').addEventListener('click', ()=> setPreset(0,6,0));
     $('preset7h').addEventListener('click', ()=> setPreset(0,7,0));
 
+    // 個別：月一括削除
     $('bulkDeleteMyMonthBtn').addEventListener('click', ()=>{
       const st = loadState();
       const staffId = st.currentStaffId;
@@ -2905,60 +2840,104 @@
       bulkDeleteMonthForStaff(staffId, month);
     });
 
-    $('histBody').addEventListener('click', (e)=>{
-      const btn = e.target.closest('button[data-act="delete"]');
+    // 履歴の削除（委譲）
+    $('histBody').addEventListener('click', (ev)=>{
+      const btn = ev.target.closest('button');
       if(!btn) return;
-      deleteEntry(btn.dataset.id);
+      const act = btn.getAttribute('data-act');
+      const id = btn.getAttribute('data-id');
+      if(act==='delete' && id){
+        deleteEntry(id);
+      }
     });
 
-    $('exportIndividualBtn').addEventListener('click', exportIndividualCSV);
-    $('exportAllBtn').addEventListener('click', exportAllCSV);
+    // Excel出力（★CSVは削除済み）
     $('exportIndividualXlsxBtn').addEventListener('click', exportIndividualXlsx);
     $('exportAllXlsxBtn').addEventListener('click', exportAllXlsx);
     $('exportFYXlsxBtn').addEventListener('click', exportFYXlsx);
     $('exportStaffMonthlyXlsxBtn').addEventListener('click', exportStaffMonthlyXlsx);
     $('exportMultiXlsxBtn').addEventListener('click', exportMultiXlsx);
 
-    $('exportJsonBtn').addEventListener('click', exportJSON);
-    $('importJsonInput').addEventListener('change', (e)=>{
-      const f = e.target.files && e.target.files[0];
-      if(f) importJSON(f);
-      e.target.value = '';
-    });
-    $('wipeOnlyEntriesBtn').addEventListener('click', wipeOnlyEntries);
-
-    $('addStaffBtn').addEventListener('click', addStaff);
-    $('newStaffName').addEventListener('keydown', (e)=>{ if(e.key==='Enter') addStaff(); });
-    $('staffBody').addEventListener('click', (e)=>{
-      const btn = e.target.closest('button[data-act]');
-      if(!btn) return;
-      const act = btn.dataset.act;
-      const id = btn.dataset.id;
-      if(act==='savestaff') saveStaffName(id);
-      if(act==='delstaff') deleteStaff(id);
-    });
-
-    $('addTypeBtn').addEventListener('click', addType);
-    $('newTypeName').addEventListener('keydown', (e)=>{ if(e.key==='Enter') addType(); });
-
-    $('typeBody').addEventListener('click', (e)=>{
-      const btn = e.target.closest('button[data-act]');
-      if(!btn) return;
-      const act = btn.dataset.act;
-      const id = btn.dataset.id;
-      if(act==='savetype') saveTypeName(id);
-      if(act==='deltype') deleteType(id);
-    });
-    $('typeBody').addEventListener('change', (e)=>{
-      const sel = e.target.closest('select[data-act="setGroup"]');
-      if(!sel) return;
+    // 複数月：対象変更・チェック変更
+    $('multiTargetSelect').addEventListener('change', ()=>{
       const st = loadState();
-      setTypeGroup(st, sel.dataset.id, sel.value);
+      st.multi = st.multi || {};
+      st.multi.targetId = $('multiTargetSelect').value || st.currentStaffId;
+      saveState(st);
+      render();
+    });
+    $('multiMonthChecks').addEventListener('change', (ev)=>{
+      const cb = ev.target;
+      if(!(cb && cb.matches('input[type="checkbox"][data-month]'))) return;
+      const m = normalizeMonthKey(cb.getAttribute('data-month'));
+      const st = loadState();
+      st.multi = st.multi || {};
+      const set = new Set((st.multi.months||[]).map(normalizeMonthKey));
+      if(cb.checked) set.add(m); else set.delete(m);
+      st.multi.months = Array.from(set);
+      saveState(st);
+      render();
+    });
+    $('multiSelectAllBtn').addEventListener('click', ()=>{
+      const st = loadState();
+      st.multi = st.multi || {};
+      const fy = Number(st.multi.fy || $('fyInputMulti').value || yearNowStr());
+      st.multi.fy = fy;
+      st.multi.months = fyMonthKeys(fy);
+      saveState(st);
+      render();
+    });
+    $('multiClearBtn').addEventListener('click', ()=>{
+      const st = loadState();
+      st.multi = st.multi || {};
+      st.multi.months = [];
+      saveState(st);
+      render();
+    });
+    $('multiUseCurrentBtn').addEventListener('click', ()=>{
+      const st = loadState();
+      st.multi = st.multi || {};
+      const mk = normalizeMonthKey($('monthInput').value || monthNowStr());
+      st.multi.months = mk ? [mk] : [];
       saveState(st);
       render();
     });
 
-    // 合算表示位置
+    // 設定：職員／種別 追加
+    $('addStaffBtn').addEventListener('click', addStaff);
+    $('addTypeBtn').addEventListener('click', addType);
+
+    // 設定：職員表（委譲）
+    $('staffBody').addEventListener('click', (ev)=>{
+      const btn = ev.target.closest('button');
+      if(!btn) return;
+      const act = btn.getAttribute('data-act');
+      const id = btn.getAttribute('data-id');
+      if(act==='savestaff' && id) saveStaffName(id);
+      if(act==='delstaff' && id) deleteStaff(id);
+    });
+
+    // 設定：種別表（委譲 + 変更）
+    $('typeBody').addEventListener('click', (ev)=>{
+      const btn = ev.target.closest('button');
+      if(!btn) return;
+      const act = btn.getAttribute('data-act');
+      const id = btn.getAttribute('data-id');
+      if(act==='savetype' && id) saveTypeName(id);
+      if(act==='deltype' && id) deleteType(id);
+    });
+    $('typeBody').addEventListener('change', (ev)=>{
+      const sel = ev.target.closest('select[data-act="setGroup"][data-id]');
+      if(!sel) return;
+      const id = sel.getAttribute('data-id');
+      const group = sel.value;
+      const st = loadState();
+      setTypeGroup(st, id, group);
+      saveState(st);
+      render();
+    });
+
+    // 設定：合算表示位置
     $('sumPosG1').addEventListener('change', ()=>{
       const st = loadState();
       st.sumConfig.g1.pos = toInt($('sumPosG1').value);
@@ -2974,82 +2953,33 @@
       render();
     });
 
-    // 複数月集計：操作
-    $('fyPrevBtnMulti').addEventListener('click', ()=> shiftFYMulti(-1));
-    $('fyNextBtnMulti').addEventListener('click', ()=> shiftFYMulti(1));
-    $('fyInputMulti').addEventListener('change', ()=>{
-      const fy = Number($('fyInputMulti').value || yearNowStr());
-      const st = loadState();
-      const cur = Number(st.multi?.fy || fy);
-      shiftFYMulti(fy - cur);
+    // JSONバックアップ/復元
+    $('exportJsonBtn').addEventListener('click', exportJSON);
+    $('importJsonInput').addEventListener('change', (ev)=>{
+      const file = ev.target.files && ev.target.files[0];
+      if(file) importJSON(file);
+      ev.target.value = '';
     });
-
-    $('multiTargetSelect').addEventListener('change', ()=>{
-      const st = loadState();
-      st.multi = st.multi || {};
-      st.multi.targetId = $('multiTargetSelect').value || st.currentStaffId;
-      saveState(st);
-      render();
-    });
-
-    $('multiMonthChecks').addEventListener('change', (e)=>{
-      const cb = e.target.closest('input[type="checkbox"][data-month]');
-      if(!cb) return;
-      const st = loadState();
-      st.multi = st.multi || {};
-      const set = new Set((st.multi.months||[]).map(normalizeMonthKey));
-      const m = normalizeMonthKey(cb.dataset.month);
-      if(cb.checked) set.add(m); else set.delete(m);
-      st.multi.months = Array.from(set);
-      st.multi.fy = Number($('fyInputMulti').value || st.currentFY);
-      saveState(st);
-      render();
-    });
-
-    $('multiSelectAllBtn').addEventListener('click', ()=>{
-      const st = loadState();
-      const fy = Number($('fyInputMulti').value || st.currentFY);
-      st.multi = st.multi || {};
-      st.multi.fy = fy;
-      st.multi.months = fyMonthKeys(fy);
-      saveState(st);
-      render();
-    });
-    $('multiClearBtn').addEventListener('click', ()=>{
-      const st = loadState();
-      st.multi = st.multi || {};
-      st.multi.months = [];
-      st.multi.fy = Number($('fyInputMulti').value || st.currentFY);
-      saveState(st);
-      render();
-    });
-    $('multiUseCurrentBtn').addEventListener('click', ()=>{
-      const st = loadState();
-      const fy = Number($('fyInputMulti').value || st.currentFY);
-      const mk = normalizeMonthKey($('monthInput').value || monthNowStr());
-      const list = fyMonthKeys(fy);
-      st.multi = st.multi || {};
-      st.multi.fy = fy;
-      st.multi.months = list.includes(mk) ? [mk] : [list[0]];
-      saveState(st);
-      render();
-    });
+    $('wipeOnlyEntriesBtn').addEventListener('click', wipeOnlyEntries);
 
     // Enterで追加（設定入力中は除外）
-    document.addEventListener('keydown', (e)=>{
-      if(e.key !== 'Enter') return;
-      const active = document.activeElement;
-      if(active && active.closest && active.closest('#panelSettings')) return; // 設定入力中は除外
-      // テキストエリア等は除外（誤爆防止）
-      if(active && (active.tagName==='TEXTAREA')) return;
-      // 入力欄でのEnterは「追加」扱いにする（意図どおり）
-      if(!document.body.classList.contains('settingsMode')){
-        e.preventDefault();
-        addEntry();
-      }
+    document.addEventListener('keydown', (ev)=>{
+      if(ev.key !== 'Enter') return;
+      const st = loadState();
+      const tab = st.currentTab || 'individual';
+      if(tab === 'settings') return;
+
+      const el = document.activeElement;
+      if(el && (el.tagName==='TEXTAREA')) return;
+      // ボタンにフォーカス中のEnterは既定動作に任せる
+      if(el && el.tagName==='BUTTON') return;
+
+      // セレクト/入力中でも Enter で追加（ただし設定タブは除外）
+      ev.preventDefault();
+      addEntry();
     });
 
-    // 初回
+    // 初期表示
     render();
   </script>
 </body>
