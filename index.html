@@ -24,6 +24,9 @@
       --controlH: 44px;
       --controlPadY: 10px;
       --controlPadX: 12px;
+
+      /* ★種別文字色（全タブ統一） */
+      --typeText:#475569; /* th と同系統 */
     }
     *{box-sizing:border-box}
     html,body{height:100%}
@@ -186,7 +189,7 @@
     }
     button:disabled{opacity:.55; cursor:not-allowed; transform:none}
 
-    .actions{display:flex; gap:10px; flex-wrap:wrap}
+    .actions{display:flex; gap:10px; flex-wrap:wrap; align-items:center}
     .actions .full{flex:1 1 260px}
 
     .miniRow{display:flex; gap:8px; flex-wrap:wrap}
@@ -219,7 +222,10 @@
       font-size: 13px;
     }
     .kpiItem .left{display:flex; gap:10px; align-items:center; min-width:0}
-    .kpiItem .name{font-weight:950; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+    .kpiItem .name{
+      font-weight:950; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+      color: var(--typeText); /* ★ */
+    }
     .kpiItem b{font-weight:950}
     .dot2{width:10px;height:10px;border-radius:999px;background:#94a3b8; flex:0 0 auto}
 
@@ -338,7 +344,7 @@
       font-weight:900;
       color:#0f172a;
     }
-    .line .k{ font-weight:950; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .line .k{ color:var(--typeText); font-weight:900; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; } /* ★ */
     .line .v{ white-space:nowrap; }
     .line.total{ background:#fbfcff; border-color:#e7eefc; font-size:13px; font-weight:950; }
     .line.total .k{ color:#0f172a; }
@@ -367,7 +373,7 @@
     .fyCell .m{font-size:11px; color:var(--muted); font-weight:900}
     .fyCell .lines{margin-top:6px; display:grid; gap:4px}
     .fyLine{ display:flex; justify-content:space-between; gap:8px; font-size:11px; font-weight:900; color:#0f172a; }
-    .fyLine .k{ font-weight:950; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+    .fyLine .k{color:var(--typeText); font-weight:900; white-space:nowrap; overflow:hidden; text-overflow:ellipsis} /* ★ */
     .fyLine .v{white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
     .fyLine.zero .v{color:#94a3b8; font-weight:900}
     .fyLine.total{font-size:12px; font-weight:950}
@@ -399,7 +405,7 @@
       font-weight:900;
       color:#0f172a;
     }
-    .mrow .k{ font-weight:950; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+    .mrow .k{color:var(--typeText); font-weight:900; white-space:nowrap; overflow:hidden; text-overflow:ellipsis} /* ★ */
     .mrow .v{white-space:nowrap}
     .mrow.total{background:#fbfcff; border-color:#e7eefc; font-size:13px; font-weight:950}
     .mrow.total .k{color:#0f172a}
@@ -505,10 +511,12 @@
       padding: 5px 10px;
       font-size: 12px;
       font-weight: 950;
+      color: var(--typeText); /* ★ */
       max-width: 260px;
-      color:#0f172a;
     }
-    .tag .tname{font-weight:950}
+
+    /* ★設定：種別名入力の文字色も統一 */
+    input[data-type-name]{ color: var(--typeText); font-weight: 950; }
 
     @media (max-width: 980px){
       .grid{grid-template-columns: 1fr;}
@@ -657,10 +665,9 @@
               <div class="pill"><span id="labelG1a">合算①</span><b id="indMonthG1">0日 0時間 0分</b></div>
               <div class="pill"><span id="labelG2a">合算②</span><b id="indMonthG2">0日 0時間 0分</b></div>
               <div class="pill"><span>全合計</span><b id="indMonthAll">0日 0時間 0分</b></div>
-
-              <!-- ★Excelボタン位置統一：各タブとも panelHeader の右端 actions 内 -->
+              <!-- ★位置統一：右端 -->
               <div class="actions right">
-                <button class="secondary" id="exportIndividualXlsxBtn" type="button">⬇Excelエクスポート</button>
+                <button class="secondary" id="exportIndividualXlsxBtn" type="button">⬇ Excelエクスポート</button>
                 <button class="danger" id="bulkDeleteMyMonthBtn" type="button">この月を一括削除</button>
               </div>
             </div>
@@ -708,8 +715,9 @@
                 <button class="secondary segBtn" id="fyNextBtnSM" type="button" aria-label="次年度">▶</button>
               </div>
 
+              <!-- ★位置統一：右端 -->
               <div class="actions right">
-                <button class="secondary" id="exportStaffMonthlyXlsxBtn" type="button">⬇Excelエクスポート</button>
+                <button class="secondary" id="exportStaffMonthlyXlsxBtn" type="button">⬇ Excelエクスポート</button>
               </div>
             </div>
 
@@ -739,8 +747,9 @@
               <div class="pill"><span id="labelG2b">全職員 合算②</span><b id="allMonthG2">0日 0時間 0分</b></div>
               <div class="pill"><span>全職員 全合計</span><b id="allMonthAll">0日 0時間 0分</b></div>
 
+              <!-- ★位置統一：右端 -->
               <div class="actions right">
-                <button class="secondary" id="exportAllXlsxBtn" type="button">⬇Excelエクスポート</button>
+                <button class="secondary" id="exportAllXlsxBtn" type="button">⬇ Excelエクスポート</button>
               </div>
             </div>
 
@@ -766,12 +775,10 @@
                 <button class="secondary segBtn" id="fyNextBtnMulti" type="button" aria-label="次年度">▶</button>
               </div>
 
-              <!-- ★Excelボタン位置統一（ここに置く） -->
               <div class="actions right">
                 <button class="secondary" id="multiSelectAllBtn" type="button">全選択</button>
                 <button class="secondary" id="multiClearBtn" type="button">全解除</button>
                 <button class="secondary" id="multiUseCurrentBtn" type="button">表示中の月だけ</button>
-                <button class="secondary" id="exportMultiXlsxBtn" type="button">⬇Excelエクスポート</button>
               </div>
             </div>
 
@@ -801,6 +808,11 @@
               <div class="pill"><span id="labelG1c">合算①</span><b id="multiG1">0日 0時間 0分</b></div>
               <div class="pill"><span id="labelG2c">合算②</span><b id="multiG2">0日 0時間 0分</b></div>
               <div class="pill"><span>全合計</span><b id="multiAll">0日 0時間 0分</b></div>
+
+              <!-- ★位置統一：右端 -->
+              <div class="actions right">
+                <button class="secondary" id="exportMultiXlsxBtn" type="button">⬇ Excelエクスポート</button>
+              </div>
             </div>
           </div>
 
@@ -814,9 +826,9 @@
                 <button class="secondary segBtn" id="fyNextBtn" type="button" aria-label="次年度">▶</button>
               </div>
 
-              <!-- ★追加：年度別一覧もExcelエクスポート -->
-              <div class="actions right">
-                <button class="secondary" id="exportFYListXlsxBtn" type="button">⬇Excelエクスポート</button>
+              <!-- ★追加：年度別一覧のExcel -->
+              <div class="actions right" style="margin-left:auto">
+                <button class="secondary" id="exportFYMatrixXlsxBtn" type="button">⬇ Excelエクスポート</button>
               </div>
             </div>
 
@@ -843,9 +855,9 @@
                 <button class="secondary segBtn" id="fyNextBtn2" type="button" aria-label="次年度">▶</button>
               </div>
 
-              <!-- ★位置統一：右端 actions -->
-              <div class="actions right">
-                <button class="secondary" id="exportFYXlsxBtn" type="button">⬇Excelエクスポート</button>
+              <!-- ★位置統一：右端（以前のwidth:100%行を撤去） -->
+              <div class="actions right" style="margin-left:auto">
+                <button class="secondary" id="exportFYXlsxBtn" type="button">⬇ Excelエクスポート</button>
               </div>
             </div>
 
@@ -1092,20 +1104,26 @@
       st.sumConfig.g1.pos = clampPos(st.sumConfig.g1.pos, len);
       st.sumConfig.g2.pos = clampPos(st.sumConfig.g2.pos, len);
 
-      // UIラベル同期
-      $('labelG1a').textContent = st.sumConfig.g1.label;
-      $('labelG2a').textContent = st.sumConfig.g2.label;
-      $('labelG1b').textContent = `全職員 ${st.sumConfig.g1.label}`;
-      $('labelG2b').textContent = `全職員 ${st.sumConfig.g2.label}`;
-      $('labelG1c').textContent = st.sumConfig.g1.label;
-      $('labelG2c').textContent = st.sumConfig.g2.label;
-      $('labelG1d').textContent = `全職員 ${st.sumConfig.g1.label}`;
-      $('labelG2d').textContent = `全職員 ${st.sumConfig.g2.label}`;
+      // UIラベル同期（存在する場合のみ）
+      const safeSet = (id, text)=>{
+        const el = $(id);
+        if(el) el.textContent = text;
+      };
+      safeSet('labelG1a', st.sumConfig.g1.label);
+      safeSet('labelG2a', st.sumConfig.g2.label);
+      safeSet('labelG1b', `全職員 ${st.sumConfig.g1.label}`);
+      safeSet('labelG2b', `全職員 ${st.sumConfig.g2.label}`);
+      safeSet('labelG1c', st.sumConfig.g1.label);
+      safeSet('labelG2c', st.sumConfig.g2.label);
+      safeSet('labelG1d', `全職員 ${st.sumConfig.g1.label}`);
+      safeSet('labelG2d', `全職員 ${st.sumConfig.g2.label}`);
     }
 
     function groupEnabled(st, groupKey){
       return (st.sumConfig?.[groupKey]?.typeIds || []).length > 0;
     }
+
+    function getType(st, id){ return st.leaveTypes.find(t=>t.id===id) || {id, name:'（不明）'}; }
 
     function getSumDesc(st, groupKey){
       const cfg = st.sumConfig[groupKey];
@@ -1213,9 +1231,6 @@
     }
 
     function saveState(state){ localStorage.setItem(KEY_MAIN, JSON.stringify(state)); }
-
-    // ===== helpers =====
-    function getType(st, id){ return st.leaveTypes.find(t=>t.id===id) || {id, name:'（不明）'}; }
 
     function typeColor(id){
       if(id==='annual') return '#2563eb';
@@ -1378,7 +1393,6 @@
       const y = Number(mk.slice(0,4));
       const mm = Number(mk.slice(5,7));
       const fy = (mm>=4) ? y : (y-1);
-
       $('fyInput').value = fy;
       $('fyInput2').value = fy;
       $('fyInputSM').value = fy;
@@ -1418,7 +1432,6 @@
       });
     }
 
-    // ===== 表示：個別履歴 =====
     function renderIndividualHistory(st, staffId, month){
       const tbody = $('histBody');
       tbody.innerHTML = '';
@@ -1436,7 +1449,7 @@
           <td>
             <span class="tag" title="${escapeHtml(type.name)}">
               <span class="dot2" style="background:${typeColor(type.id)}"></span>
-              <span class="tname" style="color:${typeColor(type.id)}">${escapeHtml(type.name)}</span>
+              ${escapeHtml(type.name)}
             </span>
           </td>
           <td>${fmt(toInt(e.d),toInt(e.h),toInt(e.m))}</td>
@@ -1457,7 +1470,7 @@
         item.innerHTML = `
           <div class="left">
             <span class="dot2" style="background:${typeColor(t.id)}"></span>
-            <div class="name" style="color:${typeColor(t.id)}">${escapeHtml(t.name)}</div>
+            <div class="name">${escapeHtml(t.name)}</div>
           </div>
           <b>${fmtMin(v)}</b>
         `;
@@ -1492,7 +1505,7 @@
             const v = map.get(it.id) || 0;
             lines.push(`
               <div class="line">
-                <span class="k" style="color:${typeColor(t.id)}">${escapeHtml(t.name)}</span>
+                <span class="k">${escapeHtml(t.name)}</span>
                 <span class="v">${v===0?'0':fmtMin(v)}</span>
               </div>
             `);
@@ -1566,7 +1579,7 @@
             const v = map.get(it.id) || 0;
             lines.push(`
               <div class="line">
-                <span class="k" style="color:${typeColor(t.id)}">${escapeHtml(t.name)}</span>
+                <span class="k">${escapeHtml(t.name)}</span>
                 <span class="v">${v===0?'0':fmtMin(v)}</span>
               </div>
             `);
@@ -1613,7 +1626,7 @@
       });
     }
 
-    // ===== 年度別一覧（職員×月） =====
+    // ===== 年度別一覧 =====
     function renderFYMatrix(st, fy){
       const wrap = $('fyMatrix');
       wrap.innerHTML = '';
@@ -1673,7 +1686,7 @@
               const zero = (v===0) ? 'zero' : '';
               lines.push(`
                 <div class="fyLine ${zero}">
-                  <span class="k" style="color:${typeColor(tp.id)}">${escapeHtml(tp.name)}</span>
+                  <span class="k">${escapeHtml(tp.name)}</span>
                   <span class="v">${v===0?'0':fmtMin(v)}</span>
                 </div>
               `);
@@ -1713,7 +1726,7 @@
       });
     }
 
-    // ===== 個別月別一覧（カード） =====
+    // ===== 個別月別一覧 =====
     function renderStaffMonthlyCards(st, staffId, fy){
       const wrap = $('staffMonthlyCards');
       wrap.innerHTML = '';
@@ -1744,7 +1757,7 @@
             const v = map.get(it.id) || 0;
             rows.push(`
               <div class="mrow">
-                <span class="k" style="color:${typeColor(tp.id)}">${escapeHtml(tp.name)}</span>
+                <span class="k">${escapeHtml(tp.name)}</span>
                 <span class="v">${v===0 ? '0' : fmtMin(v)}</span>
               </div>
             `);
@@ -1798,7 +1811,7 @@
           const v = mapFY.get(it.id) || 0;
           fyRows.push(`
             <div class="mrow">
-              <span class="k" style="color:${typeColor(tp.id)}">${escapeHtml(tp.name)}</span>
+              <span class="k">${escapeHtml(tp.name)}</span>
               <span class="v">${v===0 ? '0' : fmtMin(v)}</span>
             </div>
           `);
@@ -1933,7 +1946,7 @@
         item.innerHTML = `
           <div class="left">
             <span class="dot2" style="background:${typeColor(tp.id)}"></span>
-            <div class="name" style="color:${typeColor(tp.id)}">${escapeHtml(tp.name)}</div>
+            <div class="name">${escapeHtml(tp.name)}</div>
           </div>
           <b>${fmtMin(v)}</b>
         `;
@@ -1988,15 +2001,13 @@
       tbody.innerHTML = '';
       st.leaveTypes.forEach((t, idx)=>{
         const grp = whichGroupOfType(st, t.id);
-        const c = typeColor(t.id);
         const tr = document.createElement('tr');
         tr.innerHTML = `
           <td class="center">${idx+1}</td>
           <td>
             <div style="display:flex; gap:10px; align-items:center">
-              <span class="dot2" style="background:${c}"></span>
-              <!-- ★要望：設定の「種別名（名称変更可）」の色＝種別の文字色（全タブ共通方針） -->
-              <input type="text" value="${escapeHtml(t.name)}" data-type-name="${t.id}" style="color:${c}; font-weight:950" />
+              <span class="dot2" style="background:${typeColor(t.id)}"></span>
+              <input type="text" value="${escapeHtml(t.name)}" data-type-name="${t.id}" />
             </div>
             <div class="small" style="color:#94a3b8; margin-top:6px">ID: ${escapeHtml(t.id)}</div>
           </td>
@@ -2102,10 +2113,7 @@
         ['年度', `${fy}年度`],
         ['職員名', staff.name],
         [],
-        ['月', ...cols.flatMap(t=>[`${t.name}（分）`, `${t.name}（表示）`]),
-         `${st.sumConfig.g1.label}（分）`, `${st.sumConfig.g1.label}（表示）`,
-         `${st.sumConfig.g2.label}（分）`, `${st.sumConfig.g2.label}（表示）`,
-         '全合計（分）','全合計（表示）']
+        ['月', ...cols.flatMap(t=>[`${t.name}（分）`, `${t.name}（表示）`]), `${st.sumConfig.g1.label}（分）`, `${st.sumConfig.g1.label}（表示）`, `${st.sumConfig.g2.label}（分）`, `${st.sumConfig.g2.label}（表示）`, '全合計（分）','全合計（表示）']
       ];
       fyMonthKeys(fy).forEach(mkey=>{
         const parts = cols.map(t=> totalForMonthType(st, staffId, mkey, t.id));
@@ -2127,7 +2135,7 @@
     function exportAllXlsx(){
       if(!ensureXLSX()) return;
       const st = loadState();
-      const month = normalizeMonthKey($('monthInput').value || monthNowStr());
+      const month = normalizeMonthKey($('monthInputAll').value || $('monthInput').value || monthNowStr());
       const cols = st.leaveTypes;
       const g1Ids = groupTypeIds(st,'g1');
       const g2Ids = groupTypeIds(st,'g2');
@@ -2135,11 +2143,7 @@
       const aoa = [
         ['月', month],
         [],
-        ['#','職員名',
-         ...cols.flatMap(t=>[`${t.name}（分）`, `${t.name}（表示）`]),
-         `${st.sumConfig.g1.label}（分）`, `${st.sumConfig.g1.label}（表示）`,
-         `${st.sumConfig.g2.label}（分）`, `${st.sumConfig.g2.label}（表示）`,
-         '全合計（分）','全合計（表示）']
+        ['#','職員名', ...cols.flatMap(t=>[`${t.name}（分）`, `${t.name}（表示）`]), `${st.sumConfig.g1.label}（分）`, `${st.sumConfig.g1.label}（表示）`, `${st.sumConfig.g2.label}（分）`, `${st.sumConfig.g2.label}（表示）`, '全合計（分）','全合計（表示）']
       ];
 
       st.staff.forEach((s,i)=>{
@@ -2171,11 +2175,7 @@
       const aoa1 = [
         ['年度', `${fy}年度`],
         [],
-        ['#','職員名',
-         ...cols.flatMap(t=>[`${t.name}（分）`, `${t.name}（表示）`]),
-         `${st.sumConfig.g1.label}（分）`, `${st.sumConfig.g1.label}（表示）`,
-         `${st.sumConfig.g2.label}（分）`, `${st.sumConfig.g2.label}（表示）`,
-         '全合計（分）','全合計（表示）']
+        ['#','職員名', ...cols.flatMap(t=>[`${t.name}（分）`, `${t.name}（表示）`]), `${st.sumConfig.g1.label}（分）`, `${st.sumConfig.g1.label}（表示）`, `${st.sumConfig.g2.label}（分）`, `${st.sumConfig.g2.label}（表示）`, '全合計（分）','全合計（表示）']
       ];
       st.staff.forEach((s,i)=>{
         const parts = cols.map(t=> totalForFYType(st, s.id, fy, t.id));
@@ -2192,10 +2192,7 @@
         ['年度', `${fy}年度`],
         ['職員名', staff.name],
         [],
-        ['月', ...cols.flatMap(t=>[`${t.name}（分）`, `${t.name}（表示）`]),
-         `${st.sumConfig.g1.label}（分）`, `${st.sumConfig.g1.label}（表示）`,
-         `${st.sumConfig.g2.label}（分）`, `${st.sumConfig.g2.label}（表示）`,
-         '全合計（分）','全合計（表示）']
+        ['月', ...cols.flatMap(t=>[`${t.name}（分）`, `${t.name}（表示）`]), `${st.sumConfig.g1.label}（分）`, `${st.sumConfig.g1.label}（表示）`, `${st.sumConfig.g2.label}（分）`, `${st.sumConfig.g2.label}（表示）`, '全合計（分）','全合計（表示）']
       ];
       fyMonthKeys(fy).forEach(mkey=>{
         const parts = cols.map(t=> totalForMonthType(st, staffId, mkey, t.id));
@@ -2228,10 +2225,7 @@
         ['年度', `${fy}年度`],
         ['職員名', staff.name],
         [],
-        ['月', ...cols.flatMap(t=>[`${t.name}（分）`, `${t.name}（表示）`]),
-         `${st.sumConfig.g1.label}（分）`, `${st.sumConfig.g1.label}（表示）`,
-         `${st.sumConfig.g2.label}（分）`, `${st.sumConfig.g2.label}（表示）`,
-         '全合計（分）','全合計（表示）']
+        ['月', ...cols.flatMap(t=>[`${t.name}（分）`, `${t.name}（表示）`]), `${st.sumConfig.g1.label}（分）`, `${st.sumConfig.g1.label}（表示）`, `${st.sumConfig.g2.label}（分）`, `${st.sumConfig.g2.label}（表示）`, '全合計（分）','全合計（表示）']
       ];
       fyMonthKeys(fy).forEach(mkey=>{
         const parts = cols.map(t=> totalForMonthType(st, staffId, mkey, t.id));
@@ -2286,38 +2280,33 @@
       XLSX.writeFile(wb, `leave_time_multi_${fy}_${targetName}.xlsx`);
     }
 
-    // ★追加：年度別一覧（職員×月）をExcelエクスポート
-    // 使いやすいように「1行＝職員×月」の正規化テーブルにしています（集計やピボットに強い）
-    function exportFYListXlsx(){
+    // ★追加：年度別一覧（FYマトリクス）のExcel
+    function exportFYMatrixXlsx(){
       if(!ensureXLSX()) return;
       const st = loadState();
       const fy = Number($('fyInput').value || yearNowStr());
       const cols = st.leaveTypes;
       const g1Ids = groupTypeIds(st,'g1');
       const g2Ids = groupTypeIds(st,'g2');
-      const months = fyMonthKeys(fy);
-
-      const header = [
-        '職員名','月',
-        ...cols.flatMap(t=>[`${t.name}（分）`, `${t.name}（表示）`]),
-        `${st.sumConfig.g1.label}（分）`, `${st.sumConfig.g1.label}（表示）`,
-        `${st.sumConfig.g2.label}（分）`, `${st.sumConfig.g2.label}（表示）`,
-        '全合計（分）','全合計（表示）'
-      ];
 
       const aoa = [
-        ['年度別一覧（職員×月）', `${fy}年度`],
+        ['年度', `${fy}年度`],
+        ['表示', '年度別一覧（職員×月）'],
         [],
-        header
+        ['職員名','月', ...cols.flatMap(t=>[`${t.name}（分）`, `${t.name}（表示）`]),
+          `${st.sumConfig.g1.label}（分）`, `${st.sumConfig.g1.label}（表示）`,
+          `${st.sumConfig.g2.label}（分）`, `${st.sumConfig.g2.label}（表示）`,
+          '全合計（分）','全合計（表示）'
+        ]
       ];
 
+      const months = fyMonthKeys(fy);
       st.staff.forEach(s=>{
         months.forEach(mkey=>{
           const parts = cols.map(t=> totalForMonthType(st, s.id, mkey, t.id));
           const sumAll = parts.reduce((a,b)=>a+b,0);
           const g1 = sumOfTypesForMonth(st, s.id, mkey, g1Ids);
           const g2 = sumOfTypesForMonth(st, s.id, mkey, g2Ids);
-
           const row = [s.name, mkey];
           parts.forEach(v=> row.push(v, fmtMin(v)));
           row.push(g1, fmtMin(g1), g2, fmtMin(g2), sumAll, fmtMin(sumAll));
@@ -2327,7 +2316,7 @@
 
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(aoa), '年度別一覧');
-      XLSX.writeFile(wb, `leave_time_fy_list_${fy}.xlsx`);
+      XLSX.writeFile(wb, `leave_time_fy_matrix_${fy}.xlsx`);
     }
 
     function exportJSON(){
@@ -2555,7 +2544,7 @@
     }
     function saveStaffName(id){
       const st = loadState();
-      const input = document.querySelector(\`input[data-staff-name="\${CSS.escape(id)}"]\`);
+      const input = document.querySelector(`input[data-staff-name="${CSS.escape(id)}"]`);
       if(!input) return;
       const name = (input.value || '').trim();
       if(!name){ alert('職員名は空にできません'); return; }
@@ -2573,8 +2562,8 @@
 
       const used = st.entries.some(e=>e.staffId===id);
       const msg = used
-        ? \`「\${staff.name}」を削除します。この職員の入力データもすべて削除されます。よろしいですか？\`
-        : \`「\${staff.name}」を削除します。よろしいですか？\`;
+        ? `「${staff.name}」を削除します。この職員の入力データもすべて削除されます。よろしいですか？`
+        : `「${staff.name}」を削除します。よろしいですか？`;
       if(!confirm(msg)) return;
 
       st.staff = st.staff.filter(s=>s.id!==id);
@@ -2611,7 +2600,7 @@
     }
     function saveTypeName(id){
       const st = loadState();
-      const input = document.querySelector(\`input[data-type-name="\${CSS.escape(id)}"]\`);
+      const input = document.querySelector(`input[data-type-name="${CSS.escape(id)}"]`);
       if(!input) return;
       const name = (input.value || '').trim();
       if(!name){ alert('種別名は空にできません'); return; }
@@ -2628,8 +2617,8 @@
 
       const used = st.entries.some(e=> (e.leaveTypeId||'annual')===id);
       const msg = used
-        ? \`「\${type.name}」を削除します。該当する記録は「不明」扱いになります（履歴は残ります）。よろしいですか？\`
-        : \`「\${type.name}」を削除します。よろしいですか？\`;
+        ? `「${type.name}」を削除します。該当する記録は「不明」扱いになります（履歴は残ります）。よろしいですか？`
+        : `「${type.name}」を削除します。よろしいですか？`;
       if(!confirm(msg)) return;
 
       st.leaveTypes = st.leaveTypes.filter(t=>t.id!==id);
@@ -2661,7 +2650,7 @@
 
       const month = normalizeMonthKey($('monthInput').value || monthNowStr());
       $('monthInput').value = month;
-      $('monthInputAll').value = month;
+      $('monthInputAll').value = normalizeMonthKey($('monthInputAll').value || month);
 
       const fy = Number($('fyInput').value || yearNowStr());
       $('fyInput2').value = fy;
@@ -2676,13 +2665,11 @@
       $('fyTotalLabel').textContent = `${fy}年度`;
       $('fyPanelFY').textContent = `${fy}年度`;
 
-      // 合算説明
       $('g1Desc_ind').textContent = getSumDesc(st,'g1');
       $('g2Desc_ind').textContent = getSumDesc(st,'g2');
       $('g1Desc_fy').textContent = getSumDesc(st,'g1');
       $('g2Desc_fy').textContent = getSumDesc(st,'g2');
 
-      // 合算が「なし」の場合、ヘッダPillを非表示
       const togglePillBySpanId = (spanId, show)=>{
         const sp = $(spanId);
         const pill = sp ? sp.closest('.pill') : null;
@@ -2761,15 +2748,15 @@
 
       renderStaffMonthlyCards(st, staffId, Number($('fyInputSM').value||fy));
 
-      const allG1 = totalAllStaffMonth(st, month, (s, sid, mo)=> sumOfTypesForMonth(s, sid, mo, groupTypeIds(s,'g1')));
-      const allG2 = totalAllStaffMonth(st, month, (s, sid, mo)=> sumOfTypesForMonth(s, sid, mo, groupTypeIds(s,'g2')));
-      const allAll = totalAllStaffMonth(st, month, (s, sid, mo)=> totalForMonthAllTypes(s, sid, mo));
+      const allG1 = totalAllStaffMonth(st, $('monthInputAll').value || month, (s, sid, mo)=> sumOfTypesForMonth(s, sid, mo, groupTypeIds(s,'g1')));
+      const allG2 = totalAllStaffMonth(st, $('monthInputAll').value || month, (s, sid, mo)=> sumOfTypesForMonth(s, sid, mo, groupTypeIds(s,'g2')));
+      const allAll = totalAllStaffMonth(st, $('monthInputAll').value || month, (s, sid, mo)=> totalForMonthAllTypes(s, sid, mo));
 
       $('allMonthG1').textContent = fmtMin(allG1);
       $('allMonthG2').textContent = fmtMin(allG2);
       $('allMonthAll').textContent = fmtMin(allAll);
 
-      renderAllMonthCards(st, month);
+      renderAllMonthCards(st, $('monthInputAll').value || month);
 
       renderMulti(st);
 
@@ -2796,7 +2783,7 @@
       setTab(st.currentTab || 'individual', false);
     }
 
-    // ===== イベント：タブ =====
+    // ===== イベント =====
     $('tabIndividual').addEventListener('click', ()=> setTab('individual'));
     $('tabStaffMonthly').addEventListener('click', ()=> setTab('staffMonthly'));
     $('tabAll').addEventListener('click', ()=> setTab('all'));
@@ -2805,64 +2792,100 @@
     $('tabFYTotal').addEventListener('click', ()=> setTab('fytotal'));
     $('tabSettings').addEventListener('click', ()=> setTab('settings'));
 
-    // ===== イベント：入力（左） =====
-    $('addBtn').addEventListener('click', addEntry);
-    $('undoBtn').addEventListener('click', undoLastForStaff);
-    $('duplicateBtn').addEventListener('click', duplicateLast);
-    $('clearInputBtn').addEventListener('click', ()=>clearInput(true));
-    $('resetAllBtn').addEventListener('click', resetAll);
-
-    $('preset1d').addEventListener('click', ()=>setPreset(1,0,0));
-    $('preset1h').addEventListener('click', ()=>setPreset(0,1,0));
-    $('preset2h').addEventListener('click', ()=>setPreset(0,2,0));
-    $('preset3h').addEventListener('click', ()=>setPreset(0,3,0));
-    $('preset4h').addEventListener('click', ()=>setPreset(0,4,0));
-    $('preset5h').addEventListener('click', ()=>setPreset(0,5,0));
-    $('preset6h').addEventListener('click', ()=>setPreset(0,6,0));
-    $('preset7h').addEventListener('click', ()=>setPreset(0,7,0));
-
-    $('monthPrevBtn').addEventListener('click', ()=>addMonthsToMonthInput(-1));
-    $('monthNextBtn').addEventListener('click', ()=>addMonthsToMonthInput( 1));
-    $('monthInput').addEventListener('change', (e)=>{ setMonthAndSync(e.target.value); render(); });
-
-    $('staffSelect').addEventListener('change', (e)=>{
+    $('staffSelect').addEventListener('change', ()=>{
       const st = loadState();
-      st.currentStaffId = e.target.value;
+      st.currentStaffId = $('staffSelect').value;
       saveState(st);
       render();
     });
-    $('leaveTypeSelect').addEventListener('change', (e)=>{
+    $('staffSelectAll').addEventListener('change', ()=>{
       const st = loadState();
-      st.currentLeaveTypeId = e.target.value;
+      st.currentStaffId = $('staffSelectAll').value;
       saveState(st);
+      render();
     });
-
-    // Enterキーで追加（設定入力中は除外）
-    document.addEventListener('keydown', (ev)=>{
+    $('staffSelectMonthly').addEventListener('change', ()=>{
       const st = loadState();
-      if((st.currentTab||'individual')==='settings') return;
-      const tag = (ev.target && ev.target.tagName) ? ev.target.tagName.toLowerCase() : '';
-      if(tag==='input' || tag==='select' || tag==='textarea'){
-        // 入力欄でも Enter で追加したいので除外はしない（ただし date/month は誤爆しやすいので抑止）
-        const id = ev.target && ev.target.id ? ev.target.id : '';
-        if(id==='monthInput' || id==='monthInputAll' || id==='dateInput') return;
-      }
-      if(ev.key==='Enter'){
-        ev.preventDefault();
-        addEntry();
-      }
+      st.currentStaffId = $('staffSelectMonthly').value;
+      saveState(st);
+      render();
     });
 
-    // ===== イベント：右パネル共通（履歴削除） =====
-    $('histBody').addEventListener('click', (e)=>{
-      const btn = e.target.closest('button[data-act="delete"]');
-      if(!btn) return;
-      const id = btn.getAttribute('data-id');
-      if(!id) return;
-      if(!confirm('この記録を削除します。よろしいですか？')) return;
-      deleteEntry(id);
+    $('leaveTypeSelect').addEventListener('change', ()=>{
+      const st = loadState();
+      st.currentLeaveTypeId = $('leaveTypeSelect').value || (st.leaveTypes[0]?.id || 'annual');
+      saveState(st);
+      render();
     });
 
+    $('dateInput').addEventListener('change', ()=>{
+      const d = $('dateInput').value;
+      const m = normalizeMonthKey(monthFromDate(d));
+      if(m) setMonthAndSync(m);
+      render();
+    });
+
+    $('monthInput').addEventListener('change', ()=>{
+      setMonthAndSync($('monthInput').value || monthNowStr());
+      render();
+    });
+    $('monthInputAll').addEventListener('change', ()=>{
+      setMonthAndSync($('monthInputAll').value || monthNowStr());
+      render();
+    });
+
+    $('fyInput').addEventListener('change', ()=>{
+      setFYAndSync($('fyInput').value || yearNowStr());
+      render();
+    });
+    $('fyInput2').addEventListener('change', ()=>{
+      setFYAndSync($('fyInput2').value || yearNowStr());
+      render();
+    });
+    $('fyInputSM').addEventListener('change', ()=>{
+      setFYAndSync($('fyInputSM').value || yearNowStr());
+      render();
+    });
+    $('fyInputMulti').addEventListener('change', ()=>{
+      const st = loadState();
+      st.multi = st.multi || {};
+      st.multi.fy = Number($('fyInputMulti').value || yearNowStr());
+      saveState(st);
+      setFYAndSync(st.multi.fy);
+      render();
+    });
+
+    $('monthPrevBtn').addEventListener('click', ()=> addMonthsToMonthInput(-1));
+    $('monthNextBtn').addEventListener('click', ()=> addMonthsToMonthInput(1));
+    $('monthPrevBtnAll').addEventListener('click', ()=> addMonthsToMonthInput(-1));
+    $('monthNextBtnAll').addEventListener('click', ()=> addMonthsToMonthInput(1));
+
+    $('fyPrevBtn').addEventListener('click', ()=> shiftFY(-1));
+    $('fyNextBtn').addEventListener('click', ()=> shiftFY(1));
+    $('fyPrevBtn2').addEventListener('click', ()=> shiftFY2(-1));
+    $('fyNextBtn2').addEventListener('click', ()=> shiftFY2(1));
+    $('fyPrevBtnSM').addEventListener('click', ()=> shiftFYSM(-1));
+    $('fyNextBtnSM').addEventListener('click', ()=> shiftFYSM(1));
+    $('fyPrevBtnMulti').addEventListener('click', ()=> shiftFYMulti(-1));
+    $('fyNextBtnMulti').addEventListener('click', ()=> shiftFYMulti(1));
+
+    // 入力系ボタン
+    $('addBtn').addEventListener('click', addEntry);
+    $('undoBtn').addEventListener('click', undoLastForStaff);
+    $('duplicateBtn').addEventListener('click', duplicateLast);
+    $('clearInputBtn').addEventListener('click', ()=> clearInput(true));
+    $('resetAllBtn').addEventListener('click', resetAll);
+
+    $('preset1d').addEventListener('click', ()=> setPreset(1,0,0));
+    $('preset1h').addEventListener('click', ()=> setPreset(0,1,0));
+    $('preset2h').addEventListener('click', ()=> setPreset(0,2,0));
+    $('preset3h').addEventListener('click', ()=> setPreset(0,3,0));
+    $('preset4h').addEventListener('click', ()=> setPreset(0,4,0));
+    $('preset5h').addEventListener('click', ()=> setPreset(0,5,0));
+    $('preset6h').addEventListener('click', ()=> setPreset(0,6,0));
+    $('preset7h').addEventListener('click', ()=> setPreset(0,7,0));
+
+    // 個別：月一括削除
     $('bulkDeleteMyMonthBtn').addEventListener('click', ()=>{
       const st = loadState();
       const staffId = st.currentStaffId;
@@ -2870,67 +2893,50 @@
       bulkDeleteMonthForStaff(staffId, month);
     });
 
-    // ===== イベント：各タブ（月/年度 切替） =====
-    $('monthPrevBtnAll').addEventListener('click', ()=>addMonthsToMonthInput(-1));
-    $('monthNextBtnAll').addEventListener('click', ()=>addMonthsToMonthInput( 1));
-    $('monthInputAll').addEventListener('change', (e)=>{ setMonthAndSync(e.target.value); render(); });
-
-    $('staffSelectAll').addEventListener('change', (e)=>{
-      const st = loadState();
-      st.currentStaffId = e.target.value;
-      saveState(st);
-      render();
+    // 履歴の削除（委譲）
+    $('histBody').addEventListener('click', (ev)=>{
+      const btn = ev.target.closest('button');
+      if(!btn) return;
+      const act = btn.getAttribute('data-act');
+      const id = btn.getAttribute('data-id');
+      if(act==='delete' && id){
+        deleteEntry(id);
+      }
     });
 
-    $('staffSelectMonthly').addEventListener('change', (e)=>{
-      const st = loadState();
-      st.currentStaffId = e.target.value;
-      saveState(st);
-      render();
-    });
+    // Excel出力
+    $('exportIndividualXlsxBtn').addEventListener('click', exportIndividualXlsx);
+    $('exportAllXlsxBtn').addEventListener('click', exportAllXlsx);
+    $('exportFYXlsxBtn').addEventListener('click', exportFYXlsx);
+    $('exportStaffMonthlyXlsxBtn').addEventListener('click', exportStaffMonthlyXlsx);
+    $('exportMultiXlsxBtn').addEventListener('click', exportMultiXlsx);
+    $('exportFYMatrixXlsxBtn').addEventListener('click', exportFYMatrixXlsx);
 
-    $('fyPrevBtn').addEventListener('click', ()=>shiftFY(-1));
-    $('fyNextBtn').addEventListener('click', ()=>shiftFY( 1));
-    $('fyInput').addEventListener('change', (e)=>{ setFYAndSync(e.target.value); render(); });
-
-    $('fyPrevBtn2').addEventListener('click', ()=>shiftFY2(-1));
-    $('fyNextBtn2').addEventListener('click', ()=>shiftFY2( 1));
-    $('fyInput2').addEventListener('change', (e)=>{ setFYAndSync(e.target.value); render(); });
-
-    $('fyPrevBtnSM').addEventListener('click', ()=>shiftFYSM(-1));
-    $('fyNextBtnSM').addEventListener('click', ()=>shiftFYSM( 1));
-    $('fyInputSM').addEventListener('change', (e)=>{ setFYAndSync(e.target.value); render(); });
-
-    $('fyPrevBtnMulti').addEventListener('click', ()=>shiftFYMulti(-1));
-    $('fyNextBtnMulti').addEventListener('click', ()=>shiftFYMulti( 1));
-    $('fyInputMulti').addEventListener('change', (e)=>{ shiftFYMulti(0); });
-
-    // ===== イベント：複数月 =====
-    $('multiTargetSelect').addEventListener('change', (e)=>{
+    // 複数月：対象変更・チェック変更
+    $('multiTargetSelect').addEventListener('change', ()=>{
       const st = loadState();
       st.multi = st.multi || {};
-      st.multi.targetId = e.target.value;
+      st.multi.targetId = $('multiTargetSelect').value || st.currentStaffId;
       saveState(st);
       render();
     });
-    $('multiMonthChecks').addEventListener('change', (e)=>{
-      const cb = e.target;
-      if(!cb || cb.type!=='checkbox') return;
-      const month = cb.getAttribute('data-month');
-      if(!month) return;
+    $('multiMonthChecks').addEventListener('change', (ev)=>{
+      const cb = ev.target;
+      if(!(cb && cb.matches('input[type="checkbox"][data-month]'))) return;
+      const m = normalizeMonthKey(cb.getAttribute('data-month'));
       const st = loadState();
       st.multi = st.multi || {};
       const set = new Set((st.multi.months||[]).map(normalizeMonthKey));
-      if(cb.checked) set.add(normalizeMonthKey(month));
-      else set.delete(normalizeMonthKey(month));
+      if(cb.checked) set.add(m); else set.delete(m);
       st.multi.months = Array.from(set);
       saveState(st);
       render();
     });
+
     $('multiSelectAllBtn').addEventListener('click', ()=>{
       const st = loadState();
-      const fy = Number($('fyInputMulti').value || st.currentFY);
       st.multi = st.multi || {};
+      const fy = Number(st.multi.fy || $('fyInputMulti').value || yearNowStr());
       st.multi.fy = fy;
       st.multi.months = fyMonthKeys(fy);
       saveState(st);
@@ -2946,83 +2952,94 @@
     $('multiUseCurrentBtn').addEventListener('click', ()=>{
       const st = loadState();
       st.multi = st.multi || {};
+      const fy = Number(st.multi.fy || $('fyInputMulti').value || yearNowStr());
+      st.multi.fy = fy;
       const mk = normalizeMonthKey($('monthInput').value || monthNowStr());
-      st.multi.months = mk ? [mk] : [];
+      const list = fyMonthKeys(fy);
+      st.multi.months = list.includes(mk) ? [mk] : [list[0]];
       saveState(st);
       render();
     });
 
-    // ===== イベント：設定 =====
+    // 設定：職員/種別追加
     $('addStaffBtn').addEventListener('click', addStaff);
     $('addTypeBtn').addEventListener('click', addType);
 
-    $('staffBody').addEventListener('click', (e)=>{
-      const btn = e.target.closest('button[data-act]');
+    // 設定：保存/削除（委譲）
+    $('staffBody').addEventListener('click', (ev)=>{
+      const btn = ev.target.closest('button');
       if(!btn) return;
       const act = btn.getAttribute('data-act');
       const id = btn.getAttribute('data-id');
       if(act==='savestaff') saveStaffName(id);
       if(act==='delstaff') deleteStaff(id);
     });
-
-    $('typeBody').addEventListener('click', (e)=>{
-      const btn = e.target.closest('button[data-act]');
+    $('typeBody').addEventListener('click', (ev)=>{
+      const btn = ev.target.closest('button');
       if(!btn) return;
       const act = btn.getAttribute('data-act');
       const id = btn.getAttribute('data-id');
       if(act==='savetype') saveTypeName(id);
       if(act==='deltype') deleteType(id);
     });
-
-    $('typeBody').addEventListener('change', (e)=>{
-      const sel = e.target.closest('select[data-act="setGroup"]');
-      if(!sel) return;
+    $('typeBody').addEventListener('change', (ev)=>{
+      const sel = ev.target;
+      if(!(sel && sel.matches('select[data-act="setGroup"][data-id]'))) return;
       const id = sel.getAttribute('data-id');
+      const v = sel.value || 'none';
       const st = loadState();
-      setTypeGroup(st, id, sel.value);
+      setTypeGroup(st, id, v);
       saveState(st);
       render();
     });
 
-    $('sumPosG1').addEventListener('change', (e)=>{
+    // 合算位置
+    $('sumPosG1').addEventListener('change', ()=>{
       const st = loadState();
-      st.sumConfig.g1.pos = Number(e.target.value || 0);
+      st.sumConfig.g1.pos = toInt($('sumPosG1').value);
       ensureSumConfig(st);
       saveState(st);
       render();
     });
-    $('sumPosG2').addEventListener('change', (e)=>{
+    $('sumPosG2').addEventListener('change', ()=>{
       const st = loadState();
-      st.sumConfig.g2.pos = Number(e.target.value || 0);
+      st.sumConfig.g2.pos = toInt($('sumPosG2').value);
       ensureSumConfig(st);
       saveState(st);
       render();
     });
 
+    // JSON
     $('exportJsonBtn').addEventListener('click', exportJSON);
-    $('importJsonInput').addEventListener('change', (e)=>{
-      const file = e.target.files && e.target.files[0];
-      if(file) importJSON(file);
-      e.target.value = '';
+    $('importJsonInput').addEventListener('change', (ev)=>{
+      const f = ev.target.files && ev.target.files[0];
+      if(f) importJSON(f);
+      ev.target.value = '';
     });
     $('wipeOnlyEntriesBtn').addEventListener('click', wipeOnlyEntries);
 
-    // ===== イベント：Excelエクスポート（表記は全て「⬇Excelエクスポート」） =====
-    $('exportIndividualXlsxBtn').addEventListener('click', exportIndividualXlsx);
-    $('exportStaffMonthlyXlsxBtn').addEventListener('click', exportStaffMonthlyXlsx);
-    $('exportAllXlsxBtn').addEventListener('click', exportAllXlsx);
-    $('exportMultiXlsxBtn').addEventListener('click', exportMultiXlsx);
-    $('exportFYXlsxBtn').addEventListener('click', exportFYXlsx);
-    $('exportFYListXlsxBtn').addEventListener('click', exportFYListXlsx);
+    // Enterで追加（設定中は無効）
+    document.addEventListener('keydown', (e)=>{
+      if(e.key !== 'Enter') return;
+      if(document.body.classList.contains('settingsMode')) return;
 
-    // 初期表示
-    (function init(){
-      const st = loadState();
-      // 初期月を同期
-      setMonthAndSync(st.currentMonth || monthNowStr());
-      setFYAndSync(st.currentFY || Number(yearNowStr()));
-      render();
-    })();
+      const ae = document.activeElement;
+      if(ae){
+        const id = ae.id || '';
+        const isText = (ae.tagName==='INPUT' && (ae.type==='text' || ae.type==='search'));
+        const isSettingsText =
+          isText ||
+          ae.matches('input[data-staff-name], input[data-type-name]') ||
+          id==='newStaffName' || id==='newTypeName';
+        if(isSettingsText) return;
+      }
+
+      e.preventDefault();
+      addEntry();
+    });
+
+    // 初回
+    render();
   </script>
 </body>
 </html>
