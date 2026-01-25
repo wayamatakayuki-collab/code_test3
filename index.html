@@ -418,15 +418,25 @@
       border-radius: 14px;
       padding: 10px 10px;
       display:flex;
-      align-items:center;
+      align-items:flex-start; /* ★2行表示に合わせて上寄せ */
       gap:10px;
       cursor:pointer;
       user-select:none;
       min-height: var(--controlH);
     }
-    .mchk input{ width:18px; height:18px; }
-    .mchk .lab{font-weight:950; color:#0f172a}
-    .mchk .sub{margin-left:auto; font-size:11px; color:#64748b; font-weight:900}
+    .mchk input{ width:18px; height:18px; margin-top:2px; }
+    .mchk .lab{
+      font-weight:950;
+      color:#0f172a;
+      display:flex;
+      flex-direction:column; /* ★年度/年月を2行化 */
+      line-height:1.15;
+      min-width:0;
+      flex:1;
+    }
+    .mchk .lab .top{font-weight:950}
+    .mchk .lab .bot{font-weight:950}
+    .mchk .sub{margin-left:auto; font-size:11px; color:#64748b; font-weight:900; white-space:nowrap}
 
     .panelHeader{
       display:flex; gap:10px; flex-wrap:wrap; align-items:center;
@@ -658,9 +668,9 @@
               <div id="myMonthList" class="kpiList"></div>
             </div>
 
-            <div class="noteBox">
-              <b>合算①</b>：<span id="g1Desc_ind">-</span><br>
-              <b>合算②</b>：<span id="g2Desc_ind">-</span>
+            <div class="noteBox" id="sumDescBox_ind">
+              <b id="sumDescLine1_lbl">合算①</b>：<span id="g1Desc_ind">-</span><br>
+              <b id="sumDescLine2_lbl">合算②</b>：<span id="g2Desc_ind">-</span>
             </div>
 
             <div class="list" style="margin-top:10px">
@@ -1026,11 +1036,10 @@
     }
 
     // ===== 合算設定（2系統 + 表示位置） =====
-    // pos = 「種別の並びの中で、先頭からpos個出した後に挿入」
     function defaultSumConfigFor(st){
       const ids = st.leaveTypes.map(t=>t.id);
-      const g1 = ids.slice(0,2);         // 初期：先頭2つ
-      const g2 = ids.slice(2,4);         // 初期：3-4番目（あれば）
+      const g1 = ids.slice(0,2);
+      const g2 = ids.slice(2,4);
       return {
         g1: { label:'合算①', typeIds: g1, pos: 2 },
         g2: { label:'合算②', typeIds: g2, pos: 4 }
@@ -1044,7 +1053,6 @@
 
     function ensureSumConfig(st){
       if(!st.sumConfig || typeof st.sumConfig!=='object'){
-        // 旧 includeInTotal からの移行（あれば合算①へ）
         const migrated = { g1:{label:'合算①', typeIds:[], pos:2}, g2:{label:'合算②', typeIds:[], pos:4} };
         if(Array.isArray(st.leaveTypes)){
           const inc = st.leaveTypes.filter(t=>t.includeInTotal===true).map(t=>t.id);
@@ -1071,7 +1079,6 @@
       st.sumConfig.g1.typeIds = st.sumConfig.g1.typeIds.filter(id=>ids.has(id));
       st.sumConfig.g2.typeIds = st.sumConfig.g2.typeIds.filter(id=>ids.has(id));
 
-      // 同じ種別が両方に入らないように整理（g2から除外）
       const g1set = new Set(st.sumConfig.g1.typeIds);
       st.sumConfig.g2.typeIds = st.sumConfig.g2.typeIds.filter(id=>!g1set.has(id));
 
@@ -1090,6 +1097,10 @@
       $('labelG2d').textContent = `全職員 ${st.sumConfig.g2.label}`;
     }
 
+    function groupEnabled(st, groupKey){
+      return (st.sumConfig?.[groupKey]?.typeIds || []).length > 0;
+    }
+
     function getSumDesc(st, groupKey){
       const cfg = st.sumConfig[groupKey];
       if(!cfg) return '（未設定）';
@@ -1105,11 +1116,8 @@
           const obj = JSON.parse(raw);
           if(obj && Array.isArray(obj.staff) && Array.isArray(obj.entries)){
             if(!Array.isArray(obj.leaveTypes) || obj.leaveTypes.length===0) obj.leaveTypes = defaultTypes();
-
-            // 種別最大5（余っている場合は先頭5だけに制限：データが壊れないように「表示・追加」は制限、既存種別は残す方針にもできるが、要望に合わせて強制5に）
             if(obj.leaveTypes.length>5) obj.leaveTypes = obj.leaveTypes.slice(0,5);
 
-            // 旧 includeInTotal が残っていてもOK（移行に使うだけ）
             obj.entries = obj.entries.map(e=>({
               ...e,
               month: normalizeMonthKey(e.month || (e.date ? monthFromDate(e.date) : monthNowStr())),
@@ -1132,7 +1140,6 @@
 
             obj.version = VERSION;
 
-            // 合算設定
             ensureSumConfig(obj);
 
             saveState(obj);
@@ -1141,7 +1148,6 @@
         }
       }catch(e){}
 
-      // migrate v1
       try{
         const raw1 = localStorage.getItem(KEY_V1);
         if(raw1){
@@ -1273,38 +1279,31 @@
       return st.staff.reduce((acc,s)=> acc + fn(st, s.id, fy), 0);
     }
 
-    // 表示順（種別の間に合算①/②を挿入）
+    // ★表示順（種別の間に合算①/②を挿入）＋「合算なしなら表示しない」
     function buildDisplayOrder(st){
-      const types = st.leaveTypes.map(t=>t.id); // 最大5
-      const len = types.length;
+      const base = st.leaveTypes.map(t=>({kind:'type', id:t.id}));
+      const order = base.slice();
+      const len = base.length;
 
-      const p1 = clampPos(st.sumConfig.g1.pos, len);
-      const p2 = clampPos(st.sumConfig.g2.pos, len);
-
-      const items = [];
-      for(let i=0;i<=len;i++){
-        if(i<len){
-          items.push({kind:'type', id: types[i]});
-        }
-        // iは「種別をi+1個出した後」（=pos=i+1）ではなく、
-        // ループの境界で扱うため、「i+1個出した後に挿入」は (i+1) だが、
-        // ここは i が「いままでに出した種別数」と一致するように配置する
-      }
-      // いったん素直に構築（insertで対応）
-      const base = types.map(id=>({kind:'type', id}));
+      const hasG1 = groupEnabled(st,'g1');
+      const hasG2 = groupEnabled(st,'g2');
 
       const insert = (arr, pos, item)=>{
         const p = clampPos(pos, arr.length);
         arr.splice(p, 0, item);
       };
 
-      const order = base.slice();
-      // 同位置のときは①→②
-      insert(order, p1, {kind:'sum', group:'g1'});
-      // ①を挿入したので、②のposは「種別ベース」のposのまま扱うため、補正（①が②より前なら +1）
-      const adj = (p1 <= p2) ? 1 : 0;
-      insert(order, p2 + adj, {kind:'sum', group:'g2'});
+      let p1 = clampPos(st.sumConfig.g1.pos, len);
+      let p2 = clampPos(st.sumConfig.g2.pos, len);
 
+      // ①→②の順で、挿入位置補正
+      if(hasG1){
+        insert(order, p1, {kind:'sum', group:'g1'});
+      }
+      if(hasG2){
+        const adj = (hasG1 && (p1 <= p2)) ? 1 : 0;
+        insert(order, p2 + adj, {kind:'sum', group:'g2'});
+      }
       return order;
     }
 
@@ -1459,11 +1458,14 @@
       });
     }
 
-    // ===== 月別一覧（カード型：表示順は設定どおり） =====
+    // ===== 月別一覧（カード型：表示順は設定どおり／合算なしは非表示） =====
     function renderAllMonthCards(st, month){
       const wrap = $('allStaffCards');
       wrap.innerHTML = '';
       const order = buildDisplayOrder(st);
+
+      const hasG1 = groupEnabled(st,'g1');
+      const hasG2 = groupEnabled(st,'g2');
 
       const g1Ids = groupTypeIds(st,'g1');
       const g2Ids = groupTypeIds(st,'g2');
@@ -1510,16 +1512,17 @@
           </div>
         `);
 
+        const headSums = [];
+        if(hasG1) headSums.push(`<span>${escapeHtml(st.sumConfig.g1.label)}：${fmtMin(g1)}</span>`);
+        if(hasG2) headSums.push(`<span>${escapeHtml(st.sumConfig.g2.label)}：${fmtMin(g2)}</span>`);
+        headSums.push(`<span>全合計：${fmtMin(all)}</span>`);
+
         const card = document.createElement('div');
         card.className = 'staffCard';
         card.innerHTML = `
           <div class="staffCardHead">
             <div class="name" title="${escapeHtml(s.name)}">${escapeHtml(s.name)}</div>
-            <div class="sum">
-              <span>${escapeHtml(st.sumConfig.g1.label)}：${fmtMin(g1)}</span>
-              <span>${escapeHtml(st.sumConfig.g2.label)}：${fmtMin(g2)}</span>
-              <span>全合計：${fmtMin(all)}</span>
-            </div>
+            <div class="sum">${headSums.join('')}</div>
           </div>
           <div class="staffCardBody">
             <div class="lines">${lines.join('')}</div>
@@ -1529,11 +1532,14 @@
       });
     }
 
-    // ===== 年度合計（カード型：表示順は設定どおり） =====
+    // ===== 年度合計（カード型：表示順は設定どおり／合算なしは非表示） =====
     function renderFYTotalCards(st, fy){
       const wrap = $('fyTotalStaffCards');
       wrap.innerHTML = '';
       const order = buildDisplayOrder(st);
+
+      const hasG1 = groupEnabled(st,'g1');
+      const hasG2 = groupEnabled(st,'g2');
 
       const g1Ids = groupTypeIds(st,'g1');
       const g2Ids = groupTypeIds(st,'g2');
@@ -1580,16 +1586,17 @@
           </div>
         `);
 
+        const headSums = [];
+        if(hasG1) headSums.push(`<span>${escapeHtml(st.sumConfig.g1.label)}：${fmtMin(g1)}</span>`);
+        if(hasG2) headSums.push(`<span>${escapeHtml(st.sumConfig.g2.label)}：${fmtMin(g2)}</span>`);
+        headSums.push(`<span>全合計：${fmtMin(all)}</span>`);
+
         const card = document.createElement('div');
         card.className = 'staffCard';
         card.innerHTML = `
           <div class="staffCardHead">
             <div class="name" title="${escapeHtml(s.name)}">${escapeHtml(s.name)}</div>
-            <div class="sum">
-              <span>${escapeHtml(st.sumConfig.g1.label)}：${fmtMin(g1)}</span>
-              <span>${escapeHtml(st.sumConfig.g2.label)}：${fmtMin(g2)}</span>
-              <span>全合計：${fmtMin(all)}</span>
-            </div>
+            <div class="sum">${headSums.join('')}</div>
           </div>
           <div class="staffCardBody">
             <div class="lines">${lines.join('')}</div>
@@ -1599,7 +1606,7 @@
       });
     }
 
-    // ===== 年度別一覧：月セル内に種別＋合算2＋全合計 =====
+    // ===== 年度別一覧：月セル内に「設定の合算位置」を反映（合算なしは非表示） =====
     function renderFYMatrix(st, fy){
       const wrap = $('fyMatrix');
       wrap.innerHTML = '';
@@ -1608,6 +1615,10 @@
         `${fy}年度 4月`,`5月`,`6月`,`7月`,`8月`,`9月`,
         `10月`,`11月`,`12月`,`${fy+1}年 1月`,`2月`,`3月`
       ];
+
+      const order = buildDisplayOrder(st);
+      const hasG1 = groupEnabled(st,'g1');
+      const hasG2 = groupEnabled(st,'g2');
 
       const g1Ids = groupTypeIds(st,'g1');
       const g2Ids = groupTypeIds(st,'g2');
@@ -1622,13 +1633,15 @@
 
         const head = document.createElement('div');
         head.className = 'fyStaffHead';
+
+        const headSums = [];
+        if(hasG1) headSums.push(`<span>${escapeHtml(st.sumConfig.g1.label)}：${fmtMin(g1FY)}</span>`);
+        if(hasG2) headSums.push(`<span>${escapeHtml(st.sumConfig.g2.label)}：${fmtMin(g2FY)}</span>`);
+        headSums.push(`<span>全合計：${fmtMin(allFY)}</span>`);
+
         head.innerHTML = `
           <div class="name" title="${escapeHtml(s.name)}">${escapeHtml(s.name)}</div>
-          <div class="sum">
-            <span>${escapeHtml(st.sumConfig.g1.label)}：${fmtMin(g1FY)}</span>
-            <span>${escapeHtml(st.sumConfig.g2.label)}：${fmtMin(g2FY)}</span>
-            <span>全合計：${fmtMin(allFY)}</span>
-          </div>
+          <div class="sum">${headSums.join('')}</div>
         `;
 
         const grid = document.createElement('div');
@@ -1646,27 +1659,34 @@
           cell.className = 'fyCell';
 
           const lines = [];
-          st.leaveTypes.forEach(tp=>{
-            const v = map.get(tp.id) || 0;
-            const zero = (v===0) ? 'zero' : '';
-            lines.push(`
-              <div class="fyLine ${zero}">
-                <span class="k">${escapeHtml(tp.name)}</span>
-                <span class="v">${v===0?'0':fmtMin(v)}</span>
-              </div>
-            `);
+          order.forEach(it=>{
+            if(it.kind==='type'){
+              const tp = getType(st, it.id);
+              const v = map.get(it.id) || 0;
+              const zero = (v===0) ? 'zero' : '';
+              lines.push(`
+                <div class="fyLine ${zero}">
+                  <span class="k">${escapeHtml(tp.name)}</span>
+                  <span class="v">${v===0?'0':fmtMin(v)}</span>
+                </div>
+              `);
+            }else if(it.kind==='sum' && it.group==='g1'){
+              const zero = (sumG1===0) ? 'zero' : '';
+              lines.push(`
+                <div class="fyLine total ${zero}">
+                  <span class="k">${escapeHtml(st.sumConfig.g1.label)}</span><span class="v">${sumG1===0?'0':fmtMin(sumG1)}</span>
+                </div>
+              `);
+            }else if(it.kind==='sum' && it.group==='g2'){
+              const zero = (sumG2===0) ? 'zero' : '';
+              lines.push(`
+                <div class="fyLine total ${zero}">
+                  <span class="k">${escapeHtml(st.sumConfig.g2.label)}</span><span class="v">${sumG2===0?'0':fmtMin(sumG2)}</span>
+                </div>
+              `);
+            }
           });
 
-          lines.push(`
-            <div class="fyLine total ${sumG1===0?'zero':''}">
-              <span class="k">${escapeHtml(st.sumConfig.g1.label)}</span><span class="v">${sumG1===0?'0':fmtMin(sumG1)}</span>
-            </div>
-          `);
-          lines.push(`
-            <div class="fyLine total ${sumG2===0?'zero':''}">
-              <span class="k">${escapeHtml(st.sumConfig.g2.label)}</span><span class="v">${sumG2===0?'0':fmtMin(sumG2)}</span>
-            </div>
-          `);
           lines.push(`
             <div class="fyLine total ${sumAll===0?'zero':''}">
               <span class="k">全合計</span><span class="v">${sumAll===0?'0':fmtMin(sumAll)}</span>
@@ -1686,7 +1706,7 @@
       });
     }
 
-    // ===== 個別月別一覧（カード）：月ごとに種別＋合算2＋全合計 =====
+    // ===== 個別月別一覧（カード）：設定の合算位置を反映（合算なしは非表示） =====
     function renderStaffMonthlyCards(st, staffId, fy){
       const wrap = $('staffMonthlyCards');
       wrap.innerHTML = '';
@@ -1695,6 +1715,10 @@
         `${fy}年度 4月`,`5月`,`6月`,`7月`,`8月`,`9月`,
         `10月`,`11月`,`12月`,`${fy+1}年 1月`,`2月`,`3月`
       ];
+
+      const order = buildDisplayOrder(st);
+      const hasG1 = groupEnabled(st,'g1');
+      const hasG2 = groupEnabled(st,'g2');
 
       const g1Ids = groupTypeIds(st,'g1');
       const g2Ids = groupTypeIds(st,'g2');
@@ -1709,28 +1733,33 @@
         const sumG2 = sumOfTypesForMonth(st, staffId, mkey, g2Ids);
 
         const rows = [];
-        st.leaveTypes.forEach(tp=>{
-          const v = map.get(tp.id) || 0;
-          rows.push(`
-            <div class="mrow">
-              <span class="k">${escapeHtml(tp.name)}</span>
-              <span class="v">${v===0 ? '0' : fmtMin(v)}</span>
-            </div>
-          `);
+        order.forEach(it=>{
+          if(it.kind==='type'){
+            const tp = getType(st, it.id);
+            const v = map.get(it.id) || 0;
+            rows.push(`
+              <div class="mrow">
+                <span class="k">${escapeHtml(tp.name)}</span>
+                <span class="v">${v===0 ? '0' : fmtMin(v)}</span>
+              </div>
+            `);
+          }else if(it.kind==='sum' && it.group==='g1'){
+            rows.push(`
+              <div class="mrow total">
+                <span class="k">${escapeHtml(st.sumConfig.g1.label)}<span class="sub">${escapeHtml(g1Desc)}</span></span>
+                <span class="v">${sumG1===0 ? '0' : fmtMin(sumG1)}</span>
+              </div>
+            `);
+          }else if(it.kind==='sum' && it.group==='g2'){
+            rows.push(`
+              <div class="mrow total">
+                <span class="k">${escapeHtml(st.sumConfig.g2.label)}<span class="sub">${escapeHtml(g2Desc)}</span></span>
+                <span class="v">${sumG2===0 ? '0' : fmtMin(sumG2)}</span>
+              </div>
+            `);
+          }
         });
 
-        rows.push(`
-          <div class="mrow total">
-            <span class="k">${escapeHtml(st.sumConfig.g1.label)}<span class="sub">${escapeHtml(g1Desc)}</span></span>
-            <span class="v">${sumG1===0 ? '0' : fmtMin(sumG1)}</span>
-          </div>
-        `);
-        rows.push(`
-          <div class="mrow total">
-            <span class="k">${escapeHtml(st.sumConfig.g2.label)}<span class="sub">${escapeHtml(g2Desc)}</span></span>
-            <span class="v">${sumG2===0 ? '0' : fmtMin(sumG2)}</span>
-          </div>
-        `);
         rows.push(`
           <div class="mrow total">
             <span class="k">全合計</span>
@@ -1750,7 +1779,7 @@
         wrap.appendChild(card);
       });
 
-      // 年度合計カード
+      // 年度合計カード（合算なしは非表示）
       const mapFY = fyTypeMapForStaff(st, staffId, fy);
       let fyAll = 0;
       st.leaveTypes.forEach(tp=> fyAll += (mapFY.get(tp.id)||0));
@@ -1758,27 +1787,32 @@
       const fyG2 = sumOfTypesForFY(st, staffId, fy, g2Ids);
 
       const fyRows = [];
-      st.leaveTypes.forEach(tp=>{
-        const v = mapFY.get(tp.id) || 0;
-        fyRows.push(`
-          <div class="mrow">
-            <span class="k">${escapeHtml(tp.name)}</span>
-            <span class="v">${v===0 ? '0' : fmtMin(v)}</span>
-          </div>
-        `);
+      order.forEach(it=>{
+        if(it.kind==='type'){
+          const tp = getType(st, it.id);
+          const v = mapFY.get(it.id) || 0;
+          fyRows.push(`
+            <div class="mrow">
+              <span class="k">${escapeHtml(tp.name)}</span>
+              <span class="v">${v===0 ? '0' : fmtMin(v)}</span>
+            </div>
+          `);
+        }else if(it.kind==='sum' && it.group==='g1'){
+          fyRows.push(`
+            <div class="mrow total">
+              <span class="k">年度 ${escapeHtml(st.sumConfig.g1.label)}<span class="sub">${escapeHtml(g1Desc)}</span></span>
+              <span class="v">${fyG1===0 ? '0' : fmtMin(fyG1)}</span>
+            </div>
+          `);
+        }else if(it.kind==='sum' && it.group==='g2'){
+          fyRows.push(`
+            <div class="mrow total">
+              <span class="k">年度 ${escapeHtml(st.sumConfig.g2.label)}<span class="sub">${escapeHtml(g2Desc)}</span></span>
+              <span class="v">${fyG2===0 ? '0' : fmtMin(fyG2)}</span>
+            </div>
+          `);
+        }
       });
-      fyRows.push(`
-        <div class="mrow total">
-          <span class="k">年度 ${escapeHtml(st.sumConfig.g1.label)}<span class="sub">${escapeHtml(g1Desc)}</span></span>
-          <span class="v">${fyG1===0 ? '0' : fmtMin(fyG1)}</span>
-        </div>
-      `);
-      fyRows.push(`
-        <div class="mrow total">
-          <span class="k">年度 ${escapeHtml(st.sumConfig.g2.label)}<span class="sub">${escapeHtml(g2Desc)}</span></span>
-          <span class="v">${fyG2===0 ? '0' : fmtMin(fyG2)}</span>
-        </div>
-      `);
       fyRows.push(`
         <div class="mrow total">
           <span class="k">年度 全合計</span>
@@ -1858,18 +1892,20 @@
 
       const box = $('multiMonthChecks');
       box.innerHTML = '';
-      const labels = [
-        `${fy}年度 4月`,`5月`,`6月`,`7月`,`8月`,`9月`,
-        `10月`,`11月`,`12月`,`${fy+1}年 1月`,`2月`,`3月`
-      ];
+
+      // ★表示を「年度（上段）」＋「月（下段）」の2行に
+      const monthNums = [4,5,6,7,8,9,10,11,12,1,2,3];
       monthsFY.forEach((mkey, idx)=>{
         const id = `mchk_${mkey.replace('-','_')}`;
+        const yearLine = (idx <= 8) ? `${fy}年度` : `${fy+1}年`;
+        const monthLine = `${monthNums[idx]}月`;
+
         const wrap = document.createElement('label');
         wrap.className = 'mchk';
         wrap.setAttribute('for', id);
         wrap.innerHTML = `
           <input type="checkbox" id="${id}" data-month="${mkey}" ${chosen.has(mkey)?'checked':''}>
-          <span class="lab">${escapeHtml(labels[idx])}</span>
+          <span class="lab"><span class="top">${escapeHtml(yearLine)}</span><span class="bot">${escapeHtml(monthLine)}</span></span>
           <span class="sub">${escapeHtml(mkey)}</span>
         `;
         box.appendChild(wrap);
@@ -1936,7 +1972,6 @@
     }
 
     function setTypeGroup(st, typeId, group){
-      // remove from both
       st.sumConfig.g1.typeIds = st.sumConfig.g1.typeIds.filter(id=>id!==typeId);
       st.sumConfig.g2.typeIds = st.sumConfig.g2.typeIds.filter(id=>id!==typeId);
       if(group==='g1') st.sumConfig.g1.typeIds.push(typeId);
@@ -2285,6 +2320,7 @@
         const v = t.byType.get(tp.id) || 0;
         aoa.push([tp.name, v, fmtMin(v)]);
       });
+      // 合算は「なし」でもExcelは出力は残す（0として）
       aoa.push([st.sumConfig.g1.label, t.g1, fmtMin(t.g1)]);
       aoa.push([st.sumConfig.g2.label, t.g2, fmtMin(t.g2)]);
       aoa.push(['全合計', t.totalAll, fmtMin(t.totalAll)]);
@@ -2567,7 +2603,6 @@
       st.leaveTypes.push({id, name});
       st.currentLeaveTypeId = id;
 
-      // デフォルト：合算なし（必要に応じて設定でg1/g2へ）
       ensureSumConfig(st);
 
       $('newTypeName').value = '';
@@ -2598,7 +2633,6 @@
       if(!confirm(msg)) return;
 
       st.leaveTypes = st.leaveTypes.filter(t=>t.id!==id);
-      // 合算設定からも外す
       ensureSumConfig(st);
 
       if(!st.leaveTypes.some(t=>t.id===st.currentLeaveTypeId)){
@@ -2612,6 +2646,9 @@
     function render(){
       const st = loadState();
       ensureSumConfig(st);
+
+      const hasG1 = groupEnabled(st,'g1');
+      const hasG2 = groupEnabled(st,'g2');
 
       if(!$('dateInput').value) $('dateInput').value = todayStr();
       if(!$('monthInput').value) $('monthInput').value = st.currentMonth || monthNowStr();
@@ -2644,6 +2681,48 @@
       $('g2Desc_ind').textContent = getSumDesc(st,'g2');
       $('g1Desc_fy').textContent = getSumDesc(st,'g1');
       $('g2Desc_fy').textContent = getSumDesc(st,'g2');
+
+      // ★合算が「なし」の場合、一覧やヘッダから非表示
+      const togglePillBySpanId = (spanId, show)=>{
+        const sp = $(spanId);
+        const pill = sp ? sp.closest('.pill') : null;
+        if(pill) pill.style.display = show ? '' : 'none';
+      };
+      togglePillBySpanId('labelG1a', hasG1);
+      togglePillBySpanId('labelG2a', hasG2);
+      togglePillBySpanId('labelG1b', hasG1);
+      togglePillBySpanId('labelG2b', hasG2);
+      togglePillBySpanId('labelG1c', hasG1);
+      togglePillBySpanId('labelG2c', hasG2);
+      togglePillBySpanId('labelG1d', hasG1);
+      togglePillBySpanId('labelG2d', hasG2);
+
+      // 個別の合算説明ボックスも、なしなら行ごと隠す
+      $('sumDescLine1_lbl').textContent = st.sumConfig.g1.label;
+      $('sumDescLine2_lbl').textContent = st.sumConfig.g2.label;
+      // 2行の表示制御（brがあるので簡易に全体は表示し、文言は無しのとき非表示）
+      // ここは見た目崩れを避けるため、全体を出しつつ（なし）の説明自体が出ないように制御
+      // → もっと厳密に行単位のDOM分割も可能だが、今回は最小変更で対応
+      if(!hasG1 && hasG2){
+        $('sumDescLine1_lbl').style.display = 'none';
+        $('g1Desc_ind').style.display = 'none';
+      }else{
+        $('sumDescLine1_lbl').style.display = '';
+        $('g1Desc_ind').style.display = '';
+      }
+      if(!hasG2 && hasG1){
+        $('sumDescLine2_lbl').style.display = 'none';
+        $('g2Desc_ind').style.display = 'none';
+      }else{
+        $('sumDescLine2_lbl').style.display = '';
+        $('g2Desc_ind').style.display = '';
+      }
+      if(!hasG1 && !hasG2){
+        // 両方なしなら説明box自体を隠す
+        $('sumDescBox_ind').style.display = 'none';
+      }else{
+        $('sumDescBox_ind').style.display = '';
+      }
 
       fillStaffSelect($('staffSelect'), st, st.currentStaffId);
       fillStaffSelect($('staffSelectAll'), st, st.currentStaffId);
@@ -2685,7 +2764,7 @@
       renderKpiMyMonth(st, staffId, month);
       renderIndividualHistory(st, staffId, month);
 
-      // 個別月別一覧
+      // 個別月別一覧（★合算位置反映済み）
       renderStaffMonthlyCards(st, staffId, Number($('fyInputSM').value||fy));
 
       // 月別一覧：全職員合計
@@ -2702,7 +2781,7 @@
       // 複数月集計
       renderMulti(st);
 
-      // 年度別一覧
+      // 年度別一覧（★合算位置反映済み）
       renderFYMatrix(st, fy);
 
       // 年度合計：全職員合計
@@ -2838,6 +2917,7 @@
     $('exportAllXlsxBtn').addEventListener('click', exportAllXlsx);
     $('exportFYXlsxBtn').addEventListener('click', exportFYXlsx);
     $('exportStaffMonthlyXlsxBtn').addEventListener('click', exportStaffMonthlyXlsx);
+    $('exportMultiXlsxBtn').addEventListener('click', exportMultiXlsx);
 
     $('exportJsonBtn').addEventListener('click', exportJSON);
     $('importJsonInput').addEventListener('change', (e)=>{
@@ -2939,13 +3019,14 @@
       const st = loadState();
       st.multi = st.multi || {};
       st.multi.months = [];
+      st.multi.fy = Number($('fyInputMulti').value || st.currentFY);
       saveState(st);
       render();
     });
     $('multiUseCurrentBtn').addEventListener('click', ()=>{
       const st = loadState();
-      const mk = normalizeMonthKey($('monthInput').value || monthNowStr());
       const fy = Number($('fyInputMulti').value || st.currentFY);
+      const mk = normalizeMonthKey($('monthInput').value || monthNowStr());
       const list = fyMonthKeys(fy);
       st.multi = st.multi || {};
       st.multi.fy = fy;
@@ -2953,26 +3034,23 @@
       saveState(st);
       render();
     });
-    $('exportMultiXlsxBtn').addEventListener('click', exportMultiXlsx);
 
-    // Enter: add（設定入力中は除外）
+    // Enterで追加（設定入力中は除外）
     document.addEventListener('keydown', (e)=>{
-      if(e.key!=='Enter') return;
+      if(e.key !== 'Enter') return;
       const active = document.activeElement;
-      if(active && (active.closest('#panelSettings') || active.id==='newStaffName' || active.id==='newTypeName')) return;
-      if(active && active.closest('#panelMulti')) return;
-      addEntry();
+      if(active && active.closest && active.closest('#panelSettings')) return; // 設定入力中は除外
+      // テキストエリア等は除外（誤爆防止）
+      if(active && (active.tagName==='TEXTAREA')) return;
+      // 入力欄でのEnterは「追加」扱いにする（意図どおり）
+      if(!document.body.classList.contains('settingsMode')){
+        e.preventDefault();
+        addEntry();
+      }
     });
 
-    // 初期化
-    (function init(){
-      const st = loadState();
-      $('dateInput').value = todayStr();
-      setMonthAndSync(st.currentMonth || monthNowStr());
-      setFYAndSync(st.currentFY || Number(yearNowStr()));
-      setTab(st.currentTab || 'individual', false);
-      render();
-    })();
+    // 初回
+    render();
   </script>
 </body>
 </html>
