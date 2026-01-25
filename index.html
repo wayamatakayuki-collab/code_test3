@@ -88,13 +88,15 @@
     body.allMode .grid,
     body.fyMode .grid,
     body.fytotalMode .grid,
-    body.staffMonthlyMode .grid { grid-template-columns: 1fr; }
+    body.staffMonthlyMode .grid,
+    body.multiMode .grid { grid-template-columns: 1fr; }
 
     body.settingsMode #inputPanel,
     body.allMode #inputPanel,
     body.fyMode #inputPanel,
     body.fytotalMode #inputPanel,
-    body.staffMonthlyMode #inputPanel { display:none !important; }
+    body.staffMonthlyMode #inputPanel,
+    body.multiMode #inputPanel { display:none !important; }
 
     .card{
       border:1px solid var(--line);
@@ -255,15 +257,14 @@
       line-height: 1.6;
     }
 
-    /* ★全タブ共通：タブ位置を同一・固定 */
+    /* ★全タブ共通：アプリ上部（右ではなく上）に固定 */
     .tabsDock{
       position: sticky;
       top: 0;
-      z-index: 30;
+      z-index: 50;
       background: rgba(255,255,255,.92);
       backdrop-filter: blur(10px);
-      padding: 12px 0 10px;
-      margin-top: -6px;
+      padding: 12px 14px 10px;
       border-bottom: 1px solid rgba(229,231,235,.65);
     }
     .tabs{
@@ -439,11 +440,34 @@
     .fyLine.total{font-size:12px; font-weight:950}
     .fyLine.total .k{color:#0f172a}
 
+    /* 複数月：チェックUI */
+    .monthChecks{
+      display:grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 8px;
+      width:100%;
+    }
+    .mchk{
+      border:1px solid var(--line);
+      background:#fff;
+      border-radius: 14px;
+      padding: 10px 10px;
+      display:flex;
+      align-items:center;
+      gap:10px;
+      cursor:pointer;
+      user-select:none;
+      min-height: var(--controlH);
+    }
+    .mchk input{ width:18px; height:18px; }
+    .mchk .lab{font-weight:950; color:#0f172a}
+    .mchk .sub{margin-left:auto; font-size:11px; color:#64748b; font-weight:900}
     @media (max-width: 980px){
       .grid{grid-template-columns: 1fr;}
       .badge{margin-left:0}
       .tabs{border-radius: 18px}
       .fyGrid12{ grid-template-columns: repeat(3, 1fr); }
+      .monthChecks{ grid-template-columns: repeat(3, 1fr); }
     }
     @media (max-width: 860px){
       table, thead, tbody, th, td, tr{display:block}
@@ -477,6 +501,7 @@
       .group{grid-template-columns: 1fr}
       .segNav{grid-template-columns: 44px 1fr 44px;}
       .fyGrid12{ grid-template-columns: repeat(3, 1fr); }
+      .monthChecks{ grid-template-columns: repeat(2, 1fr); }
     }
   </style>
 
@@ -494,6 +519,19 @@
         <div class="badge"><span class="dot"></span>1日 = 7時間45分（465分）</div>
       </div>
     </header>
+
+    <!-- ★タブをアプリ上部に統一（右側ではなく上） -->
+    <div class="tabsDock">
+      <div class="tabs" role="tablist" aria-label="表示切替">
+        <button class="tab active" id="tabIndividual" data-tab="individual" type="button">個別（履歴）</button>
+        <button class="tab" id="tabStaffMonthly" data-tab="staffMonthly" type="button">個別月別一覧</button>
+        <button class="tab" id="tabAll" data-tab="all" type="button">月別一覧</button>
+        <button class="tab" id="tabMulti" data-tab="multi" type="button">複数月集計</button>
+        <button class="tab" id="tabFY" data-tab="fy" type="button">年度別一覧</button>
+        <button class="tab" id="tabFYTotal" data-tab="fytotal" type="button">年度合計</button>
+        <button class="tab" id="tabSettings" data-tab="settings" type="button">設定</button>
+      </div>
+    </div>
 
     <div class="wrap grid">
       <!-- 左：入力 -->
@@ -580,28 +618,16 @@
         </div>
       </section>
 
-      <!-- 右：一覧 -->
+      <!-- 右：各タブの中身 -->
       <section class="card" id="rightPanel">
         <div class="cardHead" style="gap:10px">
-          <div class="title">一覧</div>
+          <div class="title">表示</div>
           <div class="meta">月：<span id="monthLabel">----</span> ／ 年度：<span id="fyLabel">----</span></div>
         </div>
 
         <div class="cardBody">
-          <!-- ★全タブ共通：同じ場所に固定 -->
-          <div class="tabsDock">
-            <div class="tabs" role="tablist" aria-label="表示切替">
-              <button class="tab active" id="tabIndividual" data-tab="individual" type="button">個別（履歴）</button>
-              <button class="tab" id="tabStaffMonthly" data-tab="staffMonthly" type="button">個別月別一覧</button>
-              <button class="tab" id="tabAll" data-tab="all" type="button">月別一覧</button>
-              <button class="tab" id="tabFY" data-tab="fy" type="button">年度別一覧</button>
-              <button class="tab" id="tabFYTotal" data-tab="fytotal" type="button">年度合計</button>
-              <button class="tab" id="tabSettings" data-tab="settings" type="button">設定</button>
-            </div>
-          </div>
-
           <!-- 個別：履歴 -->
-          <div id="panelIndividual" style="margin-top:12px">
+          <div id="panelIndividual">
             <div class="panelHeader">
               <div class="pill"><span>職員</span><b id="indStaffName">-</b></div>
               <div class="pill"><span>月</span><b id="indMonth">-</b></div>
@@ -618,7 +644,6 @@
               <div id="myMonthList" class="kpiList"></div>
             </div>
 
-            <!-- ★削除：履歴検索（この月） -->
             <div class="list" style="margin-top:10px">
               <table class="autoTable">
                 <thead>
@@ -637,8 +662,8 @@
             <div class="hint">「削除」は該当記録のみ削除し、累計は自動再計算されます。</div>
           </div>
 
-          <!-- ★新タブ：個別月別一覧（旧：選択職員：月別内訳（種別別）※4月始まり） -->
-          <div id="panelStaffMonthly" style="margin-top:12px; display:none">
+          <!-- 個別月別一覧 -->
+          <div id="panelStaffMonthly" style="display:none">
             <div class="panelHeader">
               <div class="pill"><span>職員</span></div>
               <div style="min-width:260px; flex:1">
@@ -670,15 +695,13 @@
           </div>
 
           <!-- 月別一覧 -->
-          <div id="panelAll" style="margin-top:12px; display:none">
+          <div id="panelAll" style="display:none">
             <div class="panelHeader">
-              <!-- ★月別一覧：氏名も選択できる -->
               <div class="pill"><span>職員</span></div>
               <div style="min-width:260px; flex:1">
                 <select id="staffSelectAll"></select>
               </div>
 
-              <!-- 表示月 -->
               <div class="pill" style="gap:10px">
                 <span>月</span>
                 <button class="secondary segBtn" id="monthPrevBtnAll" type="button" aria-label="前の月">◀</button>
@@ -711,11 +734,62 @@
             </div>
           </div>
 
+          <!-- ★追加：複数月集計 -->
+          <div id="panelMulti" style="display:none">
+            <div class="panelHeader">
+              <div class="pill"><span>対象</span></div>
+              <div style="min-width:260px; flex:1">
+                <select id="multiTargetSelect"></select>
+              </div>
+
+              <div class="pill"><span>年度</span></div>
+              <div class="row" style="gap:8px; align-items:center">
+                <button class="secondary segBtn" id="fyPrevBtnMulti" type="button" aria-label="前年度">◀</button>
+                <input type="number" id="fyInputMulti" min="2000" max="2100" step="1" style="width:120px" />
+                <button class="secondary segBtn" id="fyNextBtnMulti" type="button" aria-label="次年度">▶</button>
+              </div>
+
+              <div class="actions right">
+                <button class="secondary" id="multiSelectAllBtn" type="button">全選択</button>
+                <button class="secondary" id="multiClearBtn" type="button">全解除</button>
+                <button class="secondary" id="multiUseCurrentBtn" type="button">表示中の月だけ</button>
+              </div>
+            </div>
+
+            <div class="noteBox" style="margin-top:10px">
+              チェックした月（例：4・5・6月）の合計をまとめて計算します。<b>年度は4月始まり</b>です。
+            </div>
+
+            <div class="kpiCard" style="margin-top:10px">
+              <div class="t">選択中の月</div>
+              <div class="chips" style="margin-top:10px">
+                <span class="chip"><strong>月数</strong> <span id="multiCount">0</span></span>
+                <span class="chip"><strong>選択</strong> <span id="multiLabel">（未選択）</span></span>
+              </div>
+            </div>
+
+            <div class="kpiCard" style="margin-top:10px">
+              <div class="t">月の選択（チェック）</div>
+              <div id="multiMonthChecks" class="monthChecks" style="margin-top:10px"></div>
+            </div>
+
+            <div class="kpiCard" style="margin-top:10px">
+              <div class="t">累計（種別別）</div>
+              <div id="multiTotals" class="kpiList"></div>
+            </div>
+
+            <div class="panelHeader" style="margin-top:10px">
+              <div class="pill"><span>合計</span><b id="multiGrand">0日 0時間 0分</b></div>
+              <div class="actions right">
+                <button class="secondary" id="exportMultiXlsxBtn" type="button">この集計をExcel</button>
+              </div>
+            </div>
+          </div>
+
           <!-- 年度別一覧 -->
-          <div id="panelFY" style="margin-top:12px; display:none">
+          <div id="panelFY" style="display:none">
             <div class="panelHeader">
               <div class="pill"><span>年度</span><b id="fyPanelFY">-</b></div>
-
               <div class="row right" style="gap:8px; align-items:center">
                 <button class="secondary segBtn" id="fyPrevBtn" type="button" aria-label="前年度">◀</button>
                 <input type="number" id="fyInput" min="2000" max="2100" step="1" style="width:120px" />
@@ -730,8 +804,8 @@
             <div id="fyMatrix" class="fyMatrix" style="margin-top:10px"></div>
           </div>
 
-          <!-- 全職員：年度合計（種別別） -->
-          <div id="panelFYTotal" style="margin-top:12px; display:none">
+          <!-- 年度合計 -->
+          <div id="panelFYTotal" style="display:none">
             <div class="panelHeader">
               <div class="pill"><span>年度</span><b id="fyTotalLabel">-</b></div>
               <div class="pill"><span>全職員合計</span><b id="allFYTotal">0日 0時間 0分</b></div>
@@ -760,7 +834,7 @@
           </div>
 
           <!-- 設定 -->
-          <div id="panelSettings" style="margin-top:12px; display:none">
+          <div id="panelSettings" style="display:none">
             <div class="panelHeader">
               <div class="pill"><b>設定</b></div>
               <div class="pill"><span>職員</span><b id="staffCount">0</b></div>
@@ -867,7 +941,7 @@
 
             <div class="noteBox">
               <b>追加した便利機能</b><br>
-              ・「直前を複製」／「この月を一括削除」／月・年度の移動／一覧列のカスタム／JSONバックアップ
+              ・「直前を複製」／「この月を一括削除」／月・年度の移動／一覧列のカスタム／JSONバックアップ／複数月集計
             </div>
           </div>
 
@@ -883,7 +957,7 @@
 
     const KEY_V1 = 'worktime_accum_v1';
     const KEY_MAIN = 'worktime_accum_staff_v3_white';
-    const VERSION = 7;
+    const VERSION = 8;
 
     const $ = (id)=>document.getElementById(id);
     const toInt = (v)=>{ const n=parseInt(v,10); return isNaN(n)?0:Math.max(0,n); };
@@ -973,6 +1047,12 @@
             obj.visibleTypeIds = obj.visibleTypeIds.filter(id=> obj.leaveTypes.some(t=>t.id===id));
             if(obj.visibleTypeIds.length===0) obj.visibleTypeIds = defaultVisibleTypes().filter(id=> obj.leaveTypes.some(t=>t.id===id));
 
+            // ★複数月集計：初期化
+            if(!obj.multi || typeof obj.multi!=='object') obj.multi = {};
+            if(!obj.multi.fy) obj.multi.fy = obj.currentFY;
+            if(!obj.multi.targetId) obj.multi.targetId = obj.currentStaffId; // staffId or "__all__"
+            if(!Array.isArray(obj.multi.months)) obj.multi.months = [obj.currentMonth];
+
             obj.version = VERSION;
             saveState(obj);
             return obj;
@@ -1012,7 +1092,8 @@
               currentMonth: monthNowStr(),
               currentFY: fy,
               currentLeaveTypeId: 'annual',
-              currentTab: 'individual'
+              currentTab: 'individual',
+              multi: { fy, targetId: staffId, months: [monthNowStr()] }
             };
             saveState(migrated);
             return migrated;
@@ -1031,7 +1112,8 @@
         currentMonth: monthNowStr(),
         currentFY: Number(yearNowStr()),
         currentLeaveTypeId: 'annual',
-        currentTab: 'individual'
+        currentTab: 'individual',
+        multi: { fy: Number(yearNowStr()), targetId: def.id, months: [monthNowStr()] }
       };
       saveState(init);
       return init;
@@ -1105,7 +1187,6 @@
       return st.staff.reduce((acc,s)=> acc + totalForFYAllTypes(st, s.id, fy), 0);
     }
 
-    /* ★年度別一覧：年次／特別／その他／合計 */
     function month4BucketsForStaff(st, staffId, month){
       const annual = totalForMonthType(st, staffId, month, 'annual');
       const special = totalForMonthType(st, staffId, month, 'special');
@@ -1266,7 +1347,6 @@
       setCellLabels(body, ['#','職員名', ...cols.map(t=>t.name), '合計']);
     }
 
-    /* ★年度別一覧：職員×月（年次/特別/その他/合計） */
     function renderFYMatrix(st, fy){
       const wrap = $('fyMatrix');
       wrap.innerHTML = '';
@@ -1321,7 +1401,6 @@
       });
     }
 
-    /* ★個別月別一覧（4月始まり）：年次/特別/その他/合計 */
     function renderStaffMonthlyTable(st, staffId, fy){
       const thead = $('staffMonthlyThead');
       thead.innerHTML = `
@@ -1362,6 +1441,116 @@
       body.appendChild(trSum);
 
       setCellLabels(body, ['月','年次休暇','特別休暇','その他','合計']);
+    }
+
+    // ★複数月集計（対象：職員 or 全職員）
+    function totalsForTargetMonths(st, targetId, months){
+      const keys = new Set((months||[]).map(normalizeMonthKey).filter(Boolean));
+      const byType = new Map();
+      st.leaveTypes.forEach(t=> byType.set(t.id, 0));
+
+      const addEntry = (e)=>{
+        const mid = normalizeMonthKey(e.month);
+        if(!keys.has(mid)) return;
+        const tid = e.leaveTypeId || 'annual';
+        byType.set(tid, (byType.get(tid)||0) + toInt(e.delta));
+      };
+
+      if(targetId==='__all__'){
+        st.entries.forEach(addEntry);
+      }else{
+        st.entries.filter(e=> e.staffId===targetId).forEach(addEntry);
+      }
+
+      // 合計
+      let total = 0;
+      for(const v of byType.values()) total += v;
+
+      return { byType, total };
+    }
+
+    function renderMulti(st){
+      const multi = st.multi || { fy: st.currentFY, targetId: st.currentStaffId, months:[st.currentMonth] };
+      const fy = Number(multi.fy || st.currentFY);
+      const monthsFY = fyMonthKeys(fy);
+
+      // 対象（全職員 + 個別）
+      const sel = $('multiTargetSelect');
+      sel.innerHTML = '';
+      const optAll = document.createElement('option');
+      optAll.value = '__all__';
+      optAll.textContent = '全職員（合計）';
+      sel.appendChild(optAll);
+      st.staff.forEach(s=>{
+        const opt = document.createElement('option');
+        opt.value = s.id;
+        opt.textContent = s.name;
+        sel.appendChild(opt);
+      });
+      if(!multi.targetId) multi.targetId = st.currentStaffId;
+      if(multi.targetId !== '__all__' && !st.staff.some(s=>s.id===multi.targetId)) multi.targetId = st.currentStaffId;
+      sel.value = multi.targetId;
+
+      // 年度
+      $('fyInputMulti').value = fy;
+
+      // 月チェック
+      const chosen = new Set((multi.months||[]).map(normalizeMonthKey));
+      // FY外の月が入っていたら除外
+      const fySet = new Set(monthsFY);
+      const cleaned = Array.from(chosen).filter(m=>fySet.has(m));
+      if(cleaned.length !== (multi.months||[]).length){
+        multi.months = cleaned;
+        st.multi = multi; saveState(st);
+      }
+
+      const box = $('multiMonthChecks');
+      box.innerHTML = '';
+      const labels = [
+        `${fy}年度 4月`,`5月`,`6月`,`7月`,`8月`,`9月`,
+        `10月`,`11月`,`12月`,`${fy+1}年 1月`,`2月`,`3月`
+      ];
+      monthsFY.forEach((mkey, idx)=>{
+        const id = `mchk_${mkey.replace('-','_')}`;
+        const wrap = document.createElement('label');
+        wrap.className = 'mchk';
+        wrap.setAttribute('for', id);
+        wrap.innerHTML = `
+          <input type="checkbox" id="${id}" data-month="${mkey}" ${chosen.has(mkey)?'checked':''}>
+          <span class="lab">${escapeHtml(labels[idx])}</span>
+          <span class="sub">${escapeHtml(mkey)}</span>
+        `;
+        box.appendChild(wrap);
+      });
+
+      // 表示：選択中
+      const selectedMonths = monthsFY.filter(m=>chosen.has(m));
+      $('multiCount').textContent = String(selectedMonths.length);
+      $('multiLabel').textContent = selectedMonths.length ? selectedMonths.join(' / ') : '（未選択）';
+
+      // 集計
+      const t = totalsForTargetMonths(st, multi.targetId, selectedMonths);
+      $('multiGrand').textContent = fmtMin(t.total);
+
+      const list = $('multiTotals');
+      list.innerHTML = '';
+      st.leaveTypes.forEach(tp=>{
+        const v = t.byType.get(tp.id) || 0;
+        const item = document.createElement('div');
+        item.className = 'kpiItem';
+        item.innerHTML = `
+          <div class="left">
+            <span class="dot2" style="background:${typeColor(tp.id)}"></span>
+            <div class="name">${escapeHtml(tp.name)}</div>
+          </div>
+          <b>${fmtMin(v)}</b>
+        `;
+        list.appendChild(item);
+      });
+
+      // state反映
+      st.multi = multi;
+      saveState(st);
     }
 
     function renderSettingsStaff(st){
@@ -1431,12 +1620,13 @@
 
     function setTab(tab, persist=true){
       const st = loadState();
-      const allowed = ['individual','staffMonthly','all','fy','fytotal','settings'];
+      const allowed = ['individual','staffMonthly','all','multi','fy','fytotal','settings'];
       const t = allowed.includes(tab) ? tab : 'individual';
 
       $('tabIndividual').classList.toggle('active', t==='individual');
       $('tabStaffMonthly').classList.toggle('active', t==='staffMonthly');
       $('tabAll').classList.toggle('active', t==='all');
+      $('tabMulti').classList.toggle('active', t==='multi');
       $('tabFY').classList.toggle('active', t==='fy');
       $('tabFYTotal').classList.toggle('active', t==='fytotal');
       $('tabSettings').classList.toggle('active', t==='settings');
@@ -1444,12 +1634,14 @@
       $('panelIndividual').style.display = (t==='individual') ? '' : 'none';
       $('panelStaffMonthly').style.display = (t==='staffMonthly') ? '' : 'none';
       $('panelAll').style.display = (t==='all') ? '' : 'none';
+      $('panelMulti').style.display = (t==='multi') ? '' : 'none';
       $('panelFY').style.display = (t==='fy') ? '' : 'none';
       $('panelFYTotal').style.display = (t==='fytotal') ? '' : 'none';
       $('panelSettings').style.display = (t==='settings') ? '' : 'none';
 
       document.body.classList.toggle('settingsMode', t==='settings');
       document.body.classList.toggle('allMode', t==='all');
+      document.body.classList.toggle('multiMode', t==='multi');
       document.body.classList.toggle('fyMode', t==='fy');
       document.body.classList.toggle('fytotalMode', t==='fytotal');
       document.body.classList.toggle('staffMonthlyMode', t==='staffMonthly');
@@ -1472,10 +1664,12 @@
       $('fyInput').value = fy;
       $('fyInput2').value = fy;
       $('fyInputSM').value = fy;
+      $('fyInputMulti').value = fy;
 
       const st = loadState();
       st.currentMonth = mk;
       st.currentFY = fy;
+      if(!st.multi) st.multi = { fy, targetId: st.currentStaffId, months:[mk] };
       saveState(st);
     }
 
@@ -1484,8 +1678,10 @@
       $('fyInput').value = y;
       $('fyInput2').value = y;
       $('fyInputSM').value = y;
+      $('fyInputMulti').value = y;
       const st = loadState();
       st.currentFY = y;
+      if(!st.multi) st.multi = { fy: y, targetId: st.currentStaffId, months:[st.currentMonth] };
       saveState(st);
     }
 
@@ -1510,6 +1706,7 @@
       if(!$('fyInput').value) $('fyInput').value = st.currentFY || Number(yearNowStr());
       if(!$('fyInput2').value) $('fyInput2').value = st.currentFY || Number(yearNowStr());
       if(!$('fyInputSM').value) $('fyInputSM').value = st.currentFY || Number(yearNowStr());
+      if(!$('fyInputMulti').value) $('fyInputMulti').value = (st.multi?.fy || st.currentFY || Number(yearNowStr()));
 
       const month = normalizeMonthKey($('monthInput').value || monthNowStr());
       $('monthInput').value = month;
@@ -1572,6 +1769,9 @@
       $('allMonthTotal').textContent = fmtMin(totalAllStaffMonthAllTypes(st, month));
       renderKpiAllMonth(st, month);
       renderAllMonthTable(st, month);
+
+      // 複数月集計
+      renderMulti(st);
 
       // 年度別一覧
       renderFYMatrix(st, fy);
@@ -1726,6 +1926,19 @@
       setFYAndSync(fy);
       render();
     }
+    function shiftFYMulti(delta){
+      const fy = Number($('fyInputMulti').value || yearNowStr()) + delta;
+      const st = loadState();
+      st.multi = st.multi || {};
+      st.multi.fy = fy;
+      // 年度変更時は、その年度の「表示中の月」を選択に寄せる（存在しないなら4月）
+      const mk = normalizeMonthKey($('monthInput').value || monthNowStr());
+      const list = fyMonthKeys(fy);
+      st.multi.months = list.includes(mk) ? [mk] : [list[0]];
+      saveState(st);
+      setFYAndSync(fy);
+      render();
+    }
 
     // 設定：職員
     function addStaff(){
@@ -1739,6 +1952,7 @@
       const id = uuid();
       st.staff.push({id, name});
       st.currentStaffId = id;
+      if(st.multi && st.multi.targetId !== '__all__') st.multi.targetId = id;
       $('newStaffName').value = '';
       saveState(st);
       render();
@@ -1772,6 +1986,9 @@
 
       if(!st.staff.some(s=>s.id===st.currentStaffId)){
         st.currentStaffId = st.staff[0].id;
+      }
+      if(st.multi && st.multi.targetId===id){
+        st.multi.targetId = st.currentStaffId;
       }
       saveState(st);
       render();
@@ -2043,6 +2260,42 @@
       XLSX.writeFile(wb, `leave_time_staff_monthly_${fy}_${staff.name}.xlsx`);
     }
 
+    // ★複数月集計をExcel出力
+    function exportMultiXlsx(){
+      if(!ensureXLSX()) return;
+      const st = loadState();
+      const multi = st.multi || {};
+      const fy = Number(multi.fy || st.currentFY);
+      const fyMonths = fyMonthKeys(fy);
+      const chosen = new Set((multi.months||[]).map(normalizeMonthKey));
+      const selectedMonths = fyMonths.filter(m=>chosen.has(m));
+      const targetId = multi.targetId || st.currentStaffId;
+
+      const targetName = (targetId==='__all__')
+        ? '全職員'
+        : (st.staff.find(s=>s.id===targetId)?.name || '（不明）');
+
+      const t = totalsForTargetMonths(st, targetId, selectedMonths);
+
+      const aoa = [
+        ['複数月集計'],
+        ['年度', `${fy}年度`],
+        ['対象', targetName],
+        ['選択月', selectedMonths.join(' / ') || '（未選択）'],
+        [],
+        ['種別','合計（分）','合計（表示）']
+      ];
+      st.leaveTypes.forEach(tp=>{
+        const v = t.byType.get(tp.id) || 0;
+        aoa.push([tp.name, v, fmtMin(v)]);
+      });
+      aoa.push(['合計', t.total, fmtMin(t.total)]);
+
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(aoa), '複数月集計');
+      XLSX.writeFile(wb, `leave_time_multi_${fy}_${targetName}.xlsx`);
+    }
+
     function exportJSON(){
       const st = loadState();
       const blob = new Blob([JSON.stringify(st, null, 2)], {type:'application/json'});
@@ -2078,6 +2331,8 @@
             createdAt: e.createdAt || Date.now()
           }));
           if(!Array.isArray(obj.visibleTypeIds)) obj.visibleTypeIds = defaultVisibleTypes();
+          if(!obj.multi) obj.multi = { fy: obj.currentFY || Number(yearNowStr()), targetId: obj.currentStaffId, months:[obj.currentMonth || monthNowStr()] };
+
           saveState(obj);
           render();
           alert('復元しました。');
@@ -2096,15 +2351,16 @@
       render();
     }
 
-    // イベント：タブ
+    // タブ
     $('tabIndividual').addEventListener('click', ()=> setTab('individual'));
     $('tabStaffMonthly').addEventListener('click', ()=> setTab('staffMonthly'));
     $('tabAll').addEventListener('click', ()=> setTab('all'));
+    $('tabMulti').addEventListener('click', ()=> setTab('multi'));
     $('tabFY').addEventListener('click', ()=> setTab('fy'));
     $('tabFYTotal').addEventListener('click', ()=> setTab('fytotal'));
     $('tabSettings').addEventListener('click', ()=> setTab('settings'));
 
-    // 職員同期（どの選択からでも currentStaffId を更新）
+    // 職員同期
     $('staffSelect').addEventListener('change', ()=>{
       const st = loadState();
       st.currentStaffId = $('staffSelect').value;
@@ -2257,11 +2513,72 @@
       toggleVisibleType(cb.dataset.id, cb.checked);
     });
 
+    // ★複数月集計：操作
+    $('fyPrevBtnMulti').addEventListener('click', ()=> shiftFYMulti(-1));
+    $('fyNextBtnMulti').addEventListener('click', ()=> shiftFYMulti(1));
+    $('fyInputMulti').addEventListener('change', ()=>{
+      const fy = Number($('fyInputMulti').value || yearNowStr());
+      shiftFYMulti(fy - Number(loadState().multi?.fy || fy));
+    });
+
+    $('multiTargetSelect').addEventListener('change', ()=>{
+      const st = loadState();
+      st.multi = st.multi || {};
+      st.multi.targetId = $('multiTargetSelect').value || st.currentStaffId;
+      saveState(st);
+      render();
+    });
+
+    $('multiMonthChecks').addEventListener('change', (e)=>{
+      const cb = e.target.closest('input[type="checkbox"][data-month]');
+      if(!cb) return;
+      const st = loadState();
+      st.multi = st.multi || {};
+      const set = new Set((st.multi.months||[]).map(normalizeMonthKey));
+      const m = normalizeMonthKey(cb.dataset.month);
+      if(cb.checked) set.add(m); else set.delete(m);
+      st.multi.months = Array.from(set);
+      st.multi.fy = Number($('fyInputMulti').value || st.currentFY);
+      saveState(st);
+      render();
+    });
+
+    $('multiSelectAllBtn').addEventListener('click', ()=>{
+      const st = loadState();
+      const fy = Number($('fyInputMulti').value || st.currentFY);
+      st.multi = st.multi || {};
+      st.multi.fy = fy;
+      st.multi.months = fyMonthKeys(fy);
+      saveState(st);
+      render();
+    });
+    $('multiClearBtn').addEventListener('click', ()=>{
+      const st = loadState();
+      st.multi = st.multi || {};
+      st.multi.months = [];
+      saveState(st);
+      render();
+    });
+    $('multiUseCurrentBtn').addEventListener('click', ()=>{
+      const st = loadState();
+      const mk = normalizeMonthKey($('monthInput').value || monthNowStr());
+      const fy = Number($('fyInputMulti').value || st.currentFY);
+      const list = fyMonthKeys(fy);
+      st.multi = st.multi || {};
+      st.multi.fy = fy;
+      st.multi.months = list.includes(mk) ? [mk] : [list[0]];
+      saveState(st);
+      render();
+    });
+    $('exportMultiXlsxBtn').addEventListener('click', exportMultiXlsx);
+
     // Enter: add（設定入力中は除外）
     document.addEventListener('keydown', (e)=>{
       if(e.key!=='Enter') return;
       const active = document.activeElement;
       if(active && (active.closest('#panelSettings') || active.id==='newStaffName' || active.id==='newTypeName')) return;
+      // multiのチェック操作中にEnterで追加しない
+      if(active && active.closest('#panelMulti')) return;
       addEntry();
     });
 
