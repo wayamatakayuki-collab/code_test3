@@ -10,201 +10,378 @@
 
   <style>
     :root{
-      --bg:#f7f7fb;
-      --card:#ffffff;
-      --ink:#111827;
-      --muted:#6b7280;
-      --brand:#2563eb;
-      --danger:#ef4444;
-      --ok:#10b981;
-      --ring: 0 0 0 3px rgba(37,99,235,.25);
-      --radius: 1.25rem;
-      --soft:#f8fafc;
-      --line:#e5e7eb;
+      --bg: #0b1220;
+      --bg2:#0a1020;
+      --surface: rgba(255,255,255,.08);
+      --card: rgba(255,255,255,.10);
+      --card2: rgba(255,255,255,.12);
+      --stroke: rgba(255,255,255,.10);
+      --stroke2: rgba(255,255,255,.16);
+      --ink: rgba(255,255,255,.92);
+      --muted: rgba(255,255,255,.64);
+      --muted2: rgba(255,255,255,.46);
+      --brand:#60a5fa;
+      --brand2:#3b82f6;
+      --danger:#fb7185;
+      --ok:#34d399;
+      --shadow: 0 24px 60px rgba(0,0,0,.45);
+      --shadow2: 0 10px 30px rgba(0,0,0,.35);
+      --radius: 18px;
+      --radius2: 14px;
+      --ring: 0 0 0 3px rgba(96,165,250,.25);
     }
+
     *{box-sizing:border-box}
     html,body{height:100%}
     body{
       margin:0;
       font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Hiragino Kaku Gothic ProN","Yu Gothic UI","Noto Sans JP", sans-serif;
-      background: var(--bg);
       color: var(--ink);
-      padding: 20px;
+      background:
+        radial-gradient(1000px 700px at 20% -10%, rgba(59,130,246,.35), transparent 60%),
+        radial-gradient(900px 600px at 95% 0%, rgba(34,197,94,.25), transparent 55%),
+        radial-gradient(900px 700px at 70% 110%, rgba(236,72,153,.22), transparent 60%),
+        linear-gradient(180deg, var(--bg) 0%, var(--bg2) 100%);
+      padding: 18px;
     }
+
     .app{
-      width:min(1300px, 100%);
+      width:min(1400px, 100%);
       margin:0 auto;
-      background:var(--card);
-      border-radius:var(--radius);
-      box-shadow: 0 20px 40px rgba(2,6,23,.08), 0 2px 6px rgba(2,6,23,.06);
+      border:1px solid var(--stroke);
+      border-radius: 22px;
+      overflow:hidden;
+      box-shadow: var(--shadow);
+      background: rgba(255,255,255,.04);
+      backdrop-filter: blur(12px) saturate(140%);
+    }
+
+    /* Top bar */
+    header{
+      padding: 16px 18px 14px;
+      border-bottom:1px solid var(--stroke);
+      background: linear-gradient(180deg, rgba(255,255,255,.08) 0%, rgba(255,255,255,.02) 100%);
+    }
+    .topbar{
+      display:flex; gap:12px; flex-wrap:wrap; align-items:center;
+    }
+    header h1{
+      margin:0;
+      font-size: clamp(18px, 2.6vw, 22px);
+      letter-spacing: .2px;
+      font-weight: 900;
+    }
+    .subtitle{color:var(--muted); font-size:12px; margin-top:4px; line-height:1.45}
+    .badge{
+      margin-left:auto;
+      display:inline-flex; gap:8px; align-items:center;
+      padding:8px 10px;
+      border-radius:999px;
+      border:1px solid var(--stroke);
+      background: rgba(255,255,255,.06);
+      color: var(--ink);
+      font-weight:800;
+      font-size:12px;
+      white-space:nowrap;
+    }
+    .badge .dot{width:10px;height:10px;border-radius:999px;background:var(--brand)}
+    .wrap{padding: 14px 14px 18px}
+
+    /* Layout */
+    .grid{
+      display:grid;
+      grid-template-columns: 1.05fr 1fr;
+      gap: 14px;
+      align-items:start;
+    }
+
+    /* Cards */
+    .card{
+      border:1px solid var(--stroke);
+      background: rgba(255,255,255,.06);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow2);
       overflow:hidden;
     }
-    header{padding:18px 20px 12px; border-bottom:1px solid #eee;}
-    header h1{margin:0 0 6px; font-size: clamp(18px, 3.4vw, 22px);}
-    .wrap{padding: 16px 18px;}
-    .grid{display:grid; grid-template-columns: 1.05fr 1fr; gap: 16px;}
-    .card{border:1px solid #eee; border-radius:18px; padding:14px; background:#fff;}
-    .field label{font-size:12px;color:var(--muted); display:block; margin-bottom:6px}
-    input[type=number], input[type=text], input[type=date], input[type=month], input[type=number].year, select{
+    .card .cardHead{
+      padding: 12px 14px;
+      border-bottom:1px solid var(--stroke);
+      background: rgba(255,255,255,.04);
+      display:flex; gap:10px; align-items:center; flex-wrap:wrap;
+    }
+    .card .cardHead .title{
+      font-weight: 950;
+      letter-spacing:.2px;
+    }
+    .card .cardHead .meta{
+      color: var(--muted);
+      font-size: 12px;
+      margin-left:auto;
+      white-space:nowrap;
+    }
+    .card .cardBody{padding: 14px}
+
+    /* Fields */
+    .field label{
+      font-size:12px;
+      color: var(--muted);
+      display:block;
+      margin: 0 0 7px;
+      font-weight: 800;
+      letter-spacing:.15px;
+    }
+    input[type=number], input[type=text], input[type=date], input[type=month], select{
       width:100%;
-      border:1px solid var(--line);
-      border-radius:12px;
-      padding:10px 12px;
+      border:1px solid var(--stroke2);
+      border-radius: 14px;
+      padding: 11px 12px;
       font-size:16px;
       outline:none;
-      background:white;
+      color: var(--ink);
+      background: rgba(255,255,255,.06);
+      box-shadow: inset 0 0 0 1px rgba(0,0,0,.0);
     }
-    input:focus, select:focus{border-color:var(--brand); box-shadow: var(--ring);}
+    input::placeholder{color: rgba(255,255,255,.38)}
+    input:focus, select:focus{
+      border-color: rgba(96,165,250,.55);
+      box-shadow: var(--ring);
+    }
+
     .row{display:flex; gap:10px; align-items:flex-end; flex-wrap:wrap}
     .group{display:grid; grid-template-columns: repeat(3, 1fr); gap:10px; align-items:end}
-    .actions{display:flex; gap:10px; flex-wrap:wrap}
+    .divider{height:1px; background: rgba(255,255,255,.08); margin: 12px 0}
+
+    /* Buttons */
     button{
       appearance:none; border:0; cursor:pointer;
-      padding:10px 14px; border-radius:12px;
-      font-size:15px; background:var(--brand); color:white; font-weight:700
+      padding: 11px 14px;
+      border-radius: 14px;
+      font-size: 14px;
+      font-weight: 900;
+      letter-spacing:.15px;
+      color: #0b1220;
+      background: linear-gradient(180deg, #93c5fd 0%, #60a5fa 100%);
+      box-shadow: 0 10px 24px rgba(96,165,250,.18);
+      transition: transform .05s ease, filter .15s ease, opacity .15s ease;
     }
-    button.secondary{background:#e5e7eb; color:#111827; font-weight:600}
-    button.ghost{background:transparent; color:#2563eb}
-    button.danger{background:var(--danger); color:white}
-    button.ok{background:var(--ok); color:white}
-    button:disabled{opacity:.55; cursor:not-allowed}
-    .badge{display:inline-flex; gap:6px; align-items:center; background:#eef2ff; color:#3730a3; font-weight:700; padding:6px 10px; border-radius:999px; font-size:12px}
-    .pill{display:inline-flex; gap:8px; align-items:center; padding:7px 10px; border:1px solid var(--line); background:#fafafa; border-radius:999px; font-size:12px; color:#374151}
-    .result{border:1px dashed #d1d5db; border-radius:14px; padding:12px 14px; background:#fafafa}
-    .muted{color:var(--muted)}
-    .list{border:1px solid #eee; border-radius:14px; overflow:hidden}
-    table{width:100%; border-collapse:collapse; font-size:14px}
-    th, td{padding:10px 10px; border-bottom:1px solid #f1f5f9; text-align:left; vertical-align:top}
-    th{background:#f8fafc; font-weight:800; font-size:13px}
-    tr:hover td{background:#fafafa}
-    .center{text-align:center}
-    .nowrap{white-space:nowrap}
-    .tabs{display:flex; gap:8px; flex-wrap:wrap}
-    .tab{
-      border:1px solid var(--line);
-      background:#fff;
-      color:#111827;
-      font-weight:900;
-      padding:8px 10px;
-      border-radius:999px;
-      cursor:pointer;
-      font-size:13px;
+    button:hover{filter:brightness(1.03)}
+    button:active{transform: translateY(1px)}
+    button.secondary{
+      color: var(--ink);
+      background: rgba(255,255,255,.10);
+      border: 1px solid var(--stroke2);
+      box-shadow: none;
     }
-    .tab.active{
-      border-color: rgba(37,99,235,.45);
-      box-shadow: 0 0 0 3px rgba(37,99,235,.12);
-      color:#1d4ed8;
-      background:#eef2ff;
+    button.ghost{
+      color: var(--ink);
+      background: transparent;
+      border: 1px solid var(--stroke2);
+      box-shadow:none;
     }
-    .hint{font-size:12px;color:var(--muted); margin-top:6px; line-height:1.45}
-    .footer{padding:14px 18px 18px; color:var(--muted); font-size:12px}
-    .divider{height:1px;background:#eef2f7;margin:12px 0}
-    .small{font-size:12px}
-    .right{margin-left:auto}
-    .kpi{display:flex; gap:10px; align-items:stretch; flex-wrap:wrap}
-    .kpi .box{
-      border:1px solid var(--line);
-      background:#fff;
-      border-radius:14px;
-      padding:10px 12px;
-      min-width: 260px;
-      flex: 1;
+    button.ok{
+      color:#052014;
+      background: linear-gradient(180deg, #86efac 0%, #34d399 100%);
+      box-shadow: 0 10px 24px rgba(52,211,153,.18);
     }
-    .kpi .box .t{color:var(--muted); font-size:12px}
-    .kpi .box .v{font-size:18px; font-weight:950; line-height:1.25}
-    .kpi .box .sub{margin-top:8px}
-    .kpiList{margin-top:8px; display:grid; gap:6px}
+    button.danger{
+      color:#2b0a12;
+      background: linear-gradient(180deg, #fda4af 0%, #fb7185 100%);
+      box-shadow: 0 10px 24px rgba(251,113,133,.16);
+    }
+    button:disabled{opacity:.55; cursor:not-allowed; transform:none}
+
+    .actions{display:flex; gap:10px; flex-wrap:wrap}
+    .actions .full{flex:1 1 260px}
+    .miniRow{display:flex; gap:8px; flex-wrap:wrap}
+    .miniBtn{
+      padding: 9px 12px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 950;
+      color: var(--ink);
+      background: rgba(255,255,255,.08);
+      border: 1px solid var(--stroke2);
+      box-shadow:none;
+    }
+    .miniBtn:hover{filter:brightness(1.05)}
+    .miniBtn:active{transform: translateY(1px)}
+
+    /* KPI */
+    .kpiGrid{display:grid; grid-template-columns: 1fr 1fr; gap: 10px}
+    .kpiCard{
+      border:1px solid var(--stroke);
+      background: rgba(255,255,255,.06);
+      border-radius: 16px;
+      padding: 12px;
+    }
+    .kpiCard .t{color:var(--muted); font-size:12px; font-weight:900}
+    .kpiList{margin-top:10px; display:grid; gap:8px}
     .kpiItem{
       display:flex; justify-content:space-between; gap:10px; align-items:center;
-      border:1px solid var(--line);
-      background: var(--soft);
-      padding:8px 10px;
-      border-radius:12px;
-      font-size:13px;
+      border:1px solid var(--stroke);
+      background: rgba(255,255,255,.05);
+      padding: 9px 10px;
+      border-radius: 14px;
+      font-size: 13px;
     }
+    .kpiItem .left{display:flex; gap:10px; align-items:center; min-width:0}
+    .kpiItem .name{font-weight:950; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
     .kpiItem b{font-weight:950}
+    .dot2{width:10px;height:10px;border-radius:999px;background:#94a3b8; flex:0 0 auto}
+
+    .chips{display:flex; gap:8px; flex-wrap:wrap; margin-top:10px}
+    .chip{
+      display:inline-flex; gap:8px; align-items:center;
+      padding: 8px 10px;
+      border-radius:999px;
+      border:1px solid var(--stroke);
+      background: rgba(255,255,255,.05);
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 900;
+    }
+    .chip strong{color: var(--ink); font-weight: 950}
+
+    .noteBox{
+      margin-top: 10px;
+      border:1px solid var(--stroke);
+      background: rgba(255,255,255,.05);
+      border-radius: 16px;
+      padding: 10px 12px;
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    /* Tabs */
+    .tabs{
+      display:flex; gap:8px; flex-wrap:wrap;
+      padding: 10px;
+      border:1px solid var(--stroke);
+      background: rgba(255,255,255,.04);
+      border-radius: 999px;
+    }
+    .tab{
+      border:1px solid transparent;
+      background: transparent;
+      color: var(--muted);
+      font-weight: 950;
+      padding: 9px 12px;
+      border-radius: 999px;
+      cursor:pointer;
+      font-size: 13px;
+      box-shadow:none;
+    }
+    .tab:hover{color: var(--ink); border-color: var(--stroke)}
+    .tab.active{
+      color: #06122a;
+      background: linear-gradient(180deg, #93c5fd 0%, #60a5fa 100%);
+      border-color: rgba(96,165,250,.55);
+    }
+
+    /* Tables */
+    .list{
+      border:1px solid var(--stroke);
+      border-radius: 16px;
+      overflow:hidden;
+      background: rgba(255,255,255,.03);
+    }
+    .table-wrap{overflow-x:auto; -webkit-overflow-scrolling: touch;}
+    table{width:100%; border-collapse:collapse; font-size:14px}
+    th, td{
+      padding: 10px 10px;
+      border-bottom: 1px solid rgba(255,255,255,.06);
+      text-align:left;
+      vertical-align: top;
+    }
+    th{
+      background: rgba(255,255,255,.05);
+      font-weight: 950;
+      font-size: 12px;
+      color: rgba(255,255,255,.78);
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      backdrop-filter: blur(8px);
+    }
+    tr:hover td{background: rgba(255,255,255,.03)}
+    .center{text-align:center}
+    .nowrap{white-space:nowrap}
+    .small{font-size:12px}
+    .right{margin-left:auto}
+
     .tag{
       display:inline-flex; align-items:center; gap:8px;
-      border:1px solid var(--line);
-      background:#fff;
+      border:1px solid var(--stroke);
+      background: rgba(255,255,255,.04);
       border-radius:999px;
-      padding:4px 10px;
-      font-size:12px;
-      font-weight:950;
-      max-width: 220px;
+      padding: 5px 10px;
+      font-size: 12px;
+      font-weight: 950;
+      color: rgba(255,255,255,.84);
+      max-width: 240px;
     }
-    .dot{width:10px; height:10px; border-radius:999px; background:#94a3b8; flex:0 0 auto}
-    .chip{
-      display:inline-flex; align-items:center; gap:8px;
-      background:#f3f4f6; border:1px solid var(--line);
-      color:#374151; border-radius:999px; padding:4px 10px; font-size:12px;
-      margin-right:6px; margin-bottom:6px;
-    }
-    .chip strong{font-weight:950}
 
     .panelHeader{
       display:flex; gap:10px; flex-wrap:wrap; align-items:center;
-      padding:10px;
-      border:1px solid var(--line);
-      background:#fbfbfd;
-      border-radius:14px;
+      padding: 10px 12px;
+      border:1px solid var(--stroke);
+      background: rgba(255,255,255,.04);
+      border-radius: 16px;
     }
+    .pill{
+      display:inline-flex; gap:8px; align-items:center;
+      padding: 8px 10px;
+      border:1px solid var(--stroke);
+      background: rgba(255,255,255,.04);
+      border-radius: 999px;
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 900;
+    }
+    .pill b{color: var(--ink); font-weight: 950}
 
     .searchRow{
       display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end;
-      padding:10px;
-      border:1px solid var(--line);
-      background:#fff;
-      border-radius:14px;
+      padding: 10px 12px;
+      border:1px solid var(--stroke);
+      background: rgba(255,255,255,.03);
+      border-radius: 16px;
     }
-    .quick{
-      display:flex; gap:8px; flex-wrap:wrap;
-    }
-    .miniBtn{
-      padding:8px 10px;
-      border-radius:999px;
-      font-size:13px;
-      font-weight:900;
-      background:#e5e7eb;
-      color:#111827;
-    }
-    .miniBtn.primary{background:var(--brand); color:#fff}
-    .miniBtn.ghost{background:#fff; border:1px solid var(--line); color:#111827}
-    .miniBtn:disabled{opacity:.55; cursor:not-allowed}
+    .hint{font-size:12px; color: var(--muted2); margin-top:8px; line-height:1.5}
 
-    .bottom-bar {
+    .bottom-bar{
       position: sticky;
       bottom: 0;
       z-index: 10;
-      background: rgba(255,255,255,.92);
-      backdrop-filter: saturate(140%) blur(8px);
+      margin-top: 12px;
       padding: 10px;
-      border-top: 1px solid var(--line);
-      border-radius: 14px;
-      margin-top: 10px;
+      border:1px solid var(--stroke);
+      border-radius: 16px;
+      background: rgba(8,12,20,.55);
+      backdrop-filter: blur(12px) saturate(140%);
     }
 
-    .noteBox{
-      border:1px solid var(--line);
-      background:#fff;
-      border-radius:14px;
-      padding:10px 12px;
-      font-size:12px;
-      color:var(--muted);
-      line-height:1.5;
+    .footer{
+      padding: 12px 14px 14px;
+      color: var(--muted2);
+      font-size: 12px;
+      border-top: 1px solid var(--stroke);
+      background: rgba(255,255,255,.02);
     }
 
-    /* Responsive enhancement */
-    input[type="number"], input[type="text"], select, button { font-size: 16px; line-height: 1.3; }
-    .table-wrap, .table-container { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-    @media (max-width: 720px) {
-      .grid, .row, .wrap, .container, .content, .main, .columns, .flex { display: block !important; }
-      .card { width: 100% !important; max-width: 100% !important; margin: 0 0 12px 0 !important; }
-      .group { grid-template-columns: 1fr !important; }
-      .actions { display: grid !important; grid-template-columns: 1fr 1fr; gap: 10px !important; }
-      .actions .full { grid-column: 1 / -1; }
-      input, select, button { width: 100% !important; box-sizing: border-box; }
-      thead th { position: sticky; top: 0; background: #fff; }
+    /* Responsive */
+    @media (max-width: 920px){
+      .grid{grid-template-columns: 1fr; }
+      .badge{margin-left:0}
+      .kpiGrid{grid-template-columns: 1fr}
+      .tabs{border-radius: 18px}
+    }
+    @media (max-width: 720px){
+      .group{grid-template-columns: 1fr}
+      .actions{display:grid; grid-template-columns: 1fr 1fr; gap:10px}
+      .actions .full{grid-column: 1 / -1}
+      button{width:100%}
     }
   </style>
 
@@ -215,347 +392,346 @@
 <body>
   <main class="app" role="application">
     <header>
-      <div class="row" style="align-items:center">
-        <div style="flex:1; min-width:240px">
-          <h1 style="margin:0;">休暇時間計算アプリ（職員別・月別・年度別／種別カスタム）</h1>
-          <div class="muted small">クラウド不要（localStorage保存）／職員・休暇種別は「設定」タブで管理／年度は4月始まり（4〜翌3月）</div>
+      <div class="topbar">
+        <div style="min-width:260px; flex:1">
+          <h1>休暇時間計算アプリ（職員別・月別・年度別／種別カスタム）</h1>
+          <div class="subtitle">クラウド不要（localStorage）／年度は4月始まり（4〜翌3月）／Excel出力対応</div>
         </div>
-        <span class="badge">1日 = 7時間45分（465分）</span>
+        <div class="badge"><span class="dot"></span>1日 = 7時間45分（465分）</div>
       </div>
     </header>
 
     <div class="wrap grid">
-      <!-- 左：入力（見やすさ強化） -->
+      <!-- 左：入力 -->
       <section class="card">
-        <div class="row" style="align-items:flex-end">
-          <div class="field" style="flex:1; min-width:240px">
-            <label>職員（検索して選択）</label>
-            <input type="text" id="staffSearch" placeholder="例）山田 / やまだ / 事務 など" />
-            <div class="hint">下の候補から選択すると、入力先が切り替わります。</div>
-          </div>
-          <div class="field" style="min-width:220px">
-            <label>職員（選択）</label>
-            <select id="staffSelect"></select>
-          </div>
+        <div class="cardHead">
+          <div class="title">入力</div>
+          <div class="meta">対象：<span id="chipStaffTop">-</span></div>
         </div>
 
-        <div class="row" style="margin-top:10px; align-items:flex-end">
-          <div class="field" style="min-width:240px">
-            <label>休暇種別（設定で追加できます）</label>
-            <select id="leaveTypeSelect"></select>
+        <div class="cardBody">
+          <div class="row">
+            <div class="field" style="flex:1; min-width:240px">
+              <label>職員（検索）</label>
+              <input type="text" id="staffSearch" placeholder="例）山田 / さとう / 事務 など" />
+            </div>
+            <div class="field" style="min-width:240px">
+              <label>職員（選択）</label>
+              <select id="staffSelect"></select>
+            </div>
           </div>
-          <div class="field" style="min-width:180px">
-            <label>日付（この日付の月に計上）</label>
-            <input type="date" id="dateInput" />
+
+          <div class="row" style="margin-top:10px">
+            <div class="field" style="min-width:240px; flex:1">
+              <label>休暇種別</label>
+              <select id="leaveTypeSelect"></select>
+            </div>
+            <div class="field" style="min-width:180px">
+              <label>日付（この月に計上）</label>
+              <input type="date" id="dateInput" />
+            </div>
+            <div class="field" style="min-width:180px">
+              <label>表示中の月</label>
+              <input type="month" id="monthInput" />
+            </div>
+            <div class="field" style="min-width:150px">
+              <label>年度（4月始まり）</label>
+              <input type="number" id="fyInput" min="2000" max="2100" step="1" />
+            </div>
           </div>
-          <div class="field" style="min-width:180px">
-            <label>表示中の月</label>
-            <input type="month" id="monthInput" />
+
+          <div class="divider"></div>
+
+          <div class="field"><label>追加する時間</label></div>
+          <div class="group">
+            <div class="field"><label>日</label><input type="number" id="in_d" inputmode="numeric" min="0" value="0"></div>
+            <div class="field"><label>時間</label><input type="number" id="in_h" inputmode="numeric" min="0" value="0"></div>
+            <div class="field"><label>分</label><input type="number" id="in_m" inputmode="numeric" min="0" value="0"></div>
           </div>
-          <div class="field" style="min-width:140px">
-            <label>表示中の年度（4月始まり）</label>
-            <input class="year" type="number" id="fyInput" min="2000" max="2100" step="1" />
+
+          <div class="row" style="margin-top:10px; align-items:center">
+            <div class="field" style="margin:0">
+              <label style="margin-bottom:0">クイック入力</label>
+            </div>
+            <div class="miniRow right">
+              <button class="miniBtn" id="presetHalf" type="button">0.5日</button>
+              <button class="miniBtn" id="preset1d" type="button">1日</button>
+              <button class="miniBtn" id="preset1h" type="button">1時間</button>
+              <button class="miniBtn" id="preset30m" type="button">30分</button>
+              <button class="miniBtn" id="preset15m" type="button">15分</button>
+            </div>
           </div>
-        </div>
 
-        <div class="divider"></div>
-
-        <div class="field"><label>入力（追加する時間）</label></div>
-        <div class="group">
-          <div class="field"><label>日</label><input type="number" id="in_d" inputmode="numeric" min="0" value="0"></div>
-          <div class="field"><label>時間</label><input type="number" id="in_h" inputmode="numeric" min="0" value="0"></div>
-          <div class="field"><label>分</label><input type="number" id="in_m" inputmode="numeric" min="0" value="0"></div>
-        </div>
-
-        <div class="divider"></div>
-
-        <div class="row" style="align-items:center">
-          <div class="muted small">よく使う追加（ワンタップ）</div>
-          <div class="right quick">
-            <button class="miniBtn ghost" id="presetHalf">0.5日</button>
-            <button class="miniBtn ghost" id="preset1d">1日</button>
-            <button class="miniBtn ghost" id="preset1h">1時間</button>
-            <button class="miniBtn ghost" id="preset30m">30分</button>
-            <button class="miniBtn ghost" id="preset15m">15分</button>
+          <div class="bottom-bar">
+            <div class="actions">
+              <button id="addBtn" class="full" type="button">追加（この職員に合算）</button>
+              <button class="secondary" id="undoBtn" type="button">元に戻す</button>
+              <button class="secondary" id="clearInputBtn" type="button">入力クリア</button>
+              <button class="ghost" id="copyBtn" type="button">月累計をコピー</button>
+              <button class="danger full" id="resetAllBtn" type="button">全データ初期化</button>
+            </div>
+            <div class="hint">Enterキーで追加（検索・設定入力中は除外）。</div>
           </div>
-        </div>
 
-        <div class="bottom-bar">
-          <div class="actions">
-            <button id="addBtn" class="full">追加（この職員に合算）</button>
-            <button class="secondary" id="undoBtn">元に戻す</button>
-            <button class="secondary" id="clearInputBtn">入力クリア</button>
-            <button class="ghost" id="copyBtn">月累計をコピー</button>
-            <button class="danger full" id="resetAllBtn">全データ初期化</button>
-          </div>
-        </div>
-
-        <div class="result" style="margin-top:12px">
-          <div class="kpi">
-            <div class="box">
+          <div style="margin-top:12px" class="kpiGrid">
+            <div class="kpiCard">
               <div class="t">この職員の月累計（種別別）</div>
               <div id="myMonthList" class="kpiList"></div>
             </div>
-            <div class="box">
+            <div class="kpiCard">
               <div class="t">全職員の月累計（種別別）</div>
               <div id="allMonthList" class="kpiList"></div>
             </div>
           </div>
 
-          <div style="margin-top:10px">
+          <div class="chips">
             <span class="chip"><strong>月</strong> <span id="chipMonth">----</span></span>
             <span class="chip"><strong>年度</strong> <span id="chipFY">----</span></span>
-            <span class="chip"><strong>職員</strong> <span id="chipStaff">----</span></span>
             <span class="chip"><strong>保存</strong> localStorage</span>
           </div>
 
-          <div class="noteBox" style="margin-top:10px">
-            ・「年度」は <b>4月〜翌年3月</b>（例：2025年度＝2025-04〜2026-03）<br>
-            ・種別は「設定」タブで追加・名称変更・削除ができます（記録には種別IDで保持）<br>
-            ・クラウド機能はありません（端末・ブラウザごとにデータが保持されます）
+          <div class="noteBox">
+            ・年度は <b>4月〜翌年3月</b>（例：2025年度＝2025-04〜2026-03）<br>
+            ・種別は「設定」タブで追加・名称変更・削除ができます（記録は種別IDで保持）<br>
+            ・クラウド同期なし（端末／ブラウザごとに保存）— 必要に応じてExcel出力でバックアップ推奨
           </div>
         </div>
-
-        <div class="hint">Enterキーで追加（職員検索・設定入力中は除外）。</div>
       </section>
 
-      <!-- 右：一覧（個別 / 全職員 / 年度 / 設定） -->
+      <!-- 右：一覧 -->
       <section class="card">
-        <div class="row" style="justify-content:space-between; align-items:center">
+        <div class="cardHead" style="gap:10px">
+          <div class="title">一覧</div>
+          <div class="meta">月：<span id="monthLabel">----</span> ／ 年度：<span id="fyLabel">----</span></div>
+        </div>
+
+        <div class="cardBody">
           <div class="tabs" role="tablist" aria-label="表示切替">
             <button class="tab active" id="tabIndividual" data-tab="individual" type="button">個別（履歴）</button>
             <button class="tab" id="tabAll" data-tab="all" type="button">全職員（月一覧）</button>
             <button class="tab" id="tabFY" data-tab="fy" type="button">年度（一覧）</button>
             <button class="tab" id="tabSettings" data-tab="settings" type="button">設定</button>
           </div>
-          <div class="muted small">
-            月：<span id="monthLabel">----</span> ／ 年度：<span id="fyLabel">----</span>
-          </div>
-        </div>
 
-        <!-- 個別：履歴（検索強化） -->
-        <div id="panelIndividual" style="margin-top:10px">
-          <div class="panelHeader">
-            <div class="pill"><span class="muted">職員：</span><b id="indStaffName">-</b></div>
-            <div class="pill"><span class="muted">月：</span><b id="indMonth">-</b></div>
-            <div class="pill"><span class="muted">合計：</span><b id="indMonthTotal">0日 0時間 0分</b></div>
-            <div class="actions right">
-              <button class="secondary" id="exportIndividualBtn">個別CSV</button>
-              <button class="secondary" id="exportIndividualXlsxBtn">個別Excel</button>
+          <!-- 個別：履歴 -->
+          <div id="panelIndividual" style="margin-top:12px">
+            <div class="panelHeader">
+              <div class="pill"><span>職員</span><b id="indStaffName">-</b></div>
+              <div class="pill"><span>月</span><b id="indMonth">-</b></div>
+              <div class="pill"><span>合計</span><b id="indMonthTotal">0日 0時間 0分</b></div>
+              <div class="actions right">
+                <button class="secondary" id="exportIndividualBtn" type="button">個別CSV</button>
+                <button class="secondary" id="exportIndividualXlsxBtn" type="button">個別Excel</button>
+              </div>
+            </div>
+
+            <div class="searchRow" style="margin-top:10px">
+              <div class="field" style="flex:1; min-width:240px">
+                <label>履歴検索（この月）</label>
+                <input type="text" id="histQuery" placeholder="例）2026-01-15 / 年次 / 特別 / 30分 など" />
+              </div>
+              <div class="field" style="min-width:220px">
+                <label>種別で絞り込み</label>
+                <select id="histTypeFilter"></select>
+              </div>
+              <div class="actions right">
+                <button class="secondary" id="histClearBtn" type="button">検索クリア</button>
+              </div>
+            </div>
+
+            <div class="list" style="margin-top:10px">
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th class="center">#</th>
+                      <th class="nowrap">日付</th>
+                      <th class="nowrap">種別</th>
+                      <th>追加</th>
+                      <th class="nowrap">分</th>
+                      <th class="center">操作</th>
+                    </tr>
+                  </thead>
+                  <tbody id="histBody"></tbody>
+                </table>
+              </div>
+            </div>
+            <div class="hint">「削除」は該当記録のみ削除し、累計は自動再計算されます。</div>
+          </div>
+
+          <!-- 全職員：月一覧 -->
+          <div id="panelAll" style="margin-top:12px; display:none">
+            <div class="panelHeader">
+              <div class="pill"><span>月</span><b id="allMonth">-</b></div>
+              <div class="pill"><span>全職員合計</span><b id="allMonthTotal">0日 0時間 0分</b></div>
+              <div class="actions right">
+                <button class="secondary" id="exportAllBtn" type="button">全職員CSV</button>
+                <button class="secondary" id="exportAllXlsxBtn" type="button">全職員Excel</button>
+              </div>
+            </div>
+
+            <div class="list" style="margin-top:10px">
+              <div class="table-wrap">
+                <table>
+                  <thead id="allThead"></thead>
+                  <tbody id="allBody"></tbody>
+                </table>
+              </div>
+            </div>
+            <div class="hint">列は「設定」の休暇種別に連動します。</div>
+          </div>
+
+          <!-- 年度：一覧 -->
+          <div id="panelFY" style="margin-top:12px; display:none">
+            <div class="panelHeader">
+              <div class="pill"><span>年度</span><b id="fyPanelFY">-</b></div>
+              <div class="pill"><span>全職員合計</span><b id="allFYTotal">0日 0時間 0分</b></div>
+              <div class="actions right">
+                <button class="secondary" id="exportFYXlsxBtn" type="button">年度Excel</button>
+              </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="small" style="color:var(--muted); font-weight:950">全職員：年度合計（種別別）</div>
+            <div class="list" style="margin-top:8px">
+              <div class="table-wrap">
+                <table>
+                  <thead id="fyAllThead"></thead>
+                  <tbody id="fyAllBody"></tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="row" style="align-items:center">
+              <div class="small" style="color:var(--muted); font-weight:950">選択職員：月別内訳（種別別）※4月始まり</div>
+              <div class="pill right"><span>職員</span><b id="fyStaffName">-</b></div>
+            </div>
+
+            <div class="list" style="margin-top:8px">
+              <div class="table-wrap">
+                <table>
+                  <thead id="fyStaffThead"></thead>
+                  <tbody id="fyStaffBody"></tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="small" style="color:var(--muted); font-weight:950">選択職員：年度内履歴（検索）</div>
+            <div class="searchRow" style="margin-top:8px">
+              <div class="field" style="flex:1; min-width:240px">
+                <label>履歴検索（年度内）</label>
+                <input type="text" id="fyHistQuery" placeholder="例）2026-02 / 年次 / 465 / 1日 など" />
+              </div>
+              <div class="field" style="min-width:220px">
+                <label>種別で絞り込み</label>
+                <select id="fyHistTypeFilter"></select>
+              </div>
+              <div class="actions right">
+                <button class="secondary" id="fyHistClearBtn" type="button">検索クリア</button>
+              </div>
+            </div>
+
+            <div class="list" style="margin-top:10px">
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th class="center">#</th>
+                      <th class="nowrap">日付</th>
+                      <th class="nowrap">月</th>
+                      <th class="nowrap">種別</th>
+                      <th>追加</th>
+                      <th class="nowrap">分</th>
+                    </tr>
+                  </thead>
+                  <tbody id="fyHistBody"></tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="hint">
+              年度は <b>4月〜翌3月</b> を集計します。年度Excelは3シート（全職員年度合計／選択職員月別内訳／選択職員年度内履歴）。
             </div>
           </div>
 
-          <div class="searchRow" style="margin-top:10px">
-            <div class="field" style="flex:1; min-width:240px">
-              <label>履歴検索（この月内）</label>
-              <input type="text" id="histQuery" placeholder="例）2026-01-15 / 年次 / 特別 / 30分 など" />
+          <!-- 設定 -->
+          <div id="panelSettings" style="margin-top:12px; display:none">
+            <div class="panelHeader">
+              <div class="pill"><b>設定</b></div>
+              <div class="pill"><span>職員</span><b id="staffCount">0</b></div>
+              <div class="pill"><span>種別</span><b id="typeCount">0</b></div>
             </div>
-            <div class="field" style="min-width:220px">
-              <label>種別で絞り込み</label>
-              <select id="histTypeFilter"></select>
-            </div>
-            <div class="actions right">
-              <button class="secondary" id="histClearBtn">検索クリア</button>
-            </div>
-          </div>
 
-          <div class="list" style="margin-top:10px">
-            <div class="table-wrap">
-              <table>
-                <thead>
-                  <tr>
-                    <th class="center">#</th>
-                    <th class="nowrap">日付</th>
-                    <th class="nowrap">種別</th>
-                    <th>追加</th>
-                    <th class="nowrap">分</th>
-                    <th class="center">操作</th>
-                  </tr>
-                </thead>
-                <tbody id="histBody"></tbody>
-              </table>
-            </div>
-          </div>
-          <div class="hint">※「削除」は該当記録を削除します（累計は自動で再計算）。</div>
-        </div>
+            <div class="divider"></div>
 
-        <!-- 全職員：月一覧（種別別） -->
-        <div id="panelAll" style="margin-top:10px; display:none">
-          <div class="panelHeader">
-            <div class="pill"><span class="muted">月：</span><b id="allMonth">-</b></div>
-            <div class="pill"><span class="muted">全職員合計：</span><b id="allMonthTotal">0日 0時間 0分</b></div>
-            <div class="actions right">
-              <button class="secondary" id="exportAllBtn">全職員CSV</button>
-              <button class="secondary" id="exportAllXlsxBtn">全職員Excel</button>
-            </div>
-          </div>
-
-          <div class="list" style="margin-top:10px">
-            <div class="table-wrap">
-              <table>
-                <thead id="allThead"></thead>
-                <tbody id="allBody"></tbody>
-              </table>
-            </div>
-          </div>
-          <div class="hint">※列は「設定」の休暇種別に連動します。</div>
-        </div>
-
-        <!-- 年度：一覧（4月始まり / 月別内訳も4月→翌3月） -->
-        <div id="panelFY" style="margin-top:10px; display:none">
-          <div class="panelHeader">
-            <div class="pill"><span class="muted">年度：</span><b id="fyPanelFY">-</b></div>
-            <div class="pill"><span class="muted">全職員合計：</span><b id="allFYTotal">0日 0時間 0分</b></div>
-            <div class="actions right">
-              <button class="secondary" id="exportFYXlsxBtn">年度Excel</button>
-            </div>
-          </div>
-
-          <div class="divider"></div>
-
-          <div class="muted small">全職員：年度合計（種別別）</div>
-          <div class="list" style="margin-top:8px">
-            <div class="table-wrap">
-              <table>
-                <thead id="fyAllThead"></thead>
-                <tbody id="fyAllBody"></tbody>
-              </table>
-            </div>
-          </div>
-
-          <div class="divider"></div>
-
-          <div class="row" style="align-items:center">
-            <div class="muted small">選択職員：月別内訳（種別別）※4月始まり</div>
-            <div class="pill right"><span class="muted">職員：</span><b id="fyStaffName">-</b></div>
-          </div>
-
-          <div class="list" style="margin-top:8px">
-            <div class="table-wrap">
-              <table>
-                <thead id="fyStaffThead"></thead>
-                <tbody id="fyStaffBody"></tbody>
-              </table>
-            </div>
-          </div>
-
-          <div class="divider"></div>
-
-          <div class="muted small">選択職員：年度内履歴（検索）</div>
-          <div class="searchRow" style="margin-top:8px">
-            <div class="field" style="flex:1; min-width:240px">
-              <label>履歴検索（年度内）</label>
-              <input type="text" id="fyHistQuery" placeholder="例）2026-02 / 年次 / 465 / 1日 など" />
-            </div>
-            <div class="field" style="min-width:220px">
-              <label>種別で絞り込み</label>
-              <select id="fyHistTypeFilter"></select>
-            </div>
-            <div class="actions right">
-              <button class="secondary" id="fyHistClearBtn">検索クリア</button>
-            </div>
-          </div>
-
-          <div class="list" style="margin-top:10px">
-            <div class="table-wrap">
-              <table>
-                <thead>
-                  <tr>
-                    <th class="center">#</th>
-                    <th class="nowrap">日付</th>
-                    <th class="nowrap">月</th>
-                    <th class="nowrap">種別</th>
-                    <th>追加</th>
-                    <th class="nowrap">分</th>
-                  </tr>
-                </thead>
-                <tbody id="fyHistBody"></tbody>
-              </table>
-            </div>
-          </div>
-
-          <div class="hint">
-            ・年度は <b>4月〜翌3月</b> を集計します。<br>
-            ・年度Excelは「全職員 年度合計」「選択職員 月別内訳」「選択職員 年度内履歴」の3シートです。
-          </div>
-        </div>
-
-        <!-- 設定：職員登録／種別追加（後から追加可能） -->
-        <div id="panelSettings" style="margin-top:10px; display:none">
-          <div class="panelHeader">
-            <div class="pill"><b>設定</b></div>
-            <div class="pill"><span class="muted">職員：</span><b id="staffCount">0</b></div>
-            <div class="pill"><span class="muted">種別：</span><b id="typeCount">0</b></div>
-          </div>
-
-          <div class="divider"></div>
-
-          <div class="row" style="align-items:flex-start">
-            <div style="flex:1; min-width:280px">
-              <div class="muted small" style="font-weight:900; margin-bottom:8px">職員の登録（最大50）</div>
-              <div class="searchRow">
-                <div class="field" style="flex:1; min-width:220px">
-                  <label>追加する職員名</label>
-                  <input type="text" id="newStaffName" placeholder="例）山田 太郎" maxlength="30" />
+            <div class="row" style="align-items:flex-start">
+              <div style="flex:1; min-width:280px">
+                <div class="small" style="color:var(--muted); font-weight:950; margin-bottom:8px">職員の登録（最大50）</div>
+                <div class="searchRow">
+                  <div class="field" style="flex:1; min-width:220px">
+                    <label>追加する職員名</label>
+                    <input type="text" id="newStaffName" placeholder="例）山田 太郎" maxlength="30" />
+                  </div>
+                  <button class="ok" id="addStaffBtn" type="button" style="min-width:160px">職員を登録</button>
                 </div>
-                <button class="ok" id="addStaffBtn" style="min-width:160px">職員を登録</button>
+
+                <div class="list" style="margin-top:10px">
+                  <div class="table-wrap">
+                    <table>
+                      <thead>
+                        <tr>
+                          <th class="center">#</th>
+                          <th>職員名（名称変更可）</th>
+                          <th class="center nowrap">操作</th>
+                        </tr>
+                      </thead>
+                      <tbody id="staffBody"></tbody>
+                    </table>
+                  </div>
+                </div>
+                <div class="hint">最低1人は必要。削除するとその職員の記録も削除されます。</div>
               </div>
 
-              <div class="list" style="margin-top:10px">
-                <div class="table-wrap">
-                  <table>
-                    <thead>
-                      <tr>
-                        <th class="center">#</th>
-                        <th>職員名（名称変更可）</th>
-                        <th class="center nowrap">操作</th>
-                      </tr>
-                    </thead>
-                    <tbody id="staffBody"></tbody>
-                  </table>
+              <div style="flex:1; min-width:280px">
+                <div class="small" style="color:var(--muted); font-weight:950; margin-bottom:8px">休暇種別の管理（後から追加できます）</div>
+                <div class="searchRow">
+                  <div class="field" style="flex:1; min-width:220px">
+                    <label>追加する種別名</label>
+                    <input type="text" id="newTypeName" placeholder="例）介護休暇 / 病気休暇 など" maxlength="40" />
+                  </div>
+                  <button class="ok" id="addTypeBtn" type="button" style="min-width:160px">種別を追加</button>
                 </div>
+
+                <div class="list" style="margin-top:10px">
+                  <div class="table-wrap">
+                    <table>
+                      <thead>
+                        <tr>
+                          <th class="center">#</th>
+                          <th>種別名（名称変更可）</th>
+                          <th class="center nowrap">操作</th>
+                        </tr>
+                      </thead>
+                      <tbody id="typeBody"></tbody>
+                    </table>
+                  </div>
+                </div>
+                <div class="hint">初期で「年次休暇」「特別休暇」。削除すると該当記録は「不明」扱い（データ自体は残ります）。</div>
               </div>
-              <div class="hint">※最低1人は必要です。削除するとその職員の記録も削除されます。</div>
             </div>
 
-            <div style="flex:1; min-width:280px">
-              <div class="muted small" style="font-weight:900; margin-bottom:8px">休暇種別の管理（後から追加できます）</div>
-              <div class="searchRow">
-                <div class="field" style="flex:1; min-width:220px">
-                  <label>追加する種別名</label>
-                  <input type="text" id="newTypeName" placeholder="例）介護休暇 / 病気休暇 など" maxlength="40" />
-                </div>
-                <button class="ok" id="addTypeBtn" style="min-width:160px">種別を追加</button>
-              </div>
-
-              <div class="list" style="margin-top:10px">
-                <div class="table-wrap">
-                  <table>
-                    <thead>
-                      <tr>
-                        <th class="center">#</th>
-                        <th>種別名（名称変更可）</th>
-                        <th class="center nowrap">操作</th>
-                      </tr>
-                    </thead>
-                    <tbody id="typeBody"></tbody>
-                  </table>
-                </div>
-              </div>
-              <div class="hint">※「年次休暇」「特別休暇」は初期で入っています（削除可）。削除するとその種別の記録は「不明」として扱われます。</div>
+            <div class="noteBox">
+              <b style="color:var(--ink)">おすすめ運用</b><br>
+              ・最初に職員と種別を登録 → 以後入力が速くなります。<br>
+              ・月末は「全職員Excel」、年度末は「年度Excel」で保管すると安心です。
             </div>
           </div>
 
-          <div class="divider"></div>
-
-          <div class="row">
-            <div class="noteBox" style="flex:1">
-              <b style="color:#111827">おすすめ運用</b><br>
-              ・最初に職員と種別を登録 → 以後は入力が早くなります。<br>
-              ・月末に「全職員Excel」／年度末に「年度Excel」を出力して保管すると安心です。<br>
-              ・このアプリはクラウド同期をしません（端末移行時はExcel出力でバックアップ推奨）。
-            </div>
-          </div>
         </div>
       </section>
     </div>
@@ -569,15 +745,15 @@
     // =========================
     const DAY_MIN = 465;
 
-    // 旧 v1/v2/v3 を同じ key で保持してきた前提（機能削除なしで拡張）
+    // 旧 v1 の互換読み込み用
     const KEY_V1 = 'worktime_accum_v1';
-    const KEY_MAIN = 'worktime_accum_staff_v2'; // 既存キー維持
+    // メイン（職員/種別/履歴）
+    const KEY_MAIN = 'worktime_accum_staff_v2';
     const VERSION = 4;
 
     const $ = (id)=>document.getElementById(id);
     const toInt = (v)=>{ const n=parseInt(v,10); return isNaN(n)?0:Math.max(0,n); };
     const totalMinutes = (d,h,m)=> toInt(d)*DAY_MIN + toInt(h)*60 + toInt(m);
-
     const normalize = (t)=>{
       const d = Math.floor(t / DAY_MIN);
       const rem = t - d*DAY_MIN;
@@ -620,7 +796,6 @@
         .replaceAll('"','&quot;')
         .replaceAll("'","&#039;");
     }
-
     function normalizeText(s){
       return String(s||'')
         .toLowerCase()
@@ -628,19 +803,22 @@
         .replace(/[ぁ-ん]/g, (ch)=> String.fromCharCode(ch.charCodeAt(0)+0x60)); // ひら→カナ(ゆる)
     }
 
-    // =========================
-    // データモデル（v4）
-    // state = {
-    //   version:4,
-    //   staff:[{id,name}],
-    //   leaveTypes:[{id,name}],
-    //   entries:[{id, staffId, date, month, leaveTypeId, d,h,m, delta, createdAt}],
-    //   currentStaffId, currentMonth, currentFY, currentLeaveTypeId,
-    //   currentTab, histQuery, histTypeFilter, staffSearch
-    // }
-    // =========================
+    // ★バグ対策：YYYY-M / YYYY-MM を必ず YYYY-MM に揃える（年度合計が0になる原因になりやすい）
+    function normalizeMonthKey(m){
+      if(!m) return '';
+      const s = String(m).trim();
+      const m1 = s.match(/^(\d{4})-(\d{1,2})$/);
+      if(m1){
+        const y = m1[1];
+        const mm = String(Number(m1[2])).padStart(2,'0');
+        return `${y}-${mm}`;
+      }
+      const m2 = s.match(/^(\d{4})-(\d{2})/);
+      if(m2) return `${m2[1]}-${m2[2]}`;
+      return s;
+    }
+
     function defaultTypes(){
-      // idは固定（過去互換のため）
       return [
         {id:'annual', name:'年次休暇'},
         {id:'special', name:'特別休暇'}
@@ -648,14 +826,13 @@
     }
 
     function loadState(){
-      // 1) main key から読み込み（v2/v3/v4）
+      // 1) メインキー
       try{
         const raw = localStorage.getItem(KEY_MAIN);
         if(raw){
           const obj = JSON.parse(raw);
 
           if(obj && (obj.version===2 || obj.version===3 || obj.version===4) && Array.isArray(obj.staff) && Array.isArray(obj.entries)){
-            // staff最低1名
             if(obj.staff.length===0){
               obj.staff = [{id: uuid(), name:'（未設定）'}];
             }
@@ -663,31 +840,25 @@
               obj.currentStaffId = obj.staff[0].id;
             }
 
-            // v4へ段階移行（機能削除なし）
             if(obj.version===2){
-              // v2: leaveType未導入 → 全て年次
               obj.leaveTypes = defaultTypes();
               obj.entries = obj.entries.map(e=>({
                 ...e,
-                month: e.month || (e.date ? monthFromDate(e.date) : monthNowStr()),
+                month: normalizeMonthKey(e.month || (e.date ? monthFromDate(e.date) : monthNowStr())),
                 leaveTypeId: 'annual'
               }));
               obj.version = 4;
             } else if(obj.version===3){
-              // v3: leaveType(annual/special) → leaveTypeIdへ
               obj.leaveTypes = obj.leaveTypes && Array.isArray(obj.leaveTypes) ? obj.leaveTypes : defaultTypes();
-              const haveAnnual = obj.leaveTypes.some(t=>t.id==='annual');
-              const haveSpecial = obj.leaveTypes.some(t=>t.id==='special');
-              if(!haveAnnual) obj.leaveTypes.unshift({id:'annual', name:'年次休暇'});
-              if(!haveSpecial) obj.leaveTypes.push({id:'special', name:'特別休暇'});
+              if(!obj.leaveTypes.some(t=>t.id==='annual')) obj.leaveTypes.unshift({id:'annual', name:'年次休暇'});
+              if(!obj.leaveTypes.some(t=>t.id==='special')) obj.leaveTypes.push({id:'special', name:'特別休暇'});
               obj.entries = obj.entries.map(e=>({
                 ...e,
-                month: e.month || (e.date ? monthFromDate(e.date) : monthNowStr()),
+                month: normalizeMonthKey(e.month || (e.date ? monthFromDate(e.date) : monthNowStr())),
                 leaveTypeId: e.leaveTypeId || e.leaveType || 'annual'
               }));
               obj.version = 4;
             } else {
-              // v4: leaveTypes/leaveTypeId を補完
               if(!Array.isArray(obj.leaveTypes) || obj.leaveTypes.length===0){
                 obj.leaveTypes = defaultTypes();
               }
@@ -697,17 +868,19 @@
               let changed = false;
               obj.entries = obj.entries.map(e=>{
                 let x = e;
-                if(!x.month && x.date){ x = {...x, month: monthFromDate(x.date)}; changed = true; }
+                const nm = normalizeMonthKey(x.month || (x.date ? monthFromDate(x.date) : ''));
+                if(nm && nm !== x.month){ x = {...x, month: nm}; changed = true; }
+                if(!x.month && nm){ x = {...x, month: nm}; changed = true; }
                 if(!x.leaveTypeId){ x = {...x, leaveTypeId: 'annual'}; changed = true; }
                 return x;
               });
               if(changed) obj.version = 4;
             }
 
-            // defaults
             if(!obj.currentTab) obj.currentTab = 'individual';
             if(!obj.currentMonth) obj.currentMonth = monthNowStr();
-            if(!obj.currentFY) obj.currentFY = Number(yearNowStr()); // 年度(4月始まり)の基準年
+            obj.currentMonth = normalizeMonthKey(obj.currentMonth);
+            if(!obj.currentFY) obj.currentFY = Number(yearNowStr());
             if(!obj.currentLeaveTypeId) obj.currentLeaveTypeId = 'annual';
             if(obj.staffSearch==null) obj.staffSearch = '';
             if(obj.histQuery==null) obj.histQuery = '';
@@ -721,7 +894,7 @@
         }
       }catch(e){}
 
-      // 2) v1 があれば移行（今日・年次として）
+      // 2) v1 があれば移行
       try{
         const raw1 = localStorage.getItem(KEY_V1);
         if(raw1){
@@ -729,8 +902,8 @@
           if(v1 && typeof v1.sum==='number' && Array.isArray(v1.items)){
             const staffId = uuid();
             const date = todayStr();
-            const month = monthFromDate(date);
-            const fy = Number(yearFromDate(date)); // とりあえず当年
+            const month = normalizeMonthKey(monthFromDate(date));
+            const fy = Number(yearFromDate(date));
             const entries = v1.items.map((it, idx)=>({
               id: it.id || uuid(),
               staffId,
@@ -798,37 +971,38 @@
       return st.leaveTypes.find(t=>t.id===id) || {id, name:'（不明）'};
     }
     function typeColor(id){
-      // UI用の簡易カラー（固定＆安定）
-      if(id==='annual') return '#4f46e5';
-      if(id==='special') return '#0891b2';
-      // hash
+      if(id==='annual') return '#60a5fa';
+      if(id==='special') return '#34d399';
       let h = 0;
       for(const c of String(id)) h = (h*31 + c.charCodeAt(0)) >>> 0;
       const hue = h % 360;
-      return `hsl(${hue} 60% 45%)`;
+      return `hsl(${hue} 70% 60%)`;
     }
     function typeBadgeHtml(st, id){
       const t = getType(st, id);
       const color = typeColor(id);
-      return `<span class="tag" title="${escapeHtml(t.name)}"><span class="dot" style="background:${color}"></span>${escapeHtml(t.name)}</span>`;
+      return `<span class="tag" title="${escapeHtml(t.name)}"><span class="dot2" style="background:${color}"></span>${escapeHtml(t.name)}</span>`;
     }
 
     // =========================
     // 集計
     // =========================
     function entriesForMonth(st, staffId, month){
+      const mk = normalizeMonthKey(month);
       return st.entries
-        .filter(e=> e.staffId===staffId && e.month===month)
-        .sort((a,b)=> (b.createdAt||0) - (a.createdAt||0)); // 新しい順で見やすく
+        .filter(e=> e.staffId===staffId && normalizeMonthKey(e.month)===mk)
+        .sort((a,b)=> (b.createdAt||0) - (a.createdAt||0));
     }
     function totalForMonthType(st, staffId, month, typeId){
+      const mk = normalizeMonthKey(month);
       return st.entries
-        .filter(e=> e.staffId===staffId && e.month===month && (e.leaveTypeId||'annual')===typeId)
+        .filter(e=> e.staffId===staffId && normalizeMonthKey(e.month)===mk && (e.leaveTypeId||'annual')===typeId)
         .reduce((acc,e)=> acc + toInt(e.delta), 0);
     }
     function totalForMonthAllTypes(st, staffId, month){
+      const mk = normalizeMonthKey(month);
       return st.entries
-        .filter(e=> e.staffId===staffId && e.month===month)
+        .filter(e=> e.staffId===staffId && normalizeMonthKey(e.month)===mk)
         .reduce((acc,e)=> acc + toInt(e.delta), 0);
     }
     function totalAllStaffMonthType(st, month, typeId){
@@ -842,41 +1016,30 @@
     function fyMonthKeys(fy){
       const y = Number(fy);
       const months = [];
-      for(let m=4;m<=12;m++){
-        months.push(`${y}-${String(m).padStart(2,'0')}`);
-      }
-      for(let m=1;m<=3;m++){
-        months.push(`${y+1}-${String(m).padStart(2,'0')}`);
-      }
+      for(let m=4;m<=12;m++) months.push(`${y}-${String(m).padStart(2,'0')}`);
+      for(let m=1;m<=3;m++) months.push(`${y+1}-${String(m).padStart(2,'0')}`);
       return months;
-    }
-    function isMonthInFY(month, fy){
-      const keys = fyMonthKeys(fy);
-      return keys.includes(month);
     }
     function entriesForFY(st, staffId, fy){
       const keys = new Set(fyMonthKeys(fy));
       return st.entries
-        .filter(e=> e.staffId===staffId && keys.has(e.month))
+        .filter(e=> e.staffId===staffId && keys.has(normalizeMonthKey(e.month)))
         .sort((a,b)=> (b.createdAt||0) - (a.createdAt||0));
     }
     function totalForFYType(st, staffId, fy, typeId){
       const keys = new Set(fyMonthKeys(fy));
       return st.entries
-        .filter(e=> e.staffId===staffId && keys.has(e.month) && (e.leaveTypeId||'annual')===typeId)
+        .filter(e=> e.staffId===staffId && keys.has(normalizeMonthKey(e.month)) && (e.leaveTypeId||'annual')===typeId)
         .reduce((acc,e)=> acc + toInt(e.delta), 0);
     }
     function totalForFYAllTypes(st, staffId, fy){
       const keys = new Set(fyMonthKeys(fy));
       return st.entries
-        .filter(e=> e.staffId===staffId && keys.has(e.month))
+        .filter(e=> e.staffId===staffId && keys.has(normalizeMonthKey(e.month)))
         .reduce((acc,e)=> acc + toInt(e.delta), 0);
     }
     function totalAllStaffFYAllTypes(st, fy){
       return st.staff.reduce((acc,s)=> acc + totalForFYAllTypes(st, s.id, fy), 0);
-    }
-    function totalAllStaffFYType(st, fy, typeId){
-      return st.staff.reduce((acc,s)=> acc + totalForFYType(st, s.id, fy, typeId), 0);
     }
 
     // =========================
@@ -905,138 +1068,6 @@
     // =========================
     // 描画
     // =========================
-    function render(){
-      const st = loadState();
-
-      // 入力デフォルト
-      if(!$('dateInput').value) $('dateInput').value = todayStr();
-      if(!$('monthInput').value) $('monthInput').value = st.currentMonth || monthNowStr();
-      if(!$('fyInput').value) $('fyInput').value = st.currentFY || Number(yearNowStr());
-      if($('staffSearch').value !== st.staffSearch) $('staffSearch').value = st.staffSearch || '';
-      if($('histQuery').value !== st.histQuery) $('histQuery').value = st.histQuery || '';
-      if($('fyHistQuery').value !== st.fyHistQuery) $('fyHistQuery').value = st.fyHistQuery || '';
-
-      const month = $('monthInput').value || monthNowStr();
-      const fy = Number($('fyInput').value || yearNowStr());
-
-      st.currentMonth = month;
-      st.currentFY = fy;
-      saveState(st);
-
-      $('monthLabel').textContent = month;
-      $('fyLabel').textContent = `${fy}年度`;
-
-      // staff select
-      $('staffSelect').innerHTML = '';
-      st.staff.forEach(s=>{
-        const opt = document.createElement('option');
-        opt.value = s.id;
-        opt.textContent = s.name;
-        if(s.id===st.currentStaffId) opt.selected = true;
-        $('staffSelect').appendChild(opt);
-      });
-      const staff = st.staff.find(x=>x.id===st.currentStaffId) || st.staff[0];
-      const staffId = staff.id;
-
-      // leave type select
-      $('leaveTypeSelect').innerHTML = '';
-      st.leaveTypes.forEach(t=>{
-        const opt = document.createElement('option');
-        opt.value = t.id;
-        opt.textContent = t.name;
-        $('leaveTypeSelect').appendChild(opt);
-      });
-      if(!st.leaveTypes.some(t=>t.id===st.currentLeaveTypeId)){
-        st.currentLeaveTypeId = st.leaveTypes[0]?.id || 'annual';
-        saveState(st);
-      }
-      $('leaveTypeSelect').value = st.currentLeaveTypeId;
-
-      // filter selects (history)
-      fillTypeFilterSelect('histTypeFilter', st, st.histTypeFilter);
-      fillTypeFilterSelect('fyHistTypeFilter', st, st.fyHistTypeFilter);
-
-      // chips
-      $('chipMonth').textContent = month;
-      $('chipFY').textContent = `${fy}年度`;
-      $('chipStaff').textContent = staff.name;
-
-      // KPI lists
-      renderKpiLists(st, staffId, month);
-
-      // Left staff quick search suggestions (update select list based on search)
-      applyStaffSearchToSelect(st);
-
-      // Panel: Individual
-      $('indStaffName').textContent = staff.name;
-      $('indMonth').textContent = month;
-      $('indMonthTotal').textContent = fmtMin(totalForMonthAllTypes(st, staffId, month));
-
-      renderIndividualHistory(st, staffId, month);
-
-      // Panel: All month
-      $('allMonth').textContent = month;
-      $('allMonthTotal').textContent = fmtMin(totalAllStaffMonthAllTypes(st, month));
-      renderAllMonthTable(st, month);
-
-      // Panel: FY
-      $('fyPanelFY').textContent = `${fy}年度`;
-      $('fyStaffName').textContent = staff.name;
-      $('allFYTotal').textContent = fmtMin(totalAllStaffFYAllTypes(st, fy));
-      renderAllFYTable(st, fy);
-      renderFYStaffMonthlyBreakdown(st, staffId, fy); // ★4月始まり
-      renderFYHistory(st, staffId, fy);
-
-      // Panel: Settings
-      $('staffCount').textContent = `${st.staff.length} / 50`;
-      $('typeCount').textContent = `${st.leaveTypes.length}`;
-      renderSettingsStaff(st);
-      renderSettingsTypes(st);
-
-      // enable/disable undo: staff has any entry at all
-      $('undoBtn').disabled = !st.entries.some(e=>e.staffId===staffId);
-
-      // tab reflect
-      setTab(st.currentTab || 'individual', false);
-    }
-
-    function renderKpiLists(st, staffId, month){
-      const myWrap = $('myMonthList');
-      const allWrap = $('allMonthList');
-      myWrap.innerHTML = '';
-      allWrap.innerHTML = '';
-
-      // staff month totals per type
-      st.leaveTypes.forEach(t=>{
-        const v = totalForMonthType(st, staffId, month, t.id);
-        const item = document.createElement('div');
-        item.className = 'kpiItem';
-        item.innerHTML = `
-          <div style="display:flex; gap:10px; align-items:center; min-width:0">
-            <span class="dot" style="background:${typeColor(t.id)}"></span>
-            <div style="font-weight:950; white-space:nowrap; overflow:hidden; text-overflow:ellipsis">${escapeHtml(t.name)}</div>
-          </div>
-          <b>${fmtMin(v)}</b>
-        `;
-        myWrap.appendChild(item);
-      });
-
-      // all staff month totals per type
-      st.leaveTypes.forEach(t=>{
-        const v = totalAllStaffMonthType(st, month, t.id);
-        const item = document.createElement('div');
-        item.className = 'kpiItem';
-        item.innerHTML = `
-          <div style="display:flex; gap:10px; align-items:center; min-width:0">
-            <span class="dot" style="background:${typeColor(t.id)}"></span>
-            <div style="font-weight:950; white-space:nowrap; overflow:hidden; text-overflow:ellipsis">${escapeHtml(t.name)}</div>
-          </div>
-          <b>${fmtMin(v)}</b>
-        `;
-        allWrap.appendChild(item);
-      });
-    }
-
     function fillTypeFilterSelect(selectId, st, selected){
       const sel = $(selectId);
       sel.innerHTML = '';
@@ -1055,21 +1086,50 @@
 
     function applyStaffSearchToSelect(st){
       const q = (st.staffSearch || '').trim();
-      if(!q){
-        // 何もしない（全員選べる）
-        return;
-      }
+      if(!q) return;
       const qn = normalizeText(q);
       const match = st.staff.find(s=> normalizeText(s.name).includes(qn));
       if(match){
-        // 候補を先頭に持ってくる（視認性のため）
         const sel = $('staffSelect');
         const opts = Array.from(sel.options);
         const idx = opts.findIndex(o=>o.value===match.id);
-        if(idx>0){
-          sel.insertBefore(opts[idx], opts[0]);
-        }
+        if(idx>0) sel.insertBefore(opts[idx], opts[0]);
       }
+    }
+
+    function renderKpiLists(st, staffId, month){
+      const myWrap = $('myMonthList');
+      const allWrap = $('allMonthList');
+      myWrap.innerHTML = '';
+      allWrap.innerHTML = '';
+
+      st.leaveTypes.forEach(t=>{
+        const v = totalForMonthType(st, staffId, month, t.id);
+        const item = document.createElement('div');
+        item.className = 'kpiItem';
+        item.innerHTML = `
+          <div class="left">
+            <span class="dot2" style="background:${typeColor(t.id)}"></span>
+            <div class="name">${escapeHtml(t.name)}</div>
+          </div>
+          <b>${fmtMin(v)}</b>
+        `;
+        myWrap.appendChild(item);
+      });
+
+      st.leaveTypes.forEach(t=>{
+        const v = totalAllStaffMonthType(st, month, t.id);
+        const item = document.createElement('div');
+        item.className = 'kpiItem';
+        item.innerHTML = `
+          <div class="left">
+            <span class="dot2" style="background:${typeColor(t.id)}"></span>
+            <div class="name">${escapeHtml(t.name)}</div>
+          </div>
+          <b>${fmtMin(v)}</b>
+        `;
+        allWrap.appendChild(item);
+      });
     }
 
     function renderIndividualHistory(st, staffId, month){
@@ -1106,7 +1166,7 @@
           <td>${fmt(toInt(e.d),toInt(e.h),toInt(e.m))}</td>
           <td class="nowrap">${toInt(e.delta)}</td>
           <td class="center">
-            <button class="secondary" data-act="delete" data-id="${e.id}">削除</button>
+            <button class="secondary" data-act="delete" data-id="${e.id}" type="button">削除</button>
           </td>
         `;
         tbody.appendChild(tr);
@@ -1114,35 +1174,31 @@
     }
 
     function renderAllMonthTable(st, month){
-      // thead (dynamic by types)
       const thead = $('allThead');
       const cols = st.leaveTypes;
       thead.innerHTML = `
         <tr>
           <th class="center">#</th>
           <th>職員名</th>
-          ${cols.map(t=> `<th class="nowrap">${escapeHtml(t.name)}（表示）</th><th class="nowrap muted">${escapeHtml(t.name)}（分）</th>`).join('')}
+          ${cols.map(t=> `<th class="nowrap">${escapeHtml(t.name)}（表示）</th><th class="nowrap">${escapeHtml(t.name)}（分）</th>`).join('')}
           <th class="nowrap">合計（表示）</th>
-          <th class="nowrap muted">合計（分）</th>
+          <th class="nowrap">合計（分）</th>
         </tr>
       `;
 
       const body = $('allBody');
       body.innerHTML = '';
       st.staff.forEach((s, idx)=>{
-        const parts = cols.map(t=>{
-          const v = totalForMonthType(st, s.id, month, t.id);
-          return {id:t.id, name:t.name, v};
-        });
-        const sum = parts.reduce((acc,x)=>acc+x.v,0);
+        const parts = cols.map(t=> totalForMonthType(st, s.id, month, t.id));
+        const sum = parts.reduce((acc,x)=>acc+x,0);
 
         const tr = document.createElement('tr');
         tr.innerHTML = `
           <td class="center">${idx+1}</td>
           <td style="font-weight:950">${escapeHtml(s.name)}</td>
-          ${parts.map(p=> `<td class="nowrap">${fmtMin(p.v)}</td><td class="nowrap muted">${p.v}</td>`).join('')}
+          ${parts.map(v=> `<td class="nowrap">${fmtMin(v)}</td><td class="nowrap">${v}</td>`).join('')}
           <td class="nowrap" style="font-weight:950">${fmtMin(sum)}</td>
-          <td class="nowrap muted">${sum}</td>
+          <td class="nowrap">${sum}</td>
         `;
         body.appendChild(tr);
       });
@@ -1155,64 +1211,56 @@
         <tr>
           <th class="center">#</th>
           <th>職員名</th>
-          ${cols.map(t=> `<th class="nowrap">${escapeHtml(t.name)}（表示）</th><th class="nowrap muted">${escapeHtml(t.name)}（分）</th>`).join('')}
+          ${cols.map(t=> `<th class="nowrap">${escapeHtml(t.name)}（表示）</th><th class="nowrap">${escapeHtml(t.name)}（分）</th>`).join('')}
           <th class="nowrap">合計（表示）</th>
-          <th class="nowrap muted">合計（分）</th>
+          <th class="nowrap">合計（分）</th>
         </tr>
       `;
 
       const body = $('fyAllBody');
       body.innerHTML = '';
       st.staff.forEach((s, idx)=>{
-        const parts = cols.map(t=>{
-          const v = totalForFYType(st, s.id, fy, t.id);
-          return {id:t.id, name:t.name, v};
-        });
-        const sum = parts.reduce((acc,x)=>acc+x.v,0);
+        const parts = cols.map(t=> totalForFYType(st, s.id, fy, t.id));
+        const sum = parts.reduce((acc,x)=>acc+x,0);
 
         const tr = document.createElement('tr');
         tr.innerHTML = `
           <td class="center">${idx+1}</td>
           <td style="font-weight:950">${escapeHtml(s.name)}</td>
-          ${parts.map(p=> `<td class="nowrap">${fmtMin(p.v)}</td><td class="nowrap muted">${p.v}</td>`).join('')}
+          ${parts.map(v=> `<td class="nowrap">${fmtMin(v)}</td><td class="nowrap">${v}</td>`).join('')}
           <td class="nowrap" style="font-weight:950">${fmtMin(sum)}</td>
-          <td class="nowrap muted">${sum}</td>
+          <td class="nowrap">${sum}</td>
         `;
         body.appendChild(tr);
       });
     }
 
     function renderFYStaffMonthlyBreakdown(st, staffId, fy){
-      // ★4月始まりの月別内訳（種別別）
       const thead = $('fyStaffThead');
       const cols = st.leaveTypes;
       thead.innerHTML = `
         <tr>
           <th class="center nowrap">月</th>
-          ${cols.map(t=> `<th class="nowrap">${escapeHtml(t.name)}（表示）</th><th class="nowrap muted">${escapeHtml(t.name)}（分）</th>`).join('')}
+          ${cols.map(t=> `<th class="nowrap">${escapeHtml(t.name)}（表示）</th><th class="nowrap">${escapeHtml(t.name)}（分）</th>`).join('')}
           <th class="nowrap">合計（表示）</th>
-          <th class="nowrap muted">合計（分）</th>
+          <th class="nowrap">合計（分）</th>
         </tr>
       `;
 
       const body = $('fyStaffBody');
       body.innerHTML = '';
-      const months = fyMonthKeys(fy); // 4→翌3
+      const months = fyMonthKeys(fy);
 
       months.forEach(mkey=>{
-        const parts = cols.map(t=>{
-          const v = totalForMonthType(st, staffId, mkey, t.id);
-          return {id:t.id, v};
-        });
-        const sum = parts.reduce((acc,x)=>acc+x.v,0);
-        const label = mkey; // YYYY-MM 表示（間違いが起きにくい）
+        const parts = cols.map(t=> totalForMonthType(st, staffId, mkey, t.id));
+        const sum = parts.reduce((acc,x)=>acc+x,0);
 
         const tr = document.createElement('tr');
         tr.innerHTML = `
-          <td class="center nowrap" style="font-weight:950">${escapeHtml(label)}</td>
-          ${parts.map(p=> `<td class="nowrap">${fmtMin(p.v)}</td><td class="nowrap muted">${p.v}</td>`).join('')}
+          <td class="center nowrap" style="font-weight:950">${escapeHtml(mkey)}</td>
+          ${parts.map(v=> `<td class="nowrap">${fmtMin(v)}</td><td class="nowrap">${v}</td>`).join('')}
           <td class="nowrap" style="font-weight:950">${fmtMin(sum)}</td>
-          <td class="nowrap muted">${sum}</td>
+          <td class="nowrap">${sum}</td>
         `;
         body.appendChild(tr);
       });
@@ -1247,7 +1295,7 @@
         tr.innerHTML = `
           <td class="center">${i+1}</td>
           <td class="nowrap">${escapeHtml(e.date||'')}</td>
-          <td class="nowrap">${escapeHtml(e.month||'')}</td>
+          <td class="nowrap">${escapeHtml(normalizeMonthKey(e.month)||'')}</td>
           <td class="nowrap">${typeBadgeHtml(st, typeId)}</td>
           <td>${fmt(toInt(e.d),toInt(e.h),toInt(e.m))}</td>
           <td class="nowrap">${toInt(e.delta)}</td>
@@ -1256,9 +1304,6 @@
       });
     }
 
-    // =========================
-    // 設定タブ描画
-    // =========================
     function renderSettingsStaff(st){
       const tbody = $('staffBody');
       tbody.innerHTML = '';
@@ -1269,11 +1314,11 @@
           <td class="center">${idx+1}</td>
           <td>
             <input type="text" value="${escapeHtml(s.name)}" data-staff-name="${s.id}" />
-            <div class="muted small">ID: ${escapeHtml(String(s.id).slice(0,8))}...</div>
+            <div class="small" style="color:var(--muted2); margin-top:6px">ID: ${escapeHtml(String(s.id).slice(0,8))}...</div>
           </td>
           <td class="center nowrap">
-            <button class="secondary" data-act="savestaff" data-id="${s.id}">保存</button>
-            <button class="danger" data-act="delstaff" data-id="${s.id}" ${delDisabled?'disabled':''}>削除</button>
+            <button class="secondary" data-act="savestaff" data-id="${s.id}" type="button">保存</button>
+            <button class="danger" data-act="delstaff" data-id="${s.id}" type="button" ${delDisabled?'disabled':''}>削除</button>
           </td>
         `;
         tbody.appendChild(tr);
@@ -1289,18 +1334,111 @@
           <td class="center">${idx+1}</td>
           <td>
             <div style="display:flex; gap:10px; align-items:center">
-              <span class="dot" style="background:${typeColor(t.id)}"></span>
+              <span class="dot2" style="background:${typeColor(t.id)}"></span>
               <input type="text" value="${escapeHtml(t.name)}" data-type-name="${t.id}" />
             </div>
-            <div class="muted small">ID: ${escapeHtml(t.id)}</div>
+            <div class="small" style="color:var(--muted2); margin-top:6px">ID: ${escapeHtml(t.id)}</div>
           </td>
           <td class="center nowrap">
-            <button class="secondary" data-act="savetype" data-id="${t.id}">保存</button>
-            <button class="danger" data-act="deltype" data-id="${t.id}">削除</button>
+            <button class="secondary" data-act="savetype" data-id="${t.id}" type="button">保存</button>
+            <button class="danger" data-act="deltype" data-id="${t.id}" type="button">削除</button>
           </td>
         `;
         tbody.appendChild(tr);
       });
+    }
+
+    function render(){
+      const st = loadState();
+
+      // defaults
+      if(!$('dateInput').value) $('dateInput').value = todayStr();
+      if(!$('monthInput').value) $('monthInput').value = st.currentMonth || monthNowStr();
+      if(!$('fyInput').value) $('fyInput').value = st.currentFY || Number(yearNowStr());
+      if($('staffSearch').value !== st.staffSearch) $('staffSearch').value = st.staffSearch || '';
+      if($('histQuery').value !== st.histQuery) $('histQuery').value = st.histQuery || '';
+      if($('fyHistQuery').value !== st.fyHistQuery) $('fyHistQuery').value = st.fyHistQuery || '';
+
+      const month = normalizeMonthKey($('monthInput').value || monthNowStr());
+      $('monthInput').value = month;
+
+      const fy = Number($('fyInput').value || yearNowStr());
+      st.currentMonth = month;
+      st.currentFY = fy;
+      saveState(st);
+
+      $('monthLabel').textContent = month;
+      $('fyLabel').textContent = `${fy}年度`;
+
+      // staff select
+      $('staffSelect').innerHTML = '';
+      st.staff.forEach(s=>{
+        const opt = document.createElement('option');
+        opt.value = s.id;
+        opt.textContent = s.name;
+        if(s.id===st.currentStaffId) opt.selected = true;
+        $('staffSelect').appendChild(opt);
+      });
+      const staff = st.staff.find(x=>x.id===st.currentStaffId) || st.staff[0];
+      const staffId = staff.id;
+      $('chipStaffTop').textContent = staff.name;
+
+      // leave types
+      $('leaveTypeSelect').innerHTML = '';
+      st.leaveTypes.forEach(t=>{
+        const opt = document.createElement('option');
+        opt.value = t.id;
+        opt.textContent = t.name;
+        $('leaveTypeSelect').appendChild(opt);
+      });
+      if(!st.leaveTypes.some(t=>t.id===st.currentLeaveTypeId)){
+        st.currentLeaveTypeId = st.leaveTypes[0]?.id || 'annual';
+        saveState(st);
+      }
+      $('leaveTypeSelect').value = st.currentLeaveTypeId;
+
+      // filters
+      fillTypeFilterSelect('histTypeFilter', st, st.histTypeFilter);
+      fillTypeFilterSelect('fyHistTypeFilter', st, st.fyHistTypeFilter);
+
+      // chips
+      $('chipMonth').textContent = month;
+      $('chipFY').textContent = `${fy}年度`;
+
+      // KPIs
+      renderKpiLists(st, staffId, month);
+
+      // staff search behavior
+      applyStaffSearchToSelect(st);
+
+      // Individual panel
+      $('indStaffName').textContent = staff.name;
+      $('indMonth').textContent = month;
+      $('indMonthTotal').textContent = fmtMin(totalForMonthAllTypes(st, staffId, month));
+      renderIndividualHistory(st, staffId, month);
+
+      // All month panel
+      $('allMonth').textContent = month;
+      $('allMonthTotal').textContent = fmtMin(totalAllStaffMonthAllTypes(st, month));
+      renderAllMonthTable(st, month);
+
+      // FY panel (★ここがユーザー指摘箇所：合計が0の原因になりやすい「月キー揃え」を実施済み)
+      $('fyPanelFY').textContent = `${fy}年度`;
+      $('fyStaffName').textContent = staff.name;
+      $('allFYTotal').textContent = fmtMin(totalAllStaffFYAllTypes(st, fy)); // ←反映される
+      renderAllFYTable(st, fy);
+      renderFYStaffMonthlyBreakdown(st, staffId, fy);
+      renderFYHistory(st, staffId, fy);
+
+      // Settings panel
+      $('staffCount').textContent = `${st.staff.length} / 50`;
+      $('typeCount').textContent = `${st.leaveTypes.length}`;
+      renderSettingsStaff(st);
+      renderSettingsTypes(st);
+
+      $('undoBtn').disabled = !st.entries.some(e=>e.staffId===staffId);
+
+      setTab(st.currentTab || 'individual', false);
     }
 
     // =========================
@@ -1309,8 +1447,9 @@
     function addEntry(){
       const st = loadState();
       const staffId = $('staffSelect').value;
+
       const date = $('dateInput').value || todayStr();
-      const month = monthFromDate(date) || ($('monthInput').value || monthNowStr());
+      const month = normalizeMonthKey(monthFromDate(date) || ($('monthInput').value || monthNowStr()));
       const leaveTypeId = $('leaveTypeSelect').value || 'annual';
 
       const d = toInt($('in_d').value);
@@ -1321,7 +1460,7 @@
       if(delta===0){ alert('0は追加されません'); return; }
 
       st.currentStaffId = staffId;
-      st.currentMonth = $('monthInput').value || monthNowStr();
+      st.currentMonth = normalizeMonthKey($('monthInput').value || monthNowStr());
       st.currentFY = Number($('fyInput').value || yearNowStr());
       st.currentLeaveTypeId = leaveTypeId;
 
@@ -1381,7 +1520,7 @@
       const st = loadState();
       const staffId = $('staffSelect').value;
       const staff = st.staff.find(s=>s.id===staffId) || {name:'（不明）'};
-      const month = $('monthInput').value || monthNowStr();
+      const month = normalizeMonthKey($('monthInput').value || monthNowStr());
 
       const lines = [];
       lines.push(`【${month}】${staff.name}`);
@@ -1413,14 +1552,11 @@
     function onStaffSearchInput(){
       const st = loadState();
       st.staffSearch = $('staffSearch').value || '';
-      // 先頭マッチがあれば自動選択（任意：早くなる）
       const q = st.staffSearch.trim();
       if(q){
         const qn = normalizeText(q);
         const match = st.staff.find(s=> normalizeText(s.name).includes(qn));
-        if(match){
-          st.currentStaffId = match.id;
-        }
+        if(match) st.currentStaffId = match.id;
       }
       saveState(st);
       render();
@@ -1481,7 +1617,7 @@
     }
 
     // =========================
-    // 設定：種別（後から追加）
+    // 設定：種別
     // =========================
     function addType(){
       const st = loadState();
@@ -1523,7 +1659,6 @@
       if(!confirm(msg)) return;
 
       st.leaveTypes = st.leaveTypes.filter(t=>t.id!==id);
-      // current が消えたら先頭へ
       if(!st.leaveTypes.some(t=>t.id===st.currentLeaveTypeId)){
         st.currentLeaveTypeId = st.leaveTypes[0]?.id || 'annual';
       }
@@ -1532,7 +1667,7 @@
     }
 
     // =========================
-    // フィルタ（履歴）
+    // フィルタ
     // =========================
     function updateHistFilters(){
       const st = loadState();
@@ -1564,7 +1699,7 @@
     }
 
     // =========================
-    // CSV / Excel（動的種別対応）
+    // CSV / Excel
     // =========================
     function downloadCSV(csv, filename){
       const blob = new Blob([csv], {type:'text/csv'});
@@ -1574,7 +1709,6 @@
       document.body.appendChild(a); a.click(); a.remove();
       URL.revokeObjectURL(url);
     }
-
     function ensureXLSX(){
       if(typeof XLSX==='undefined'){
         alert('Excel出力ライブラリの読み込みに失敗しました。ネットワーク接続をご確認ください。');
@@ -1583,13 +1717,12 @@
       return true;
     }
 
-    // 個別CSV（この月）
     function exportIndividualCSV(){
       const st = loadState();
       const staffId = $('staffSelect').value;
       const staff = st.staff.find(s=>s.id===staffId) || {name:'unknown'};
-      const month = $('monthInput').value || monthNowStr();
-      const list = entriesForMonth(st, staffId, month).slice().reverse(); // 出力は古い→新しい
+      const month = normalizeMonthKey($('monthInput').value || monthNowStr());
+      const list = entriesForMonth(st, staffId, month).slice().reverse();
 
       const rows = [
         ['月', month],
@@ -1606,10 +1739,9 @@
       downloadCSV(csv, `leave_time_${month}_${staff.name}.csv`);
     }
 
-    // 全職員CSV（月一覧：種別別）
     function exportAllCSV(){
       const st = loadState();
-      const month = $('monthInput').value || monthNowStr();
+      const month = normalizeMonthKey($('monthInput').value || monthNowStr());
       const cols = st.leaveTypes;
 
       const header = ['#','職員名'];
@@ -1629,12 +1761,8 @@
         const parts = cols.map(t=> totalForMonthType(st, s.id, month, t.id));
         const sum = parts.reduce((a,b)=>a+b,0);
         const line = [i+1, s.name];
-        parts.forEach((v, idx)=>{
-          line.push(v);
-          line.push(fmtMin(v));
-        });
-        line.push(sum);
-        line.push(fmtMin(sum));
+        parts.forEach(v=> line.push(v, fmtMin(v)));
+        line.push(sum, fmtMin(sum));
         rows.push(line);
       });
 
@@ -1642,17 +1770,15 @@
       downloadCSV(csv, `leave_time_all_${month}.csv`);
     }
 
-    // 個別Excel（月履歴＋年度月別内訳）
     function exportIndividualXlsx(){
       if(!ensureXLSX()) return;
       const st = loadState();
       const staffId = $('staffSelect').value;
       const staff = st.staff.find(s=>s.id===staffId) || {name:'unknown'};
-      const month = $('monthInput').value || monthNowStr();
+      const month = normalizeMonthKey($('monthInput').value || monthNowStr());
       const fy = Number($('fyInput').value || yearNowStr());
       const cols = st.leaveTypes;
 
-      // sheet1: 月内履歴
       const list = entriesForMonth(st, staffId, month).slice().reverse();
       const aoa1 = [
         ['月', month],
@@ -1665,7 +1791,6 @@
         aoa1.push([i+1, e.date||'', t, toInt(e.d), toInt(e.h), toInt(e.m), toInt(e.delta)]);
       });
 
-      // sheet2: 年度 月別内訳（4月始まり）
       const aoa2 = [
         ['年度', `${fy}年度`],
         ['職員名', staff.name],
@@ -1687,11 +1812,10 @@
       XLSX.writeFile(wb, `leave_time_${month}_${staff.name}.xlsx`);
     }
 
-    // 全職員Excel（月一覧）
     function exportAllXlsx(){
       if(!ensureXLSX()) return;
       const st = loadState();
-      const month = $('monthInput').value || monthNowStr();
+      const month = normalizeMonthKey($('monthInput').value || monthNowStr());
       const cols = st.leaveTypes;
 
       const aoa = [
@@ -1714,7 +1838,6 @@
       XLSX.writeFile(wb, `leave_time_all_${month}.xlsx`);
     }
 
-    // 年度Excel（全職員年度合計＋選択職員月別＋選択職員年度内履歴）
     function exportFYXlsx(){
       if(!ensureXLSX()) return;
       const st = loadState();
@@ -1723,7 +1846,6 @@
       const staff = st.staff.find(s=>s.id===staffId) || {name:'unknown'};
       const cols = st.leaveTypes;
 
-      // sheet1: 全職員 年度合計
       const aoa1 = [
         ['年度', `${fy}年度`],
         [],
@@ -1738,7 +1860,6 @@
         aoa1.push(row);
       });
 
-      // sheet2: 選択職員 月別内訳（4月始まり）
       const aoa2 = [
         ['年度', `${fy}年度`],
         ['職員名', staff.name],
@@ -1754,7 +1875,6 @@
         aoa2.push(row);
       });
 
-      // sheet3: 選択職員 年度内履歴
       const list = entriesForFY(st, staffId, fy).slice().reverse();
       const aoa3 = [
         ['年度', `${fy}年度`],
@@ -1764,7 +1884,7 @@
       ];
       list.forEach((e,i)=>{
         const t = getType(st, e.leaveTypeId||'annual').name;
-        aoa3.push([i+1, e.date||'', e.month||'', t, toInt(e.d), toInt(e.h), toInt(e.m), toInt(e.delta)]);
+        aoa3.push([i+1, e.date||'', normalizeMonthKey(e.month)||'', t, toInt(e.d), toInt(e.h), toInt(e.m), toInt(e.delta)]);
       });
 
       const wb = XLSX.utils.book_new();
@@ -1797,11 +1917,11 @@
     });
 
     $('dateInput').addEventListener('change', ()=>{
-      const m = monthFromDate($('dateInput').value);
+      const d = $('dateInput').value;
+      const m = normalizeMonthKey(monthFromDate(d));
       if(m) $('monthInput').value = m;
 
       // 年度も追随（4月以降ならその年、1-3月なら前年）
-      const d = $('dateInput').value;
       if(d){
         const y = Number(d.slice(0,4));
         const mm = Number(d.slice(5,7));
@@ -1810,7 +1930,7 @@
       }
 
       const st = loadState();
-      st.currentMonth = $('monthInput').value || monthNowStr();
+      st.currentMonth = normalizeMonthKey($('monthInput').value || monthNowStr());
       st.currentFY = Number($('fyInput').value || yearNowStr());
       saveState(st);
       render();
@@ -1818,12 +1938,14 @@
 
     $('monthInput').addEventListener('change', ()=>{
       const st = loadState();
-      st.currentMonth = $('monthInput').value || monthNowStr();
-      // 月を変えたら年度もそれっぽく追随（4月以上ならその年、1-3なら前年）
+      st.currentMonth = normalizeMonthKey($('monthInput').value || monthNowStr());
+      $('monthInput').value = st.currentMonth;
+
       const y = Number(st.currentMonth.slice(0,4));
       const m = Number(st.currentMonth.slice(5,7));
       const fy = (m>=4) ? y : (y-1);
       $('fyInput').value = fy;
+
       st.currentFY = fy;
       saveState(st);
       render();
@@ -1844,14 +1966,12 @@
     $('resetAllBtn').addEventListener('click', resetAll);
     $('copyBtn').addEventListener('click', copyMonthTotal);
 
-    // presets
-    $('presetHalf').addEventListener('click', ()=> setPreset(0,3,53)); // 465/2=232.5 → 3:52.5 なので現場向けに3:53
+    $('presetHalf').addEventListener('click', ()=> setPreset(0,3,53)); // 0.5日（現場向け丸め）
     $('preset1d').addEventListener('click', ()=> setPreset(1,0,0));
     $('preset1h').addEventListener('click', ()=> setPreset(0,1,0));
     $('preset30m').addEventListener('click', ()=> setPreset(0,0,30));
     $('preset15m').addEventListener('click', ()=> setPreset(0,0,15));
 
-    // history filters
     $('histQuery').addEventListener('input', updateHistFilters);
     $('histTypeFilter').addEventListener('change', updateHistFilters);
     $('histClearBtn').addEventListener('click', clearHistFilters);
@@ -1860,25 +1980,20 @@
     $('fyHistTypeFilter').addEventListener('change', updateFYHistFilters);
     $('fyHistClearBtn').addEventListener('click', clearFYHistFilters);
 
-    // history delete
     $('histBody').addEventListener('click', (e)=>{
       const btn = e.target.closest('button[data-act="delete"]');
       if(!btn) return;
       deleteEntry(btn.dataset.id);
     });
 
-    // exports
     $('exportIndividualBtn').addEventListener('click', exportIndividualCSV);
     $('exportAllBtn').addEventListener('click', exportAllCSV);
-
     $('exportIndividualXlsxBtn').addEventListener('click', exportIndividualXlsx);
     $('exportAllXlsxBtn').addEventListener('click', exportAllXlsx);
     $('exportFYXlsxBtn').addEventListener('click', exportFYXlsx);
 
-    // settings actions
     $('addStaffBtn').addEventListener('click', addStaff);
     $('newStaffName').addEventListener('keydown', (e)=>{ if(e.key==='Enter') addStaff(); });
-
     $('staffBody').addEventListener('click', (e)=>{
       const btn = e.target.closest('button[data-act]');
       if(!btn) return;
@@ -1890,7 +2005,6 @@
 
     $('addTypeBtn').addEventListener('click', addType);
     $('newTypeName').addEventListener('keydown', (e)=>{ if(e.key==='Enter') addType(); });
-
     $('typeBody').addEventListener('click', (e)=>{
       const btn = e.target.closest('button[data-act]');
       if(!btn) return;
@@ -1904,9 +2018,7 @@
     document.addEventListener('keydown', (e)=>{
       if(e.key!=='Enter') return;
       const active = document.activeElement;
-      const blockIds = new Set([
-        'staffSearch','newStaffName','newTypeName','histQuery','fyHistQuery'
-      ]);
+      const blockIds = new Set(['staffSearch','newStaffName','newTypeName','histQuery','fyHistQuery']);
       if(active && active.id && blockIds.has(active.id)) return;
       if(active && active.closest('#panelSettings')) return;
       addEntry();
@@ -1916,7 +2028,7 @@
     (function init(){
       const st = loadState();
       $('dateInput').value = todayStr();
-      $('monthInput').value = st.currentMonth || monthNowStr();
+      $('monthInput').value = normalizeMonthKey(st.currentMonth || monthNowStr());
       $('fyInput').value = st.currentFY || Number(yearNowStr());
       $('staffSearch').value = st.staffSearch || '';
       setTab(st.currentTab || 'individual', false);
