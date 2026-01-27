@@ -1,0 +1,3253 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>服務区分集計システム（Webアプリ）</title>
+
+  <style>
+    :root{
+      --bg:#f7f7fb;
+      --card:#ffffff;
+      --ink:#111827;
+      --muted:#6b7280;
+      --brand:#2563eb;
+      --danger:#ef4444;
+      --ok:#10b981;
+      --ring: 0 0 0 3px rgba(37,99,235,.18);
+      --radius: 18px;
+      --shadow: 0 18px 40px rgba(2,6,23,.08), 0 2px 8px rgba(2,6,23,.06);
+      --line:#e5e7eb;
+      --soft:#f3f4f6;
+      --soft2:#f8fafc;
+
+      --controlH: 44px;
+      --controlPadY: 10px;
+      --controlPadX: 12px;
+
+      /* ★服務区分文字色（全タブ統一） */
+      --typeText:#475569; /* th と同系統 */
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Hiragino Kaku Gothic ProN","Yu Gothic UI","Noto Sans JP", sans-serif;
+      color: var(--ink);
+      background: radial-gradient(900px 600px at 10% -10%, rgba(37,99,235,.10), transparent 60%),
+                  radial-gradient(900px 600px at 95% 0%, rgba(16,185,129,.10), transparent 55%),
+                  linear-gradient(180deg, var(--bg) 0%, #ffffff 70%, var(--bg) 100%);
+      padding: 18px;
+    }
+    .app{
+      width:min(1400px, 100%);
+      margin:0 auto;
+      background: var(--card);
+      border:1px solid var(--line);
+      border-radius: 22px;
+      box-shadow: var(--shadow);
+      overflow:visible; /* allow sticky headers to work */
+    }
+    header{
+      padding: 16px 18px 12px;
+      border-bottom:1px solid var(--line);
+      background: linear-gradient(180deg, #ffffff 0%, #fbfbfe 100%);
+    }
+    .topbar{display:flex; gap:12px; align-items:center; flex-wrap:wrap}
+    header h1{
+      margin:0;
+      font-size: clamp(18px, 2.6vw, 22px);
+      letter-spacing:.2px;
+      font-weight: 900;
+    }
+    .subtitle{color:var(--muted); font-size:12px; margin-top:4px; line-height:1.45}
+    .badge{
+      margin-left:auto;
+      display:inline-flex; gap:8px; align-items:center;
+      padding:8px 10px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      background: #f8fafc;
+      color: var(--ink);
+      font-weight:800;
+      font-size:12px;
+      white-space:nowrap;
+    }
+    .badge .dot{width:10px;height:10px;border-radius:999px;background:var(--brand)}
+    .wrap{padding: 14px 14px 18px}
+
+    .grid{
+      display:grid;
+      grid-template-columns: 1.05fr 1fr;
+      gap: 14px;
+      align-items:start;
+    }
+
+    body.settingsMode .grid,
+    body.allMode .grid,
+    body.fyMode .grid,
+    body.fytotalMode .grid,
+    body.staffMonthlyMode .grid,
+    body.multiMode .grid { grid-template-columns: 1fr; }
+
+    body.settingsMode #inputPanel,
+    body.allMode #inputPanel,
+    body.fyMode #inputPanel,
+    body.fytotalMode #inputPanel,
+    body.staffMonthlyMode #inputPanel,
+    body.multiMode #inputPanel { display:none !important; }
+
+    .card{
+      border:1px solid var(--line);
+      background: #fff;
+      border-radius: var(--radius);
+      overflow:hidden;
+    }
+    .card .cardHead{
+      padding: 12px 14px;
+      border-bottom:1px solid var(--line);
+      background: var(--soft2);
+      display:flex; gap:10px; align-items:center; flex-wrap:wrap;
+    }
+    .card .cardHead .title{font-weight: 950; letter-spacing:.2px}
+    .card .cardHead .meta{color: var(--muted); font-size: 12px; margin-left:auto; white-space:nowrap}
+    .card .cardBody{padding: 14px}
+
+    .field label{
+      font-size:12px;
+      color: var(--muted);
+      display:block;
+      margin: 0 0 7px;
+      font-weight: 800;
+      letter-spacing:.15px;
+    }
+
+    input[type=number], input[type=text], input[type=date], input[type=month], select{
+      width:100%;
+      border:1px solid var(--line);
+      border-radius: 14px;
+      padding: var(--controlPadY) var(--controlPadX);
+      font-size:16px;
+      outline:none;
+      color: var(--ink);
+      background: #fff;
+      height: var(--controlH);
+      line-height: 1.2;
+    }
+    select{
+      -webkit-appearance:none;
+      appearance:none;
+      background-image:
+        linear-gradient(45deg, transparent 50%, #64748b 50%),
+        linear-gradient(135deg, #64748b 50%, transparent 50%),
+        linear-gradient(to right, transparent, transparent);
+      background-position:
+        calc(100% - 18px) calc(50% - 3px),
+        calc(100% - 12px) calc(50% - 3px),
+        0 0;
+      background-size: 6px 6px, 6px 6px, 100% 100%;
+      background-repeat: no-repeat;
+      padding-right: 34px;
+    }
+    input::placeholder{color:#9ca3af}
+    input:focus, select:focus{border-color: var(--brand); box-shadow: var(--ring);}
+
+    .row{display:flex; gap:10px; align-items:flex-end; flex-wrap:wrap}
+    .group{display:grid; grid-template-columns: repeat(3, 1fr); gap:10px; align-items:end}
+    .divider{height:1px; background: var(--line); margin: 12px 0}
+
+    button{
+      appearance:none; border:0; cursor:pointer;
+      padding: 11px 14px;
+      border-radius: 14px;
+      font-size: 14px;
+      font-weight: 900;
+      letter-spacing:.15px;
+      color: #fff;
+      background: linear-gradient(180deg, #3b82f6 0%, #2563eb 100%);
+      box-shadow: 0 12px 24px rgba(37,99,235,.16);
+      transition: transform .05s ease, filter .15s ease, opacity .15s ease;
+      min-height: var(--controlH);
+    }
+    button:hover{filter:brightness(1.03)}
+    button:active{transform: translateY(1px)}
+    button.secondary{
+      color: var(--ink);
+      background: #fff;
+      border:1px solid var(--line);
+      box-shadow:none;
+    }
+    button.ok{
+      color:#064e3b;
+      background: linear-gradient(180deg, #34d399 0%, #10b981 100%);
+      box-shadow: 0 12px 24px rgba(16,185,129,.14);
+    }
+    button.danger{
+      color:#fff;
+      background: linear-gradient(180deg, #fb7185 0%, #ef4444 100%);
+      box-shadow: 0 12px 24px rgba(239,68,68,.14);
+    }
+    button.excel{
+  background: linear-gradient(180deg, #22c55e 0%, #16a34a 100%);
+  color:#ffffff;
+  border:1px solid rgba(21,128,61,.35);
+  box-shadow: 0 12px 24px rgba(22,163,74,.18);
+}
+
+    /* ===== Buttons (Settings only) ===== */
+    .violet{
+      color:#fff;
+      background: linear-gradient(180deg, #8b5cf6 0%, #6d28d9 100%);
+      box-shadow: 0 12px 24px rgba(109,40,217,.18);
+    }
+
+    /* ===== Settings help cards ===== */
+    .helpLead{ font-weight:800; color:#334155; line-height:1.6; }
+    .helpGrid{
+      display:grid; gap:12px;
+      grid-template-columns: repeat(3, minmax(0,1fr));
+      margin-top:12px;
+    }
+    @media (max-width: 980px){
+      .helpGrid{ grid-template-columns: 1fr; }
+    }
+    .helpCard{
+      background:#ffffff;
+      border:1px solid var(--line);
+      border-radius: 18px;
+      padding: 14px;
+      box-shadow: 0 10px 20px rgba(2,6,23,.05);
+    }
+    .helpCard .hd{ display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+    .helpCard h4{ margin:0; font-size:15px; font-weight:1000; color:#0f172a; }
+    .helpIcon{
+      width:34px; height:34px;
+      border-radius: 12px;
+      display:flex; align-items:center; justify-content:center;
+      font-weight:1000;
+      border: 1px solid rgba(15,23,42,.06);
+      flex:0 0 auto;
+    }
+    .helpIcon.about{ background: rgba(37,99,235,.12); color:#2563eb; }
+    .helpIcon.how{ background: rgba(139,92,246,.12); color:#7c3aed; }
+    .helpIcon.backup{ background: rgba(245,158,11,.14); color:#b45309; }
+    .helpCard ul{ margin:0; padding-left: 18px; color:#334155; line-height:1.7; }
+    .helpCard li{ margin: 4px 0; }
+    .helpSmall{ color:#64748b; font-weight:700; margin-top:8px; }
+button.excel:hover{ filter: brightness(.98); }
+button.excel:active{ transform: translateY(1px); }
+button.excel:disabled{ opacity:.55; cursor:not-allowed; transform:none; }
+button:disabled{opacity:.55; cursor:not-allowed; transform:none}
+
+    .actions{display:flex; gap:10px; flex-wrap:wrap; align-items:center}
+    .actions .full{flex:1 1 260px}
+
+    .miniRow{display:flex; gap:8px; flex-wrap:wrap}
+    .miniBtn{
+      padding: 9px 12px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 950;
+      color: var(--ink);
+      background: #fff;
+      border: 1px solid var(--line);
+      box-shadow:none;
+      min-height: unset;
+    }
+
+    .kpiCard{
+      border:1px solid var(--line);
+      background: #fff;
+      border-radius: 16px;
+      padding: 12px;
+    }
+    .kpiCard .t{color:var(--muted); font-size:12px; font-weight:900}
+    .kpiList{margin-top:10px; display:grid; gap:8px}
+    .kpiItem{
+      display:flex; justify-content:space-between; gap:10px; align-items:center;
+      border:1px solid var(--line);
+      background: var(--soft2);
+      padding: 9px 10px;
+      border-radius: 14px;
+      font-size: clamp(14px, 2.4vw, 18px);
+    }
+    .kpiItem .left{display:flex; gap:10px; align-items:center; min-width:0}
+    .kpiItem .name{font-weight:900; color: var(--tcolor, var(--text)); white-space:normal; overflow:visible; text-overflow:clip; overflow-wrap:anywhere; line-height:1.2;}
+    .kpiItem b{font-size: inherit;}
+    .dot2{width:10px;height:10px;border-radius:999px;background:#94a3b8; flex:0 0 auto}
+
+    .chips{display:flex; gap:8px; flex-wrap:wrap; margin-top:10px}
+    .chip{
+      display:inline-flex; gap:8px; align-items:center;
+      padding: 8px 10px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      background: #fff;
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 900;
+    }
+    .chip strong{color: var(--ink); font-weight: 950}
+
+    .noteBox{
+      margin-top: 10px;
+      border:1px solid var(--line);
+      background: var(--soft2);
+      border-radius: 16px;
+      padding: 10px 12px;
+      font-size:clamp(12px,2.8vw,14px);
+      color:#334155;
+      line-height: 1.6;
+    }
+
+    .tabsDock{
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: rgba(255,255,255,.92);
+      backdrop-filter: blur(10px);
+      padding: 12px 14px 10px;
+      border-bottom: 1px solid rgba(229,231,235,.65);
+    }
+    .tabs{
+      display:flex; gap:8px; flex-wrap:wrap;
+      padding: 10px;
+      border:1px solid var(--line);
+      background: #fff;
+      border-radius: 999px;
+    }
+    .tab{
+      border:1px solid transparent;
+      background: transparent;
+      color: var(--muted);
+      font-weight: 950;
+      padding: 9px 12px;
+      border-radius: 999px;
+      cursor:pointer;
+      font-size: 13px;
+      box-shadow:none;
+      min-height: unset;
+    }
+    .tab:hover{color: var(--ink); border-color: var(--line)}
+    .tab.active{
+      color: #fff;
+      background: linear-gradient(180deg, #3b82f6 0%, #2563eb 100%);
+      border-color: rgba(37,99,235,.35);
+    }
+
+    
+    /* --- Mobile tab selector (no horizontal scroll) --- */
+    .tabSelectWrap{ display:none; width:100%; }
+    .tabSelect{
+      width:100%;
+      padding:10px 12px;
+      border:1px solid rgba(15,23,42,.12);
+      border-radius:14px;
+      background:#ffffff;
+      font-weight:900;
+      color:#0f172a;
+      box-shadow: 0 10px 22px rgba(2,6,23,.08);
+    }
+    .tabSelect:focus{ outline:2px solid rgba(37,99,235,.25); outline-offset:2px; }
+.segNav{
+      display:grid;
+      grid-template-columns: 44px 1fr 44px;
+      gap: 8px;
+      align-items: center;
+    }
+    .segBtn{
+      width:44px;
+      height: var(--controlH);
+      padding: 0;
+      border-radius: 14px;
+      display:grid;
+      place-items:center;
+      font-weight: 950;
+    }
+
+    /* カード型一覧（横スクロールなし） */
+    .staffCards{ display:grid; gap:10px; margin-top:10px; }
+    .staffCard{
+      border:1px solid var(--line);
+      border-radius: 16px;
+      background:#fff;
+      overflow:hidden;
+    }
+    .staffCardHead{
+      padding:10px 12px;
+      background: var(--soft2);
+      border-bottom:1px solid var(--line);
+      display:flex; gap:10px; align-items:center; flex-wrap:wrap;
+    }
+    .staffCardHead .name{
+      font-weight:950;
+      max-width: 420px;
+      overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+    }
+    .staffCardHead .sum{
+      margin-left:auto;
+      font-weight:950;
+      color:#0f172a;
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+    font-size:clamp(13px,3.1vw,16px);}
+    .staffCardBody{ padding:10px 12px; }
+    .lines{ display:grid; gap:6px; }
+    .line{display:flex; justify-content:space-between; gap:10px; font-size:clamp(13px, 3.1vw, 16px); align-items:flex-start; padding:7px 0; border-bottom:1px dashed #e5e7eb;}
+    .line .k{flex:1; min-width:0; font-weight:900; color:var(--tcolor, var(--typeText)); white-space:normal; overflow:visible; text-overflow:clip; overflow-wrap:anywhere; line-height:1.2;} /* ★ */
+    .line .v{ white-space:nowrap; }
+    .line.total{ background:#fbfcff; border-color:#e7eefc;  font-weight:950; }
+    .line.total .k{ color:#0f172a; }
+    .line .sub{
+      display:block;
+      margin-top:2px;
+      font-size:11px;
+      color:#94a3b8;
+      font-weight:900;
+      white-space:normal;
+    }
+
+    /* 年度：職員×月（動的服務区分 + 合算2 + 全合計） */
+    .fyMatrix{ display:grid; grid-template-columns: 1fr; gap: 10px; }
+    .fyStaffCard{ border:1px solid var(--line); border-radius: 16px; background: #fff; overflow:hidden; }
+    .fyStaffHead{
+      display:flex; gap:10px; align-items:center; flex-wrap:wrap;
+      padding: 10px 12px;
+      background: var(--soft2);
+      border-bottom:1px solid var(--line);
+    }
+    .fyStaffHead .name{ font-weight: 950; min-width: 180px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .fyStaffHead .sum{ margin-left:auto; font-weight:950; color:#0f172a; display:flex; gap:10px; flex-wrap:wrap; justify-content:flex-end;font-size:clamp(13px,3.1vw,16px);}
+    .fyGrid12{ display:grid; grid-template-columns: repeat(6, 1fr); gap: 8px; padding: 10px 12px 12px; }
+    .fyCell{ border:1px solid var(--line); border-radius: 14px; padding: 8px 8px; background:#fff; min-width:0; }
+    .fyCell .m{font-size:11px; color:var(--muted); font-weight:900}
+    .fyCell .lines{margin-top:6px; display:grid; gap:4px}
+    .fyLine{display:flex; justify-content:space-between; gap:8px; font-size:clamp(11px, 2.3vw, 13px); align-items:flex-start; padding:5px 0; border-bottom:1px dashed #e5e7eb;}
+    .fyLine .k{flex:1; min-width:0; font-weight:800; color:var(--tcolor, var(--typeText)); white-space:normal; overflow:visible; text-overflow:clip; overflow-wrap:anywhere; line-height:1.2;} /* ★ */
+    .fyLine .v{white-space:nowrap; overflow:visible; text-overflow:clip; }
+    .fyLine.zero .v{color:#94a3b8; font-weight:900}
+    .fyLine.total{ font-weight:950}
+    .fyLine.total .k{color:#0f172a}
+
+    /* 個別月別一覧（カード） */
+    .monthCards{ display:grid; gap:10px; }
+    .mcard{ border:1px solid var(--line); background:#fff; border-radius: 16px; overflow:hidden; }
+    /* 個別月別一覧：追従ヘッダーに月見出しが隠れないように */
+    #staffMonthlyCards .mcard{ scroll-margin-top: calc(var(--dockH,0px) + 180px); }
+
+    .mcardHead{
+      padding:10px 12px;
+      background: var(--soft2);
+      border-bottom:1px solid var(--line);
+      display:flex;
+      gap:10px;
+      align-items:center;
+      flex-wrap:wrap;
+    }
+    .mcardHead .m{font-weight:950}
+    .mcardHead .r{margin-left:auto; display:flex; gap:8px; flex-wrap:wrap}
+    .mcardBody{padding:10px 12px}
+    .mgrid{display:grid; gap:6px}
+    .mrow{display:flex; justify-content:space-between; gap:10px; font-size:clamp(13px, 3.1vw, 16px); align-items:flex-start; padding:8px 0; border-bottom:1px dashed #e5e7eb;}
+    .mrow .k{flex:1; min-width:0; font-weight:900; color:var(--tcolor, var(--typeText)); white-space:normal; overflow:visible; text-overflow:clip; overflow-wrap:anywhere; line-height:1.2;} /* ★ */
+    .mrow .v{white-space:nowrap}
+    .mrow.total{background:#fbfcff; border-color:#e7eefc;  font-weight:950}
+    .mrow.total .k{color:#0f172a}
+    .mrow .sub{display:block;margin-top:2px;font-size:11px;color:#94a3b8;font-weight:900;white-space:normal}
+
+    /* 複数月：チェックUI */
+    .monthChecks{
+      display:grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 8px;
+      width:100%;
+    }
+    .mchk{
+      border:1px solid var(--line);
+      background:#fff;
+      border-radius: 14px;
+      padding: 10px 10px;
+      display:flex;
+      align-items:flex-start;
+      gap:10px;
+      cursor:pointer;
+      user-select:none;
+      min-height: var(--controlH);
+    }
+    .mchk input{ width:18px; height:18px; margin-top:2px; }
+    .mchk .lab{
+      font-weight:950;
+      color:#0f172a;
+      display:flex;
+      flex-direction:column;
+      line-height:1.15;
+      min-width:0;
+      flex:1;
+    }
+    .mchk .lab .top{font-weight:950}
+    .mchk .lab .bot{font-weight:950}
+    .mchk .sub{margin-left:auto; font-size:11px; color:#64748b; font-weight:900; white-space:nowrap}
+
+    .panelHeader{
+      display:flex; gap:10px; flex-wrap:wrap; align-items:center;
+      padding: 10px 12px;
+      border:1px solid var(--line);
+      background: var(--soft2);
+      border-radius: 16px;
+    }
+    
+.panelHeader.stickyBar{ position:sticky; top: calc(var(--dockH, 0px) + 10px); z-index: 60; }
+.pill{
+      display:inline-flex; gap:8px; align-items:center;
+      padding: 8px 10px;
+      border:1px solid var(--line);
+      background: #fff;
+      border-radius: 999px;
+      font-size:clamp(13px,3.1vw,16px);
+      color: var(--muted);
+      font-weight: 900;
+    }
+    .pill span, .pill b{ font-size:inherit; }
+    .pill b{color: var(--ink); font-weight: 950}
+    /* Multi panel: make sum labels/values same size as other text */
+    #panelMulti .panelHeader .pill span,
+    #panelMulti .panelHeader .pill b{ font-size: 13px; }
+
+
+    .hint{font-size:12px; color: #64748b; margin-top:8px; line-height:1.5}
+    .bottom-bar{
+      position: sticky;
+      bottom: 0;
+      z-index: 10;
+      margin-top: 12px;
+      padding: 10px;
+      border:1px solid var(--line);
+      border-radius: 16px;
+      background: rgba(255,255,255,.92);
+      backdrop-filter: blur(10px);
+    }
+    .footer{
+      padding: 12px 14px 14px;
+      color: #64748b;
+      font-size: 12px;
+      border-top: 1px solid var(--line);
+      background: #fbfbfe;
+    }
+
+    table{width:100%; border-collapse:collapse; font-size:14px; table-layout:auto;}
+    th, td{
+      padding: 10px 10px;
+      border-bottom: 1px solid #f1f5f9;
+      text-align:left;
+      vertical-align: top;
+      overflow:hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    th{
+      background: var(--soft2);
+      font-weight: 950;
+      font-size: 12px;
+      color: #475569;
+    }
+    tr:hover td{background: #fbfcff}
+    .center{text-align:center}
+    .small{font-size:12px}
+    .right{margin-left:auto}
+    .tag{display:inline-flex; gap:8px; align-items:center; max-width:100%; padding:6px 10px; border-radius:999px; background:#f1f5f9; color:#0f172a; font-weight:900; font-size:clamp(13px,3.0vw,16px);}
+.tag .dot{width:10px;height:10px;border-radius:999px; flex:0 0 auto}
+.tag .name{max-width:100%; white-space:normal; overflow:visible; text-overflow:clip; overflow-wrap:anywhere; line-height:1.2;}
+
+    /* ★設定：服務区分名入力の文字色も統一 */
+    input[data-type-name]{ color: var(--tcolor, var(--typeText)); font-weight: 950; }
+
+    @media (max-width: 980px){
+      .grid{grid-template-columns: 1fr;}
+      .badge{margin-left:0}
+      .tabs{border-radius: 18px}
+      .fyGrid12{ grid-template-columns: repeat(3, 1fr); }
+      .monthChecks{ grid-template-columns: repeat(3, 1fr); }
+    }
+    @media (max-width: 860px){
+      .actions{display:grid; grid-template-columns: 1fr 1fr; gap:10px}
+      .actions .full{grid-column: 1 / -1}
+      button{width:100%}
+      .group{grid-template-columns: 1fr}
+      .segNav{grid-template-columns: 44px 1fr 44px;}
+      .fyGrid12{ grid-template-columns: repeat(3, 1fr); }
+      .monthChecks{ grid-template-columns: repeat(2, 1fr); }
+    }
+  
+    /* ===== Mobile tweaks ===== */
+    @media (max-width: 560px){
+      .wrap{ padding:12px; }
+      .topbar{ padding:12px; }
+      .tabs{ display:none; }
+      .tabSelectWrap{ display:block; }
+      .tab{ flex:0 0 auto; white-space:nowrap; }
+      .staffCardHead, .fyStaffHead{ flex-direction:column; align-items:flex-start; gap:6px; }
+      .staffCardHead .sum, .fyStaffHead .sum{ justify-content:flex-start; flex-wrap:wrap; font-size:clamp(13px,3.1vw,16px);}
+      .fyGrid12{ grid-template-columns: 1fr !important; }
+      .line, .fyLine, .mrow{ align-items:flex-start; }
+      .line .k, .fyLine .k, .mrow .k{ max-width:68%; white-space:normal; overflow:visible; text-overflow:clip; word-break:break-word; }
+      .tag{ max-width:100%; white-space:normal; overflow:visible; text-overflow:clip; word-break:break-word; }
+      .list{ overflow-x:auto; -webkit-overflow-scrolling:touch; }
+      .list table{ min-width: 720px; }
+    
+      /* ★Mobile form layout fixes（はみ出し防止） */
+      .row{ flex-direction:column; align-items:stretch; }
+      .field{ min-width:0 !important; width:100%; }
+      .field > input, .field > select{ width:100%; max-width:100%; min-width:0; }
+      input[type="date"], input[type="month"]{ max-width:100%; min-width:0; }
+      .segNav{ grid-template-columns:40px 1fr 40px; }
+      .segNav input{ min-width:0; width:100%; }
+      #fyInput, #fyInput2, #fyInputSM, #fyInputMulti{ width:100% !important; }
+      #dateInput, #monthInput, #monthInputAll{ width:100% !important; }
+
+    }
+
+      .flashFocus{ outline:3px solid rgba(59,130,246,.55); outline-offset:4px; }
+
+
+/* =========================================================
+   v24 UI polish (機能変更なし：レイアウト/配色/フォント/レスポンシブのみ)
+   ========================================================= */
+:root{
+  /* 既存変数を活かしつつ、質感を少し上げる */
+  --bg:#f7f9fc;
+  --card:#ffffff;
+  --shadow: 0 20px 55px rgba(2,6,23,.08), 0 3px 10px rgba(2,6,23,.05);
+  --shadow2: 0 12px 32px rgba(2,6,23,.08);
+  --ring: 0 0 0 4px rgba(37,99,235,.18);
+}
+
+html, body{ height:100%; }
+body{
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  background:
+    radial-gradient(1100px 520px at 12% -12%, rgba(37,99,235,.11), transparent 55%),
+    radial-gradient(900px 520px at 92% -18%, rgba(16,185,129,.10), transparent 58%),
+    linear-gradient(180deg, var(--bg), #ffffff 44%, var(--bg));
+}
+
+/* アプリの最大幅を少し広げ、余白を上品に */
+.app{ max-width: 1220px; }
+
+/* ヘッダーを“薄く”固定（PC/タブレットで視線が迷わない） */
+header{
+  position: sticky;
+  top: 0;
+  z-index: 60;
+  background: rgba(255,255,255,.86);
+  border-bottom: 1px solid rgba(229,231,235,.85);
+  backdrop-filter: blur(10px);
+}
+@supports not (backdrop-filter: blur(10px)){
+  header{ background:#fff; }
+}
+
+/* タブ：押したくなる質感 */
+.tabsDock{
+  background: rgba(255,255,255,.86);
+  border: 1px solid rgba(229,231,235,.85);
+}
+.tabBtn{
+  font-weight: 900;
+  letter-spacing: .02em;
+  transition: transform .12s ease, box-shadow .18s ease, background .18s ease;
+}
+.tabBtn:hover{ transform: translateY(-1px); box-shadow: 0 10px 24px rgba(2,6,23,.08); }
+.tabBtn:active{ transform: translateY(0); box-shadow:none; }
+
+/* ボタン全体：押下感 + タッチ最適化 */
+button{ touch-action: manipulation; }
+.btn{
+  transition: transform .08s ease, box-shadow .18s ease, background .18s ease, border-color .18s ease, filter .18s ease;
+}
+.btn:active{ transform: translateY(1px); box-shadow:none; }
+
+/* Excelボタン：Excelらしさ（緑＋白）をさらに強める */
+.btn.excel{
+  color:#fff;
+  background: linear-gradient(180deg, #10b981, #059669);
+  border-color: rgba(5,150,105,.45);
+}
+.btn.excel:hover{ filter: brightness(1.03); box-shadow: 0 16px 36px rgba(16,185,129,.22); }
+.btn.excel:focus{ box-shadow: var(--ring); }
+
+/* ピル：横伸び暴走防止 */
+.pill, .pill *{ min-width:0; }
+.pill{
+  overflow: hidden;
+}
+.pill select,
+.pill input[type="month"],
+.pill input[type="number"],
+.pill input[type="text"],
+.pill input[type="search"]{
+  min-width: 0;
+  max-width: 100%;
+}
+
+/* 以前の“複数月だけ文字が小さい”を抑止 */
+.panelHeader.isMulti{ font-size: inherit !important; }
+
+/* 行（種別/合算/全合計）の視認性を底上げ（入らない時は自然に縮む） */
+.line{ font-size: clamp(14px, 1.7vw, 17px); }
+.line .k, .line .v{ line-height: 1.25; }
+.mrow{ font-size: clamp(14px, 1.7vw, 17px); }
+.fyLine{ font-size: clamp(13px, 1.5vw, 16px); }
+.kpiItem{ font-size: clamp(14px, 1.6vw, 16px); }
+
+/* カード：少しだけ浮かせて“一覧の見通し”を良く */
+.card{
+  box-shadow: var(--shadow);
+  border-color: rgba(229,231,235,.85);
+}
+.staffCard, .fyStaffCard, .mcard{
+  box-shadow: var(--shadow2);
+  border-color: rgba(229,231,235,.88);
+}
+
+/* 入力欄：フォーカス時に気持ちよく */
+input:focus, select:focus{
+  box-shadow: var(--ring);
+}
+
+/* モバイル/タブレット：はみ出しを徹底的に潰す */
+@media (max-width: 980px){
+  .app{ padding: 12px; }
+  .panelHeader{ gap: 10px; }
+  .tabsDock{ padding: 10px; }
+}
+@media (max-width: 760px){
+  header{ position: sticky; }
+  .tabBtn{ padding: 10px 12px; }
+  .panelHeader{ padding: 12px; }
+  /* インライン指定を上書き（※はみ出し対策） */
+  #panelAll .panelHeader > div[style*="min-width:260px"]{ min-width: 0 !important; flex: 1 1 100% !important; }
+  #panelStaffMonthly .panelHeader > div[style*="min-width:260px"]{ min-width: 0 !important; flex: 1 1 100% !important; }
+  #panelAll input[type="month"], #panelStaffMonthly input[type="month"]{ width: 100% !important; }
+}
+
+/* iPad横など：操作列が詰まったら自然に折り返す */
+@media (max-width: 1024px){
+  .panelHeader{ flex-wrap: wrap; }
+  .panelHeader .pill{ flex: 0 1 auto; }
+  .panelHeader .pill + .pill{ margin-left: 0; }
+}
+
+
+/* 重なり/クリック不能の予防：最前面はヘッダー、次にタブ、次に各タブ内の追従バー */
+header{ z-index: 90; }
+.tabsDock{ z-index: 85; position: relative; }
+.panelHeader.stickyBar{ z-index: 80; }
+
+/* 複数月集計のヘッダー文字が小さくなる問題を抑止 */
+#panelMulti .panelHeader .pill span,
+#panelMulti .panelHeader .pill b{
+  font-size: inherit !important;
+}
+
+
+</style>
+
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+</head>
+
+<body>
+  <main class="app" role="application">
+    <header>
+      <div class="topbar">
+        <div style="min-width:260px; flex:1">
+          <h1>服務区分集計システム（Webアプリ）</h1>
+</div>
+        <div class="badge"><span class="dot"></span>1日 = 7時間45分（465分）</div>
+      </div>
+    </header>
+
+    <div class="tabsDock">
+      <div class="tabs" role="tablist" aria-label="表示切替">
+        <button class="tab active" id="tabIndividual" data-tab="individual" type="button">個別（履歴）</button>
+        <button class="tab" id="tabStaffMonthly" data-tab="staffMonthly" type="button">個別月別一覧</button>
+        <button class="tab" id="tabAll" data-tab="all" type="button">月別一覧</button>
+        <button class="tab" id="tabMulti" data-tab="multi" type="button">複数月集計</button>
+        <button class="tab" id="tabFY" data-tab="fy" type="button">年度別一覧</button>
+        <button class="tab" id="tabFYTotal" data-tab="fytotal" type="button">年度合計</button>
+        <button class="tab" id="tabSettings" data-tab="settings" type="button">設定</button>
+      </div>
+
+      <div class="tabSelectWrap">
+        <select id="tabSelect" class="tabSelect" aria-label="タブ切替">
+          <option value="individual">個別</option>
+          <option value="staffMonthly">個別（月別）</option>
+          <option value="all">全職員（月）</option>
+          <option value="multi">複数月</option>
+          <option value="fy">年度別一覧</option>
+          <option value="fytotal">年度合計</option>
+          <option value="settings">設定</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="wrap grid">
+      <!-- 左：入力 -->
+      <section class="card" id="inputPanel">
+        <div class="cardHead">
+          <div class="title">入力</div>
+          <div class="meta">選択職員：<b id="chipStaffTop">-</b></div>
+        </div>
+
+        <div class="cardBody">
+          <div class="row">
+            <div class="field" style="min-width:240px; flex:1">
+              <label>職員（選択）</label>
+              <select id="staffSelect"></select>
+            </div>
+            <div class="field" style="min-width:240px; flex:1">
+              <label>服務区分</label>
+              <select id="leaveTypeSelect"></select>
+            </div>
+            <div class="field" style="min-width:220px; flex:1">
+              <label>日付（この月に計上）</label>
+              <input type="date" id="dateInput" />
+            </div>
+          </div>
+
+          <div class="row" style="margin-top:10px">
+            <div class="field" style="min-width:260px; flex:1">
+              <label>表示中の月</label>
+              <div class="segNav">
+                <button class="secondary segBtn" id="monthPrevBtn" type="button" aria-label="前の月">◀</button>
+                <input type="month" id="monthInput" />
+                <button class="secondary segBtn" id="monthNextBtn" type="button" aria-label="次の月">▶</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="divider"></div>
+
+          <div class="field"><label>追加する時間</label></div>
+          <div class="group">
+            <div class="field"><label>日</label><input type="number" id="in_d" inputmode="numeric" min="0" value="0"></div>
+            <div class="field"><label>時間</label><input type="number" id="in_h" inputmode="numeric" min="0" value="0"></div>
+            <div class="field"><label>分</label><input type="number" id="in_m" inputmode="numeric" min="0" value="0"></div>
+          </div>
+
+          <div class="row" style="margin-top:10px; align-items:center">
+            <div class="field" style="margin:0">
+              <label style="margin-bottom:0">クイック入力</label>
+            </div>
+            <div class="miniRow right">
+              <button class="miniBtn" id="preset1d" type="button">1日</button>
+              <button class="miniBtn" id="preset1h" type="button">1時間</button>
+              <button class="miniBtn" id="preset2h" type="button">2時間</button>
+              <button class="miniBtn" id="preset3h" type="button">3時間</button>
+              <button class="miniBtn" id="preset4h" type="button">4時間</button>
+              <button class="miniBtn" id="preset5h" type="button">5時間</button>
+              <button class="miniBtn" id="preset6h" type="button">6時間</button>
+              <button class="miniBtn" id="preset7h" type="button">7時間</button>
+            </div>
+          </div>
+
+          <div class="bottom-bar">
+            <div class="actions">
+              <button id="addBtn" class="full" type="button">追加（この職員に合算）</button>
+              <button class="secondary" id="undoBtn" type="button">元に戻す</button>
+              <button class="secondary" id="duplicateBtn" type="button">直前を複製</button>
+              <button class="secondary" id="clearInputBtn" type="button">入力クリア</button>
+              <button class="danger full" id="resetAllBtn" type="button">全データ初期化</button>
+            </div>
+            <div class="hint">Enterキーで追加（設定入力中は除外）。「直前を複製」は同じ日付・服務区分・時間で1件追加します。</div>
+          </div>
+
+          <div class="chips">
+            <span class="chip"><strong>月</strong> <span id="chipMonth">----</span></span>
+            <span class="chip"><strong>年度</strong> <span id="chipFY">----</span></span>
+            <span class="chip"><strong>保存</strong> localStorage</span>
+          </div>
+</div>
+      </section>
+
+      <!-- 右：各タブの中身 -->
+      <section class="card" id="rightPanel">
+        <div class="cardHead" style="gap:10px">
+          <div class="title">表示</div>
+          <div class="meta">月：<span id="monthLabel">----</span> ／ 年度：<span id="fyLabel">----</span></div>
+        </div>
+
+        <div class="cardBody">
+          <!-- 個別：履歴 -->
+          <div id="panelIndividual">
+            <div class="panelHeader">
+              <div class="pill"><span>職員</span><b id="indStaffName">-</b></div>
+              <div class="pill"><span>月</span><b id="indMonth">-</b></div>
+              <div class="pill"><span id="labelG1a">合算①</span><b id="indMonthG1">0日 0時間 0分</b></div>
+              <div class="pill"><span id="labelG2a">合算②</span><b id="indMonthG2">0日 0時間 0分</b></div>
+              <div class="pill"><span>全合計</span><b id="indMonthAll">0日 0時間 0分</b></div>
+              <!-- ★位置統一：右端 -->
+              <div class="actions right">
+                <button class="excel" id="exportIndividualXlsxBtn" type="button">⬇ Excelエクスポート</button>
+                <button class="danger" id="bulkDeleteMyMonthBtn" type="button">この月を一括削除</button>
+              </div>
+            </div>
+
+            <div class="kpiCard" style="margin-top:10px">
+              <div class="t">この職員の月累計（服務区分別）</div>
+              <div id="myMonthList" class="kpiList"></div>
+            </div>
+
+            <div class="list" style="margin-top:10px">
+              <table>
+                <thead>
+                  <tr>
+                    <th style="width:56px" class="center">#</th>
+                    <th style="width:120px">日付</th>
+                    <th style="width:240px">服務区分</th>
+                    <th>追加時間</th>
+                    <th style="width:110px">合計（分）</th>
+                    <th style="width:120px" class="center">操作</th>
+                  </tr>
+                </thead>
+                <tbody id="histBody"></tbody>
+              </table>
+            </div>
+            <div class="hint">「削除」は該当記録のみ削除し、累計は自動再計算されます。</div>
+          </div>
+
+          <!-- 個別月別一覧 -->
+          <div id="panelStaffMonthly" style="display:none">
+            
+<div class="panelHeader">
+              <div class="pill"><span>職員</span></div>
+              <div style="min-width:260px; flex:1">
+                <select id="staffSelectMonthly"></select>
+              </div>
+
+              <div class="pill" style="gap:10px">
+                <span>月</span>
+                <button class="secondary segBtn" id="monthPrevBtnSM" type="button" aria-label="前の月" onclick="shiftMonthInput('monthInputSM',-1)">◀</button>
+                <input type="month" id="monthInputSM" style="width:160px; height:var(--controlH)" />
+                <button class="secondary segBtn" id="monthNextBtnSM" type="button" aria-label="次の月" onclick="shiftMonthInput('monthInputSM',1)">▶</button>
+              </div>
+
+              <div class="mutedNote">※選択した月が属する年度（4月〜3月）を自動表示します。</div>
+
+              <div class="actions right">
+                <button class="excel" id="exportStaffMonthlyXlsxBtn" type="button"><span class="icon">⬇</span>Excelエクスポート</button>
+              </div>
+            </div>
+            <div id="staffMonthlyCards" class="monthCards" style="margin-top:10px"></div>
+	          </div>
+
+	          <!-- 月別一覧 -->
+          <div id="panelAll" style="display:none">
+            <div class="panelHeader">
+              <div class="pill"><span>職員</span></div>
+              <div style="min-width:260px; flex:1">
+                <select id="staffSelectAll"></select>
+              </div>
+              <div class="pill" style="gap:10px">
+                <span>月</span>
+                <button class="secondary segBtn" id="monthPrevBtnAll" type="button" aria-label="前の月">◀</button>
+                <input type="month" id="monthInputAll" style="width:160px; height:var(--controlH)" />
+                <button class="secondary segBtn" id="monthNextBtnAll" type="button" aria-label="次の月">▶</button>
+              </div>
+
+              <div class="pill"><span id="labelG1b">全職員 合算①</span><b id="allMonthG1">0日 0時間 0分</b></div>
+              <div class="pill"><span id="labelG2b">全職員 合算②</span><b id="allMonthG2">0日 0時間 0分</b></div>
+              <div class="pill"><span>全職員 全合計</span><b id="allMonthAll">0日 0時間 0分</b></div>
+
+              <!-- ★位置統一：右端 -->
+              <div class="actions right">
+                <button class="excel" id="exportAllXlsxBtn" type="button">⬇ Excelエクスポート</button>
+              </div>
+            </div>
+<div id="allStaffCards" class="staffCards"></div>
+          </div>
+
+
+
+          <!-- 複数月集計 -->
+          <div id="panelMulti" style="display:none">
+            <div class="panelHeader">
+              <div class="pill"><span>対象</span></div>
+              <div style="min-width:260px; flex:1">
+                <select id="multiTargetSelect"></select>
+              </div>
+
+              <div class="pill"><span>年度</span></div>
+              <div class="row" style="gap:8px; align-items:center">
+                <button class="secondary segBtn" id="fyPrevBtnMulti" type="button" aria-label="前年度">◀</button>
+                <input type="number" id="fyInputMulti" min="2000" max="2100" step="1" style="width:120px" />
+                <button class="secondary segBtn" id="fyNextBtnMulti" type="button" aria-label="次年度">▶</button>
+              </div>
+
+              <div class="actions right">
+                <button class="secondary" id="multiSelectAllBtn" type="button">全選択</button>
+                <button class="secondary" id="multiClearBtn" type="button">全解除</button>
+                <button class="secondary" id="multiUseCurrentBtn" type="button">表示中の月だけ</button>
+              </div>
+            </div>
+            <div class="kpiCard" style="margin-top:10px">
+              <div class="t">選択中の月</div>
+              <div class="chips" style="margin-top:10px">
+                <span class="chip"><strong>月数</strong> <span id="multiCount">0</span></span>
+                <span class="chip"><strong>選択</strong> <span id="multiLabel">（未選択）</span></span>
+              </div>
+            </div>
+
+            <div class="kpiCard" style="margin-top:10px">
+              <div class="t">月の選択（チェック）</div>
+              <div id="multiMonthChecks" class="monthChecks" style="margin-top:10px"></div>
+            </div>
+
+            <div class="kpiCard" style="margin-top:10px">
+              <div class="t">累計（服務区分別）</div>
+              <div id="multiTotals" class="kpiList"></div>
+            </div>
+
+            <div class="panelHeader" style="margin-top:10px">
+              <div class="pill"><span id="labelG1c">合算①</span><b id="multiG1">0日 0時間 0分</b></div>
+              <div class="pill"><span id="labelG2c">合算②</span><b id="multiG2">0日 0時間 0分</b></div>
+              <div class="pill"><span>全合計</span><b id="multiAll">0日 0時間 0分</b></div>
+
+              <!-- ★位置統一：右端 -->
+              <div class="actions right">
+                <button class="excel" id="exportMultiXlsxBtn" type="button">⬇ Excelエクスポート</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 年度別一覧 -->
+          <div id="panelFY" style="display:none">
+            <div class="panelHeader">
+              <div class="pill"><span>年度</span><b id="fyPanelFY">-</b></div>
+              <div class="row right" style="gap:8px; align-items:center">
+                <button class="secondary segBtn" id="fyPrevBtn" type="button" aria-label="前年度">◀</button>
+                <input type="number" id="fyInput" min="2000" max="2100" step="1" style="width:120px" />
+                <button class="secondary segBtn" id="fyNextBtn" type="button" aria-label="次年度">▶</button>
+              </div>
+
+              <!-- ★追加：年度別一覧のExcel -->
+              <div class="actions right" style="margin-left:auto">
+                <button class="excel" id="exportFYMatrixXlsxBtn" type="button">⬇ Excelエクスポート</button>
+              </div>
+            </div>
+
+            <div class="noteBox" style="margin-top:10px">
+              <b>職員×月（年度内）</b>：各月に、登録した服務区分（最大5）を表示します。合算は2系統。<br>
+              合算①：<span id="g1Desc_fy">-</span><br>
+              合算②：<span id="g2Desc_fy">-</span>
+            </div>
+
+            <div id="fyMatrix" class="fyMatrix" style="margin-top:10px"></div>
+          </div>
+
+          <!-- 年度合計 -->
+          <div id="panelFYTotal" style="display:none">
+            <div class="panelHeader">
+              <div class="pill"><span>年度</span><b id="fyTotalLabel">-</b></div>
+              <div class="pill"><span id="labelG1d">全職員 合算①</span><b id="allFY_G1">0日 0時間 0分</b></div>
+              <div class="pill"><span id="labelG2d">全職員 合算②</span><b id="allFY_G2">0日 0時間 0分</b></div>
+              <div class="pill"><span>全職員 全合計</span><b id="allFY_All">0日 0時間 0分</b></div>
+
+              <div class="row right" style="gap:8px; align-items:center">
+                <button class="secondary segBtn" id="fyPrevBtn2" type="button" aria-label="前年度">◀</button>
+                <input type="number" id="fyInput2" min="2000" max="2100" step="1" style="width:120px" />
+                <button class="secondary segBtn" id="fyNextBtn2" type="button" aria-label="次年度">▶</button>
+              </div>
+
+              <!-- ★位置統一：右端（以前のwidth:100%行を撤去） -->
+              <div class="actions right" style="margin-left:auto">
+                <button class="excel" id="exportFYXlsxBtn" type="button">⬇ Excelエクスポート</button>
+              </div>
+            </div>
+<div id="fyTotalStaffCards" class="staffCards"></div>
+          </div>
+
+          <!-- 設定 -->
+          <div id="panelSettings" style="display:none">
+            <div class="panelHeader">
+              <div class="pill"><b>設定</b></div>
+              <div class="pill"><span>職員</span><b id="staffCount">0</b></div>
+              <div class="pill"><span>服務区分</span><b id="typeCount">0</b></div>
+              <div class="pill"><span>合算①</span><b id="g1Count">0</b></div>
+              <div class="pill"><span>合算②</span><b id="g2Count">0</b></div>
+            </div>
+</div>
+
+              <div style="flex:1; min-width:320px">
+                <div class="small" style="color:var(--muted); font-weight:950; margin-bottom:8px">バックアップ／復元（JSON）</div>
+                <div class="row" style="gap:10px; flex-wrap:wrap; padding:10px 12px; border:1px solid var(--line); background:#fff; border-radius:16px">
+                  <button class="secondary" id="exportJsonBtn" type="button" style="min-width:200px">JSONバックアップ</button>
+                  <label class="secondary" style="display:inline-flex; align-items:center; gap:10px; padding:11px 14px; border-radius:14px; border:1px solid var(--line); cursor:pointer;">
+                    JSON復元
+                    <input type="file" id="importJsonInput" accept="application/json" style="display:none">
+                  </label>
+                  <button class="danger" id="wipeOnlyEntriesBtn" type="button" style="min-width:220px">履歴だけ全消去</button>
+                </div>
+                <div class="hint">
+                  ・JSON復元は <b>端末内のデータを置き換え</b> ます（確認あり）<br>
+                  ・クラウド不要のため、年度末などにバックアップ推奨
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+      </section>
+    </div>
+
+    <div class="footer">© 服務区分集計システム（Webアプリ） Takayuki WAYAMA</div>
+  </main>
+
+  <script>
+    const DAY_MIN = 465;
+
+    const KEY_V1 = 'worktime_accum_v1';
+    const KEY_MAIN = 'worktime_accum_staff_v3_white';
+    const VERSION = 10;
+
+    const $ = (id)=>document.getElementById(id);
+
+    // ===== sticky header offset (tabsDock 高さをCSS変数へ) =====
+    function updateDockH(){
+      const dock = document.querySelector('.tabsDock');
+      if(!dock) return;
+      const h = dock.getBoundingClientRect().height || dock.offsetHeight || 0;
+      document.documentElement.style.setProperty('--dockH', `${Math.ceil(h)}px`);
+    }
+    window.addEventListener('resize', updateDockH);
+    updateDockH();
+    window.addEventListener('load', ()=>{ updateDockH(); setTimeout(updateDockH, 50); });
+    const toInt = (v)=>{ const n=parseInt(v,10); return isNaN(n)?0:Math.max(0,n); };
+    const totalMinutes = (d,h,m)=> toInt(d)*DAY_MIN + toInt(h)*60 + toInt(m);
+    const normalize = (t)=>{
+      const d = Math.floor(t / DAY_MIN);
+      const rem = t - d*DAY_MIN;
+      const h = Math.floor(rem/60);
+      const m = rem - h*60;
+      return {d,h,m};
+    };
+    const fmt = (d,h,m)=> `${d}日 ${h}時間 ${m}分`;
+    const fmtMin = (t)=>{ const n = normalize(t); return fmt(n.d,n.h,n.m); };
+
+    const todayStr = ()=>{
+      const d = new Date();
+      const yyyy = d.getFullYear();
+      const mm = String(d.getMonth()+1).padStart(2,'0');
+      const dd = String(d.getDate()).padStart(2,'0');
+      return `${yyyy}-${mm}-${dd}`;
+    };
+    const monthFromDate = (dateStr)=> (dateStr && dateStr.length>=7) ? dateStr.slice(0,7) : '';
+    const yearFromDate = (dateStr)=> (dateStr && dateStr.length>=4) ? dateStr.slice(0,4) : '';
+    const monthNowStr = ()=> monthFromDate(todayStr());
+    const yearNowStr = ()=> yearFromDate(todayStr());
+
+    const uuid = ()=> (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()+Math.random()));
+    const shortId = ()=> uuid().replace(/-/g,'').slice(0,10);
+
+    function escapeHtml(s){
+      return String(s ?? '')
+        .replaceAll('&','&amp;')
+        .replaceAll('<','&lt;')
+        .replaceAll('>','&gt;')
+        .replaceAll('"','&quot;')
+        .replaceAll("'","&#039;");
+    }
+
+    function normalizeMonthKey(m){
+      if(!m) return '';
+      const s = String(m).trim();
+      const m1 = s.match(/^(\d{4})-(\d{1,2})$/);
+      if(m1){
+        const y = m1[1];
+        const mm = String(Number(m1[2])).padStart(2,'0');
+        return `${y}-${mm}`;
+      }
+      const m2 = s.match(/^(\d{4})-(\d{2})/);
+      if(m2) return `${m2[1]}-${m2[2]}`;
+      return s;
+    }
+
+    // ===== 服務区分（最大5） =====
+    function defaultTypes(){
+      return [
+        {id:'annual', name:'年次休暇'},
+        {id:'special', name:'特別休暇'}
+      ];
+    }
+
+    // ===== 合算設定（2系統 + 表示位置） =====
+    function defaultSumConfigFor(st){
+      const ids = st.leaveTypes.map(t=>t.id);
+      const g1 = ids.slice(0,2);
+      const g2 = ids.slice(2,4);
+      return {
+        g1: { label:'合算①', typeIds: g1, pos: 2 },
+        g2: { label:'合算②', typeIds: g2, pos: 4 }
+      };
+    }
+
+    function clampPos(pos, len){
+      const p = toInt(pos);
+      return Math.max(0, Math.min(len, p));
+    }
+
+    function ensureSumConfig(st){
+      if(!st.sumConfig || typeof st.sumConfig!=='object'){
+        const migrated = { g1:{label:'合算①', typeIds:[], pos:2}, g2:{label:'合算②', typeIds:[], pos:4} };
+        if(Array.isArray(st.leaveTypes)){
+          const inc = st.leaveTypes.filter(t=>t.includeInTotal===true).map(t=>t.id);
+          if(inc.length) migrated.g1.typeIds = inc;
+        }
+        if(!migrated.g1.typeIds.length){
+          const base = st.leaveTypes.map(t=>t.id);
+          migrated.g1.typeIds = base.slice(0,2);
+          migrated.g2.typeIds = base.slice(2,4);
+        }
+        st.sumConfig = migrated;
+      }else{
+        if(!st.sumConfig.g1) st.sumConfig.g1 = {label:'合算①', typeIds:[], pos:2};
+        if(!st.sumConfig.g2) st.sumConfig.g2 = {label:'合算②', typeIds:[], pos:4};
+        if(!st.sumConfig.g1.label) st.sumConfig.g1.label='合算①';
+        if(!st.sumConfig.g2.label) st.sumConfig.g2.label='合算②';
+        if(!Array.isArray(st.sumConfig.g1.typeIds)) st.sumConfig.g1.typeIds=[];
+        if(!Array.isArray(st.sumConfig.g2.typeIds)) st.sumConfig.g2.typeIds=[];
+        if(st.sumConfig.g1.pos==null) st.sumConfig.g1.pos=2;
+        if(st.sumConfig.g2.pos==null) st.sumConfig.g2.pos=4;
+      }
+
+      const ids = new Set(st.leaveTypes.map(t=>t.id));
+      st.sumConfig.g1.typeIds = st.sumConfig.g1.typeIds.filter(id=>ids.has(id));
+      st.sumConfig.g2.typeIds = st.sumConfig.g2.typeIds.filter(id=>ids.has(id));
+
+      const g1set = new Set(st.sumConfig.g1.typeIds);
+      st.sumConfig.g2.typeIds = st.sumConfig.g2.typeIds.filter(id=>!g1set.has(id));
+
+      const len = st.leaveTypes.length;
+      st.sumConfig.g1.pos = clampPos(st.sumConfig.g1.pos, len);
+      st.sumConfig.g2.pos = clampPos(st.sumConfig.g2.pos, len);
+
+      // UIラベル同期（存在する場合のみ）
+      const safeSet = (id, text)=>{
+        const el = $(id);
+        if(el) el.textContent = text;
+      };
+      safeSet('labelG1a', st.sumConfig.g1.label);
+      safeSet('labelG2a', st.sumConfig.g2.label);
+      safeSet('labelG1b', `全職員 ${st.sumConfig.g1.label}`);
+      safeSet('labelG2b', `全職員 ${st.sumConfig.g2.label}`);
+      safeSet('labelG1c', st.sumConfig.g1.label);
+      safeSet('labelG2c', st.sumConfig.g2.label);
+      safeSet('labelG1d', `全職員 ${st.sumConfig.g1.label}`);
+      safeSet('labelG2d', `全職員 ${st.sumConfig.g2.label}`);
+    }
+
+    function groupEnabled(st, groupKey){
+      return (st.sumConfig?.[groupKey]?.typeIds || []).length > 0;
+    }
+
+    function getType(st, id){ return st.leaveTypes.find(t=>t.id===id) || {id, name:'（不明）'}; }
+
+    function getSumDesc(st, groupKey){
+      const cfg = st.sumConfig[groupKey];
+      if(!cfg) return '（未設定）';
+      const names = cfg.typeIds.map(id=> getType(st,id).name);
+      return names.length ? names.join(' ＋ ') : '（なし）';
+    }
+
+    // ===== state =====
+    function loadState(){
+      try{
+        const raw = localStorage.getItem(KEY_MAIN);
+        if(raw){
+          const obj = JSON.parse(raw);
+          if(obj && Array.isArray(obj.staff) && Array.isArray(obj.entries)){
+            if(!Array.isArray(obj.leaveTypes) || obj.leaveTypes.length===0) obj.leaveTypes = defaultTypes();
+            if(obj.leaveTypes.length>5) obj.leaveTypes = obj.leaveTypes.slice(0,5);
+
+            obj.entries = obj.entries.map(e=>({
+              ...e,
+              month: normalizeMonthKey(e.month || (e.date ? monthFromDate(e.date) : monthNowStr())),
+              leaveTypeId: e.leaveTypeId || 'annual',
+              delta: toInt(e.delta),
+              d: toInt(e.d),
+              h: toInt(e.h),
+              m: toInt(e.m),
+              createdAt: e.createdAt || Date.now()
+            }));
+
+            if(obj.staff.length===0) obj.staff = [{id: uuid(), name:'（未設定）'}];
+            if(!obj.currentStaffId || !obj.staff.some(s=>s.id===obj.currentStaffId)) obj.currentStaffId = obj.staff[0].id;
+
+            if(!obj.currentTab) obj.currentTab = 'individual';
+            if(!obj.currentMonth) obj.currentMonth = monthNowStr();
+            obj.currentMonth = normalizeMonthKey(obj.currentMonth);
+            if(!obj.currentFY) obj.currentFY = Number(yearNowStr());
+            if(!obj.currentLeaveTypeId) obj.currentLeaveTypeId = obj.leaveTypes[0]?.id || 'annual';
+
+            obj.version = VERSION;
+
+            ensureSumConfig(obj);
+
+            saveState(obj);
+            return obj;
+          }
+        }
+      }catch(e){}
+
+      try{
+        const raw1 = localStorage.getItem(KEY_V1);
+        if(raw1){
+          const v1 = JSON.parse(raw1);
+          if(v1 && typeof v1.sum==='number' && Array.isArray(v1.items)){
+            const staffId = uuid();
+            const date = todayStr();
+            const month = normalizeMonthKey(monthFromDate(date));
+            const fy = Number(yearFromDate(date));
+            const entries = v1.items.map((it, idx)=>({
+              id: it.id || uuid(),
+              staffId,
+              date,
+              month,
+              leaveTypeId: 'annual',
+              d: toInt(it.d),
+              h: toInt(it.h),
+              m: toInt(it.m),
+              delta: toInt(it.delta),
+              createdAt: Date.now() + idx
+            }));
+            const migrated = {
+              version: VERSION,
+              staff: [{id: staffId, name: '（旧データ）'}],
+              leaveTypes: defaultTypes(),
+              entries,
+              currentStaffId: staffId,
+              currentMonth: monthNowStr(),
+              currentFY: fy,
+              currentLeaveTypeId: 'annual',
+              currentTab: 'individual',
+              multi: { fy, targetId: staffId, months: [monthNowStr()] }
+            };
+            ensureSumConfig(migrated);
+            saveState(migrated);
+            return migrated;
+          }
+        }
+      }catch(e){}
+
+      const def = {id: uuid(), name:'（未設定）'};
+      const init = {
+        version: VERSION,
+        staff: [def],
+        leaveTypes: defaultTypes(),
+        entries: [],
+        currentStaffId: def.id,
+        currentMonth: monthNowStr(),
+        currentFY: Number(yearNowStr()),
+        currentLeaveTypeId: 'annual',
+        currentTab: 'individual',
+        multi: { fy: Number(yearNowStr()), targetId: def.id, months: [monthNowStr()] }
+      };
+      ensureSumConfig(init);
+      saveState(init);
+      return init;
+    }
+
+    function saveState(state){ localStorage.setItem(KEY_MAIN, JSON.stringify(state)); }
+
+    function typeColor(id){
+      if(id==='annual') return '#2563eb';
+      if(id==='special') return '#10b981';
+      let h = 0; for(const c of String(id)) h = (h*31 + c.charCodeAt(0)) >>> 0;
+      const hue = h % 360;
+      return `hsl(${hue} 65% 45%)`;
+    }
+
+    
+    function fyFromMonthKey(mkey){
+      const mk = normalizeMonthKey(mkey);
+      if(!mk) return Number(yearNowStr());
+      const y = Number(mk.slice(0,4));
+      const mm = Number(mk.slice(5,7));
+      return (mm>=4) ? y : (y-1);
+    }
+
+function fyMonthKeys(fy){
+      const y = Number(fy);
+      const months = [];
+      for(let m=4;m<=12;m++) months.push(`${y}-${String(m).padStart(2,'0')}`);
+      for(let m=1;m<=3;m++) months.push(`${y+1}-${String(m).padStart(2,'0')}`);
+      return months.map(normalizeMonthKey);
+    }
+
+    function groupTypeIds(st, groupKey){
+      return (st.sumConfig?.[groupKey]?.typeIds || []).slice();
+    }
+
+    function sumOfTypesForMonth(st, staffId, month, typeIds){
+      const mk = normalizeMonthKey(month);
+      const set = new Set(typeIds);
+      return st.entries
+        .filter(e=> e.staffId===staffId && normalizeMonthKey(e.month)===mk && set.has((e.leaveTypeId||'annual')))
+        .reduce((acc,e)=> acc + toInt(e.delta), 0);
+    }
+    function sumOfTypesForFY(st, staffId, fy, typeIds){
+      const keys = new Set(fyMonthKeys(fy));
+      const set = new Set(typeIds);
+      return st.entries
+        .filter(e=> e.staffId===staffId && keys.has(normalizeMonthKey(e.month)) && set.has((e.leaveTypeId||'annual')))
+        .reduce((acc,e)=> acc + toInt(e.delta), 0);
+    }
+
+    function totalForMonthType(st, staffId, month, typeId){
+      const mk = normalizeMonthKey(month);
+      return st.entries
+        .filter(e=> e.staffId===staffId && normalizeMonthKey(e.month)===mk && (e.leaveTypeId||'annual')===typeId)
+        .reduce((acc,e)=> acc + toInt(e.delta), 0);
+    }
+    function totalForMonthAllTypes(st, staffId, month){
+      const mk = normalizeMonthKey(month);
+      return st.entries
+        .filter(e=> e.staffId===staffId && normalizeMonthKey(e.month)===mk)
+        .reduce((acc,e)=> acc + toInt(e.delta), 0);
+    }
+
+    function totalForFYType(st, staffId, fy, typeId){
+      const keys = new Set(fyMonthKeys(fy));
+      return st.entries
+        .filter(e=> e.staffId===staffId && keys.has(normalizeMonthKey(e.month)) && (e.leaveTypeId||'annual')===typeId)
+        .reduce((acc,e)=> acc + toInt(e.delta), 0);
+    }
+    function totalForFYAllTypes(st, staffId, fy){
+      const keys = new Set(fyMonthKeys(fy));
+      return st.entries
+        .filter(e=> e.staffId===staffId && keys.has(normalizeMonthKey(e.month)))
+        .reduce((acc,e)=> acc + toInt(e.delta), 0);
+    }
+
+    function totalAllStaffMonth(st, month, fn){
+      return st.staff.reduce((acc,s)=> acc + fn(st, s.id, month), 0);
+    }
+    function totalAllStaffFY(st, fy, fn){
+      return st.staff.reduce((acc,s)=> acc + fn(st, s.id, fy), 0);
+    }
+
+    // ★表示順（服務区分の間に合算①/②を挿入）＋「合算なしなら表示しない」
+    function buildDisplayOrder(st){
+      const base = st.leaveTypes.map(t=>({kind:'type', id:t.id}));
+      const order = base.slice();
+      const len = base.length;
+
+      const hasG1 = groupEnabled(st,'g1');
+      const hasG2 = groupEnabled(st,'g2');
+
+      const insert = (arr, pos, item)=>{
+        const p = clampPos(pos, arr.length);
+        arr.splice(p, 0, item);
+      };
+
+      let p1 = clampPos(st.sumConfig.g1.pos, len);
+      let p2 = clampPos(st.sumConfig.g2.pos, len);
+
+      if(hasG1){
+        insert(order, p1, {kind:'sum', group:'g1'});
+      }
+      if(hasG2){
+        const adj = (hasG1 && (p1 <= p2)) ? 1 : 0;
+        insert(order, p2 + adj, {kind:'sum', group:'g2'});
+      }
+      return order;
+    }
+
+    function monthTypeMapForStaff(st, staffId, month){
+      const map = new Map();
+      st.leaveTypes.forEach(t=> map.set(t.id, 0));
+      st.entries
+        .filter(e=> e.staffId===staffId && normalizeMonthKey(e.month)===normalizeMonthKey(month))
+        .forEach(e=>{
+          const tid = e.leaveTypeId || 'annual';
+          if(map.has(tid)) map.set(tid, (map.get(tid)||0) + toInt(e.delta));
+        });
+      return map;
+    }
+    function fyTypeMapForStaff(st, staffId, fy){
+      const keys = new Set(fyMonthKeys(fy));
+      const map = new Map();
+      st.leaveTypes.forEach(t=> map.set(t.id, 0));
+      st.entries
+        .filter(e=> e.staffId===staffId && keys.has(normalizeMonthKey(e.month)))
+        .forEach(e=>{
+          const tid = e.leaveTypeId || 'annual';
+          if(map.has(tid)) map.set(tid, (map.get(tid)||0) + toInt(e.delta));
+        });
+      return map;
+    }
+    // ★追加：個別月別一覧（staffMonthly）で、選択した月カードまでスクロール（ヘッダー分のオフセット考慮）
+    function scrollStaffMonthlyTo(mkey){
+      const mk = normalizeMonthKey(mkey || '');
+      if(!mk) return;
+
+      const el = document.getElementById(`sm_${mk}`);
+      if(!el) return;
+
+      const panel = document.getElementById('panelStaffMonthly');
+      const head = panel ? (panel.querySelector('.panelHeader.stickyBar') || panel.querySelector('.panelHeader')) : null;
+      const gap = 12; // ヘッダー下の余白
+
+      // いったん要素を上に寄せる（確実に位置決めするため auto）
+      el.scrollIntoView({ behavior: 'auto', block: 'start' });
+
+      // 実際のヘッダー位置から「見えるべき開始位置」を計算して微調整
+      if(head){
+        const headRect = head.getBoundingClientRect();
+        const elRect = el.getBoundingClientRect();
+        const desiredTop = headRect.bottom + gap;
+        const delta = elRect.top - desiredTop;
+        if(Math.abs(delta) > 1){
+          window.scrollBy({ top: delta, left: 0, behavior: 'auto' });
+        }
+
+        // 端末/ブラウザでレイアウト確定が遅れることがあるため、もう一度だけ補正
+        setTimeout(()=>{
+          const headRect2 = head.getBoundingClientRect();
+          const elRect2 = el.getBoundingClientRect();
+          const desiredTop2 = headRect2.bottom + gap;
+          const delta2 = elRect2.top - desiredTop2;
+          if(Math.abs(delta2) > 1){
+            window.scrollBy({ top: delta2, left: 0, behavior: 'auto' });
+          }
+        }, 60);
+      }
+    }
+
+
+function setTab(tab, persist=true){
+      const st = loadState();
+      const allowed = ['individual','staffMonthly','all','multi','fy','fytotal','settings'];
+      const t = allowed.includes(tab) ? tab : 'individual';
+
+      $('tabIndividual').classList.toggle('active', t==='individual');
+      $('tabStaffMonthly').classList.toggle('active', t==='staffMonthly');
+      $('tabAll').classList.toggle('active', t==='all');
+      $('tabMulti').classList.toggle('active', t==='multi');
+      $('tabFY').classList.toggle('active', t==='fy');
+      $('tabFYTotal').classList.toggle('active', t==='fytotal');
+      $('tabSettings').classList.toggle('active', t==='settings');
+
+      $('panelIndividual').style.display = (t==='individual') ? '' : 'none';
+      $('panelStaffMonthly').style.display = (t==='staffMonthly') ? '' : 'none';
+      $('panelAll').style.display = (t==='all') ? '' : 'none';
+      $('panelMulti').style.display = (t==='multi') ? '' : 'none';
+      $('panelFY').style.display = (t==='fy') ? '' : 'none';
+      $('panelFYTotal').style.display = (t==='fytotal') ? '' : 'none';
+      $('panelSettings').style.display = (t==='settings') ? '' : 'none';
+
+      document.body.classList.toggle('settingsMode', t==='settings');
+      document.body.classList.toggle('allMode', t==='all');
+      document.body.classList.toggle('multiMode', t==='multi');
+      document.body.classList.toggle('fyMode', t==='fy');
+      document.body.classList.toggle('fytotalMode', t==='fytotal');
+      document.body.classList.toggle('staffMonthlyMode', t==='staffMonthly');
+
+      // staffMonthly: 月選択後は該当月カードまで移動
+      if(t==='staffMonthly'){
+        const mk = st.currentMonth || (document.getElementById('monthInputSM')?.value) || monthNowStr();
+        requestAnimationFrame(()=> scrollStaffMonthlyTo(mk));
+      }
+
+      if(persist){
+        st.currentTab = t;
+        saveState(st);
+      }
+    }
+
+    function setMonthAndSync(m){
+      const mk = normalizeMonthKey(m || monthNowStr());
+      $('monthInput').value = mk;
+      $('monthInputAll').value = mk;
+      const sm = document.getElementById('monthInputSM');
+      if(sm) sm.value = mk;
+
+      const y = Number(mk.slice(0,4));
+      const mm = Number(mk.slice(5,7));
+      const fy = (mm>=4) ? y : (y-1);
+      $('fyInput').value = fy;
+      $('fyInput2').value = fy;
+            $('fyInputMulti').value = fy;
+
+      const st = loadState();
+      st.currentMonth = mk;
+      st.currentFY = fy;
+      if(!st.multi || typeof st.multi!=='object') st.multi = {};
+      if(!st.multi.fy) st.multi.fy = fy;
+      if(!st.multi.targetId) st.multi.targetId = st.currentStaffId;
+      if(!Array.isArray(st.multi.months)) st.multi.months = [mk];
+      saveState(st);
+    }
+
+    function setFYAndSync(fy){
+      const y = Number(fy || yearNowStr());
+      $('fyInput').value = y;
+      $('fyInput2').value = y;
+      const fySM = document.getElementById('fyInputSM');
+      if(fySM) fySM.value = y;
+      $('fyInputMulti').value = y;
+      const st = loadState();
+      st.currentFY = y;
+      if(!st.multi || typeof st.multi!=='object') st.multi = {};
+      if(!st.multi.fy) st.multi.fy = y;
+      saveState(st);
+    }
+
+    function fillStaffSelect(selectEl, st, selectedId){
+      selectEl.innerHTML = '';
+      st.staff.forEach(s=>{
+        const opt = document.createElement('option');
+        opt.value = s.id;
+        opt.textContent = s.name;
+        if(s.id===selectedId) opt.selected = true;
+        selectEl.appendChild(opt);
+      });
+    }
+
+    function renderIndividualHistory(st, staffId, month){
+      const tbody = $('histBody');
+      tbody.innerHTML = '';
+      const mk = normalizeMonthKey(month);
+      const list = st.entries
+        .filter(e=> e.staffId===staffId && normalizeMonthKey(e.month)===mk)
+        .sort((a,b)=> (b.createdAt||0)-(a.createdAt||0));
+
+      list.forEach((e, i)=>{
+        const type = getType(st, e.leaveTypeId||'annual');
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td class="center">${i+1}</td>
+          <td>${escapeHtml(e.date||'')}</td>
+          <td>
+            <span class="tag" title="${escapeHtml(type.name)}">
+              <span class="dot2" style="background:${typeColor(type.id)}"></span>
+              ${escapeHtml(type.name)}
+            </span>
+          </td>
+          <td>${fmt(toInt(e.d),toInt(e.h),toInt(e.m))}</td>
+          <td>${toInt(e.delta)}</td>
+          <td class="center"><button class="secondary" data-act="delete" data-id="${e.id}" type="button">削除</button></td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function renderKpiMyMonth(st, staffId, month){
+      const myWrap = $('myMonthList');
+      myWrap.innerHTML = '';
+      st.leaveTypes.forEach(t=>{
+        const v = totalForMonthType(st, staffId, month, t.id);
+        const item = document.createElement('div');
+        item.className = 'kpiItem';
+        item.innerHTML = `
+          <div class="left">
+            <span class="dot2" style="background:${typeColor(t.id)}"></span>
+            <div class="name" style="--tcolor:${typeColor(t.id)}">${escapeHtml(t.name)}</div>
+          </div>
+          <b>${fmtMin(v)}</b>
+        `;
+        myWrap.appendChild(item);
+      });
+    }
+
+    // ===== 月別一覧（カード型） =====
+    function renderAllMonthCards(st, month){
+      const wrap = $('allStaffCards');
+      wrap.innerHTML = '';
+      const order = buildDisplayOrder(st);
+
+      const hasG1 = groupEnabled(st,'g1');
+      const hasG2 = groupEnabled(st,'g2');
+
+      const g1Ids = groupTypeIds(st,'g1');
+      const g2Ids = groupTypeIds(st,'g2');
+      const g1Desc = getSumDesc(st,'g1');
+      const g2Desc = getSumDesc(st,'g2');
+
+      st.staff.forEach(s=>{
+        const map = monthTypeMapForStaff(st, s.id, month);
+        const g1 = sumOfTypesForMonth(st, s.id, month, g1Ids);
+        const g2 = sumOfTypesForMonth(st, s.id, month, g2Ids);
+        const all = totalForMonthAllTypes(st, s.id, month);
+
+        const lines = [];
+        order.forEach(it=>{
+          if(it.kind==='type'){
+            const t = getType(st, it.id);
+            const v = map.get(it.id) || 0;
+            lines.push(`
+              <div class="line">
+                <span class="k" style="--tcolor:${typeColor(t.id)}">${escapeHtml(t.name)}</span>
+                <span class="v">${v===0?'0':fmtMin(v)}</span>
+              </div>
+            `);
+          }else if(it.kind==='sum' && it.group==='g1'){
+            lines.push(`
+              <div class="line total">
+                <span class="k">${escapeHtml(st.sumConfig.g1.label)}<span class="sub">${escapeHtml(g1Desc)}</span></span>
+                <span class="v">${g1===0?'0':fmtMin(g1)}</span>
+              </div>
+            `);
+          }else if(it.kind==='sum' && it.group==='g2'){
+            lines.push(`
+              <div class="line total">
+                <span class="k">${escapeHtml(st.sumConfig.g2.label)}<span class="sub">${escapeHtml(g2Desc)}</span></span>
+                <span class="v">${g2===0?'0':fmtMin(g2)}</span>
+              </div>
+            `);
+          }
+        });
+        lines.push(`
+          <div class="line total">
+            <span class="k">全合計</span>
+            <span class="v">${all===0?'0':fmtMin(all)}</span>
+          </div>
+        `);
+
+        const headSums = [];
+        if(hasG1) headSums.push(`<span>${escapeHtml(st.sumConfig.g1.label)}：${fmtMin(g1)}</span>`);
+        if(hasG2) headSums.push(`<span>${escapeHtml(st.sumConfig.g2.label)}：${fmtMin(g2)}</span>`);
+        headSums.push(`<span>全合計：${fmtMin(all)}</span>`);
+
+        const card = document.createElement('div');
+        card.id = 'allStaff_' + s.id;
+        card.className = 'staffCard';
+        card.innerHTML = `
+          <div class="staffCardHead">
+            <div class="name" title="${escapeHtml(s.name)}">${escapeHtml(s.name)}</div>
+            <div class="sum">${headSums.join('')}</div>
+          </div>
+          <div class="staffCardBody">
+            <div class="lines">${lines.join('')}</div>
+          </div>
+        `;
+        wrap.appendChild(card);
+      });
+    }
+
+    // ===== 年度合計（カード型） =====
+    function renderFYTotalCards(st, fy){
+      const wrap = $('fyTotalStaffCards');
+      wrap.innerHTML = '';
+      const order = buildDisplayOrder(st);
+
+      const hasG1 = groupEnabled(st,'g1');
+      const hasG2 = groupEnabled(st,'g2');
+
+      const g1Ids = groupTypeIds(st,'g1');
+      const g2Ids = groupTypeIds(st,'g2');
+      const g1Desc = getSumDesc(st,'g1');
+      const g2Desc = getSumDesc(st,'g2');
+
+      st.staff.forEach(s=>{
+        const map = fyTypeMapForStaff(st, s.id, fy);
+        const g1 = sumOfTypesForFY(st, s.id, fy, g1Ids);
+        const g2 = sumOfTypesForFY(st, s.id, fy, g2Ids);
+        const all = totalForFYAllTypes(st, s.id, fy);
+
+        const lines = [];
+        order.forEach(it=>{
+          if(it.kind==='type'){
+            const t = getType(st, it.id);
+            const v = map.get(it.id) || 0;
+            lines.push(`
+              <div class="line">
+                <span class="k" style="--tcolor:${typeColor(t.id)}">${escapeHtml(t.name)}</span>
+                <span class="v">${v===0?'0':fmtMin(v)}</span>
+              </div>
+            `);
+          }else if(it.kind==='sum' && it.group==='g1'){
+            lines.push(`
+              <div class="line total">
+                <span class="k">${escapeHtml(st.sumConfig.g1.label)}<span class="sub">${escapeHtml(g1Desc)}</span></span>
+                <span class="v">${g1===0?'0':fmtMin(g1)}</span>
+              </div>
+            `);
+          }else if(it.kind==='sum' && it.group==='g2'){
+            lines.push(`
+              <div class="line total">
+                <span class="k">${escapeHtml(st.sumConfig.g2.label)}<span class="sub">${escapeHtml(g2Desc)}</span></span>
+                <span class="v">${g2===0?'0':fmtMin(g2)}</span>
+              </div>
+            `);
+          }
+        });
+        lines.push(`
+          <div class="line total">
+            <span class="k">全合計</span>
+            <span class="v">${all===0?'0':fmtMin(all)}</span>
+          </div>
+        `);
+
+        const headSums = [];
+        if(hasG1) headSums.push(`<span>${escapeHtml(st.sumConfig.g1.label)}：${fmtMin(g1)}</span>`);
+        if(hasG2) headSums.push(`<span>${escapeHtml(st.sumConfig.g2.label)}：${fmtMin(g2)}</span>`);
+        headSums.push(`<span>全合計：${fmtMin(all)}</span>`);
+
+        const card = document.createElement('div');
+        card.id = 'allStaff_' + s.id;
+        card.className = 'staffCard';
+        card.innerHTML = `
+          <div class="staffCardHead">
+            <div class="name" title="${escapeHtml(s.name)}">${escapeHtml(s.name)}</div>
+            <div class="sum">${headSums.join('')}</div>
+          </div>
+          <div class="staffCardBody">
+            <div class="lines">${lines.join('')}</div>
+          </div>
+        `;
+        wrap.appendChild(card);
+      });
+    }
+
+    // ===== 年度別一覧 =====
+    function renderFYMatrix(st, fy){
+      const wrap = $('fyMatrix');
+      wrap.innerHTML = '';
+      const months = fyMonthKeys(fy);
+      const labels = [
+        `${fy}年度 4月`,`5月`,`6月`,`7月`,`8月`,`9月`,
+        `10月`,`11月`,`12月`,`${fy+1}年 1月`,`2月`,`3月`
+      ];
+
+      const order = buildDisplayOrder(st);
+      const hasG1 = groupEnabled(st,'g1');
+      const hasG2 = groupEnabled(st,'g2');
+
+      const g1Ids = groupTypeIds(st,'g1');
+      const g2Ids = groupTypeIds(st,'g2');
+
+      st.staff.forEach(s=>{
+        const g1FY = sumOfTypesForFY(st, s.id, fy, g1Ids);
+        const g2FY = sumOfTypesForFY(st, s.id, fy, g2Ids);
+        const allFY = totalForFYAllTypes(st, s.id, fy);
+
+        const card = document.createElement('div');
+        card.className = 'fyStaffCard';
+
+        const head = document.createElement('div');
+        head.className = 'fyStaffHead';
+
+        const headSums = [];
+        if(hasG1) headSums.push(`<span>${escapeHtml(st.sumConfig.g1.label)}：${fmtMin(g1FY)}</span>`);
+        if(hasG2) headSums.push(`<span>${escapeHtml(st.sumConfig.g2.label)}：${fmtMin(g2FY)}</span>`);
+        headSums.push(`<span>全合計：${fmtMin(allFY)}</span>`);
+
+        head.innerHTML = `
+          <div class="name" title="${escapeHtml(s.name)}">${escapeHtml(s.name)}</div>
+          <div class="sum">${headSums.join('')}</div>
+        `;
+
+        const grid = document.createElement('div');
+        grid.className = 'fyGrid12';
+
+        months.forEach((mkey, i)=>{
+          const map = monthTypeMapForStaff(st, s.id, mkey);
+
+          let sumAll = 0;
+          st.leaveTypes.forEach(tp=> sumAll += (map.get(tp.id)||0));
+          const sumG1 = sumOfTypesForMonth(st, s.id, mkey, g1Ids);
+          const sumG2 = sumOfTypesForMonth(st, s.id, mkey, g2Ids);
+
+          const cell = document.createElement('div');
+          cell.className = 'fyCell';
+
+          const lines = [];
+          order.forEach(it=>{
+            if(it.kind==='type'){
+              const tp = getType(st, it.id);
+              const v = map.get(it.id) || 0;
+              const zero = (v===0) ? 'zero' : '';
+              lines.push(`
+                <div class="fyLine ${zero}">
+                  <span class="k" style="--tcolor:${typeColor(tp.id)}">${escapeHtml(tp.name)}</span>
+                  <span class="v">${v===0?'0':fmtMin(v)}</span>
+                </div>
+              `);
+            }else if(it.kind==='sum' && it.group==='g1'){
+              const zero = (sumG1===0) ? 'zero' : '';
+              lines.push(`
+                <div class="fyLine total ${zero}">
+                  <span class="k">${escapeHtml(st.sumConfig.g1.label)}</span><span class="v">${sumG1===0?'0':fmtMin(sumG1)}</span>
+                </div>
+              `);
+            }else if(it.kind==='sum' && it.group==='g2'){
+              const zero = (sumG2===0) ? 'zero' : '';
+              lines.push(`
+                <div class="fyLine total ${zero}">
+                  <span class="k">${escapeHtml(st.sumConfig.g2.label)}</span><span class="v">${sumG2===0?'0':fmtMin(sumG2)}</span>
+                </div>
+              `);
+            }
+          });
+
+          lines.push(`
+            <div class="fyLine total ${sumAll===0?'zero':''}">
+              <span class="k">全合計</span><span class="v">${sumAll===0?'0':fmtMin(sumAll)}</span>
+            </div>
+          `);
+
+          cell.innerHTML = `
+            <div class="m">${escapeHtml(labels[i])}</div>
+            <div class="lines">${lines.join('')}</div>
+          `;
+          grid.appendChild(cell);
+        });
+
+        card.appendChild(head);
+        card.appendChild(grid);
+        wrap.appendChild(card);
+      });
+    }
+
+    // ===== 個別月別一覧 =====
+    function renderStaffMonthlyCards(st, staffId, fy){
+      const wrap = $('staffMonthlyCards');
+      wrap.innerHTML = '';
+      const months = fyMonthKeys(fy);
+      const labels = [
+        `${fy}年度 4月`,`5月`,`6月`,`7月`,`8月`,`9月`,
+        `10月`,`11月`,`12月`,`${fy+1}年 1月`,`2月`,`3月`
+      ];
+
+      const order = buildDisplayOrder(st);
+
+      const g1Ids = groupTypeIds(st,'g1');
+      const g2Ids = groupTypeIds(st,'g2');
+      const g1Desc = getSumDesc(st,'g1');
+      const g2Desc = getSumDesc(st,'g2');
+
+      months.forEach((mkey, idx)=>{
+        const map = monthTypeMapForStaff(st, staffId, mkey);
+        let sumAll = 0;
+        st.leaveTypes.forEach(tp=> sumAll += (map.get(tp.id)||0));
+        const sumG1 = sumOfTypesForMonth(st, staffId, mkey, g1Ids);
+        const sumG2 = sumOfTypesForMonth(st, staffId, mkey, g2Ids);
+
+        const rows = [];
+        order.forEach(it=>{
+          if(it.kind==='type'){
+            const tp = getType(st, it.id);
+            const v = map.get(it.id) || 0;
+            rows.push(`
+              <div class="mrow">
+                <span class="k" style="--tcolor:${typeColor(tp.id)}">${escapeHtml(tp.name)}</span>
+                <span class="v">${v===0 ? '0' : fmtMin(v)}</span>
+              </div>
+            `);
+          }else if(it.kind==='sum' && it.group==='g1'){
+            rows.push(`
+              <div class="mrow total">
+                <span class="k">${escapeHtml(st.sumConfig.g1.label)}<span class="sub">${escapeHtml(g1Desc)}</span></span>
+                <span class="v">${sumG1===0 ? '0' : fmtMin(sumG1)}</span>
+              </div>
+            `);
+          }else if(it.kind==='sum' && it.group==='g2'){
+            rows.push(`
+              <div class="mrow total">
+                <span class="k">${escapeHtml(st.sumConfig.g2.label)}<span class="sub">${escapeHtml(g2Desc)}</span></span>
+                <span class="v">${sumG2===0 ? '0' : fmtMin(sumG2)}</span>
+              </div>
+            `);
+          }
+        });
+
+        rows.push(`
+          <div class="mrow total">
+            <span class="k">全合計</span>
+            <span class="v">${sumAll===0 ? '0' : fmtMin(sumAll)}</span>
+          </div>
+        `);
+
+        const card = document.createElement('div');
+        card.className = 'mcard';
+        card.id = `sm_${mkey}`;
+        card.setAttribute('data-month', mkey);
+
+        card.innerHTML = `
+          <div class="mcardHead">
+            <div class="m">${escapeHtml(labels[idx])}</div>
+            <div class="r"><span class="chip"><strong>${escapeHtml(mkey)}</strong></span></div>
+          </div>
+          <div class="mcardBody"><div class="mgrid">${rows.join('')}</div></div>
+        `;
+        wrap.appendChild(card);
+      });
+
+      // 年度合計カード
+      const mapFY = fyTypeMapForStaff(st, staffId, fy);
+      let fyAll = 0;
+      st.leaveTypes.forEach(tp=> fyAll += (mapFY.get(tp.id)||0));
+      const fyG1 = sumOfTypesForFY(st, staffId, fy, g1Ids);
+      const fyG2 = sumOfTypesForFY(st, staffId, fy, g2Ids);
+
+      const fyRows = [];
+      order.forEach(it=>{
+        if(it.kind==='type'){
+          const tp = getType(st, it.id);
+          const v = mapFY.get(it.id) || 0;
+          fyRows.push(`
+            <div class="mrow">
+              <span class="k" style="--tcolor:${typeColor(tp.id)}">${escapeHtml(tp.name)}</span>
+              <span class="v">${v===0 ? '0' : fmtMin(v)}</span>
+            </div>
+          `);
+        }else if(it.kind==='sum' && it.group==='g1'){
+          fyRows.push(`
+            <div class="mrow total">
+              <span class="k">年度 ${escapeHtml(st.sumConfig.g1.label)}<span class="sub">${escapeHtml(getSumDesc(st,'g1'))}</span></span>
+              <span class="v">${fyG1===0 ? '0' : fmtMin(fyG1)}</span>
+            </div>
+          `);
+        }else if(it.kind==='sum' && it.group==='g2'){
+          fyRows.push(`
+            <div class="mrow total">
+              <span class="k">年度 ${escapeHtml(st.sumConfig.g2.label)}<span class="sub">${escapeHtml(getSumDesc(st,'g2'))}</span></span>
+              <span class="v">${fyG2===0 ? '0' : fmtMin(fyG2)}</span>
+            </div>
+          `);
+        }
+      });
+      fyRows.push(`
+        <div class="mrow total">
+          <span class="k">年度 全合計</span>
+          <span class="v">${fyAll===0 ? '0' : fmtMin(fyAll)}</span>
+        </div>
+      `);
+
+      const sumCard = document.createElement('div');
+      sumCard.className = 'mcard';
+      sumCard.innerHTML = `
+        <div class="mcardHead"><div class="m">${fy}年度 合計</div></div>
+        <div class="mcardBody"><div class="mgrid">${fyRows.join('')}</div></div>
+      `;
+      wrap.appendChild(sumCard);
+    }
+
+    // ===== 複数月集計 =====
+    function totalsForTargetMonths(st, targetId, months){
+      const keys = new Set((months||[]).map(normalizeMonthKey).filter(Boolean));
+      const byType = new Map();
+      st.leaveTypes.forEach(t=> byType.set(t.id, 0));
+
+      const addEntry = (e)=>{
+        const mid = normalizeMonthKey(e.month);
+        if(!keys.has(mid)) return;
+        const tid = e.leaveTypeId || 'annual';
+        if(byType.has(tid)) byType.set(tid, (byType.get(tid)||0) + toInt(e.delta));
+      };
+
+      if(targetId==='__all__'){
+        st.entries.forEach(addEntry);
+      }else{
+        st.entries.filter(e=> e.staffId===targetId).forEach(addEntry);
+      }
+
+      let totalAll = 0;
+      for(const v of byType.values()) totalAll += v;
+
+      const g1Ids = groupTypeIds(st,'g1');
+      const g2Ids = groupTypeIds(st,'g2');
+      const g1 = g1Ids.reduce((acc,id)=> acc + (byType.get(id)||0), 0);
+      const g2 = g2Ids.reduce((acc,id)=> acc + (byType.get(id)||0), 0);
+
+      return { byType, totalAll, g1, g2 };
+    }
+
+    function renderMulti(st){
+      const multi = st.multi || { fy: st.currentFY, targetId: st.currentStaffId, months:[st.currentMonth] };
+      const fy = Number(multi.fy || st.currentFY);
+      const monthsFY = fyMonthKeys(fy);
+
+      const sel = $('multiTargetSelect');
+      sel.innerHTML = '';
+      const optAll = document.createElement('option');
+      optAll.value = '__all__';
+      optAll.textContent = '全職員（合計）';
+      sel.appendChild(optAll);
+      st.staff.forEach(s=>{
+        const opt = document.createElement('option');
+        opt.value = s.id;
+        opt.textContent = s.name;
+        sel.appendChild(opt);
+      });
+      if(!multi.targetId) multi.targetId = st.currentStaffId;
+      if(multi.targetId !== '__all__' && !st.staff.some(s=>s.id===multi.targetId)) multi.targetId = st.currentStaffId;
+      sel.value = multi.targetId;
+
+      $('fyInputMulti').value = fy;
+
+      const chosen = new Set((multi.months||[]).map(normalizeMonthKey));
+      const fySet = new Set(monthsFY);
+      const cleaned = Array.from(chosen).filter(m=>fySet.has(m));
+      if(cleaned.length !== (multi.months||[]).length){
+        multi.months = cleaned;
+        st.multi = multi; saveState(st);
+      }
+
+      const box = $('multiMonthChecks');
+      box.innerHTML = '';
+
+      const monthNums = [4,5,6,7,8,9,10,11,12,1,2,3];
+      monthsFY.forEach((mkey, idx)=>{
+        const id = `mchk_${mkey.replace('-','_')}`;
+        const yearLine = (idx <= 8) ? `${fy}年度` : `${fy+1}年`;
+        const monthLine = `${monthNums[idx]}月`;
+
+        const wrap = document.createElement('label');
+        wrap.className = 'mchk';
+        wrap.setAttribute('for', id);
+        wrap.innerHTML = `
+          <input type="checkbox" id="${id}" data-month="${mkey}" ${chosen.has(mkey)?'checked':''}>
+          <span class="lab"><span class="top">${escapeHtml(yearLine)}</span><span class="bot">${escapeHtml(monthLine)}</span></span>
+          <span class="sub">${escapeHtml(mkey)}</span>
+        `;
+        box.appendChild(wrap);
+      });
+
+      const selectedMonths = monthsFY.filter(m=>chosen.has(m));
+      $('multiCount').textContent = String(selectedMonths.length);
+      $('multiLabel').textContent = selectedMonths.length ? selectedMonths.join(' / ') : '（未選択）';
+
+      const t = totalsForTargetMonths(st, multi.targetId, selectedMonths);
+      $('multiG1').textContent = fmtMin(t.g1);
+      $('multiG2').textContent = fmtMin(t.g2);
+      $('multiAll').textContent = fmtMin(t.totalAll);
+
+      const list = $('multiTotals');
+      list.innerHTML = '';
+      st.leaveTypes.forEach(tp=>{
+        const v = t.byType.get(tp.id) || 0;
+        const item = document.createElement('div');
+        item.className = 'kpiItem';
+        item.innerHTML = `
+          <div class="left">
+            <span class="dot2" style="background:${typeColor(tp.id)}"></span>
+            <div class="name" style="--tcolor:${typeColor(tp.id)}">${escapeHtml(tp.name)}</div>
+          </div>
+          <b>${fmtMin(v)}</b>
+        `;
+        list.appendChild(item);
+      });
+
+      st.multi = multi;
+      saveState(st);
+    }
+
+    // ===== 設定：職員 =====
+    function renderSettingsStaff(st){
+      const tbody = $('staffBody');
+      tbody.innerHTML = '';
+      st.staff.forEach((s, idx)=>{
+        const delDisabled = (st.staff.length<=1);
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td class="center">${idx+1}</td>
+          <td>
+            <input type="text" value="${escapeHtml(s.name)}" data-staff-name="${s.id}" />
+            <div class="small" style="color:#94a3b8; margin-top:6px">ID: ${escapeHtml(String(s.id).slice(0,8))}...</div>
+          </td>
+          <td class="center">
+            <button class="secondary" data-act="savestaff" data-id="${s.id}" type="button">保存</button>
+            <button class="danger" data-act="delstaff" data-id="${s.id}" type="button" ${delDisabled?'disabled':''}>削除</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    // ===== 設定：服務区分（合算グループ選択） =====
+    function whichGroupOfType(st, typeId){
+      const g1 = new Set(groupTypeIds(st,'g1'));
+      const g2 = new Set(groupTypeIds(st,'g2'));
+      if(g1.has(typeId)) return 'g1';
+      if(g2.has(typeId)) return 'g2';
+      return 'none';
+    }
+
+    function setTypeGroup(st, typeId, group){
+      st.sumConfig.g1.typeIds = st.sumConfig.g1.typeIds.filter(id=>id!==typeId);
+      st.sumConfig.g2.typeIds = st.sumConfig.g2.typeIds.filter(id=>id!==typeId);
+      if(group==='g1') st.sumConfig.g1.typeIds.push(typeId);
+      if(group==='g2') st.sumConfig.g2.typeIds.push(typeId);
+      ensureSumConfig(st);
+    }
+
+    function renderSettingsTypes(st){
+      const tbody = $('typeBody');
+      tbody.innerHTML = '';
+      st.leaveTypes.forEach((t, idx)=>{
+        const grp = whichGroupOfType(st, t.id);
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td class="center">${idx+1}</td>
+          <td>
+            <div style="display:flex; gap:10px; align-items:center">
+              <span class="dot2" style="background:${typeColor(t.id)}"></span>
+              <input type="text" value="${escapeHtml(t.name)}" data-type-name="${t.id}" style="--tcolor:${typeColor(t.id)}" />
+            </div>
+            <div class="small" style="color:#94a3b8; margin-top:6px">ID: ${escapeHtml(t.id)}</div>
+          </td>
+          <td class="center">
+            <select data-act="setGroup" data-id="${t.id}" style="width:140px">
+              <option value="none" ${grp==='none'?'selected':''}>なし</option>
+              <option value="g1" ${grp==='g1'?'selected':''}>${escapeHtml(st.sumConfig.g1.label)}</option>
+              <option value="g2" ${grp==='g2'?'selected':''}>${escapeHtml(st.sumConfig.g2.label)}</option>
+            </select>
+          </td>
+          <td class="center">
+            <button class="secondary" data-act="savetype" data-id="${t.id}" type="button">保存</button>
+            <button class="danger" data-act="deltype" data-id="${t.id}" type="button">削除</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      $('typeCount').textContent = `${st.leaveTypes.length} / 5`;
+      $('g1Count').textContent = `${st.sumConfig.g1.typeIds.length}`;
+      $('g2Count').textContent = `${st.sumConfig.g2.typeIds.length}`;
+    }
+
+    function buildPosOptions(st){
+      const types = st.leaveTypes.map(t=>t.name);
+      const len = types.length;
+
+      const opts = [];
+      opts.push({value:0, label:`先頭（${types[0] ? escapeHtml(types[0])+' の前' : '服務区分の前'}）`});
+      for(let i=1;i<len;i++){
+        opts.push({value:i, label:`${escapeHtml(types[i-1])} と ${escapeHtml(types[i])} の間`});
+      }
+      opts.push({value:len, label:`末尾（最後の後）`});
+      return opts;
+    }
+
+    function renderSumPosSelects(st){
+      const opts = buildPosOptions(st);
+
+      const s1 = $('sumPosG1');
+      const s2 = $('sumPosG2');
+      s1.innerHTML = '';
+      s2.innerHTML = '';
+      opts.forEach(o=>{
+        const op1 = document.createElement('option');
+        op1.value = String(o.value);
+        op1.textContent = o.label;
+        s1.appendChild(op1);
+
+        const op2 = document.createElement('option');
+        op2.value = String(o.value);
+        op2.textContent = o.label;
+        s2.appendChild(op2);
+      });
+
+      s1.value = String(clampPos(st.sumConfig.g1.pos, st.leaveTypes.length));
+      s2.value = String(clampPos(st.sumConfig.g2.pos, st.leaveTypes.length));
+    }
+
+    // ===== Excel/JSON =====
+    function ensureXLSX(){
+      if(typeof XLSX==='undefined'){
+        alert('Excel出力ライブラリの読み込みに失敗しました。ネットワーク接続をご確認ください。');
+        return false;
+      }
+      return true;
+    }
+
+    function exportIndividualXlsx(){
+      if(!ensureXLSX()) return;
+      const st = loadState();
+      const staffId = st.currentStaffId;
+      const staff = st.staff.find(s=>s.id===staffId) || {name:'unknown'};
+      const month = normalizeMonthKey($('monthInput').value || monthNowStr());
+      const fy = Number($('fyInput').value || yearNowStr());
+      const cols = st.leaveTypes;
+
+      const list = st.entries
+        .filter(e=> e.staffId===staffId && normalizeMonthKey(e.month)===month)
+        .sort((a,b)=> (a.createdAt||0)-(b.createdAt||0));
+
+      const g1Ids = groupTypeIds(st,'g1');
+      const g2Ids = groupTypeIds(st,'g2');
+      const g1 = sumOfTypesForMonth(st, staffId, month, g1Ids);
+      const g2 = sumOfTypesForMonth(st, staffId, month, g2Ids);
+      const all = totalForMonthAllTypes(st, staffId, month);
+
+      const aoa1 = [
+        ['月', month],
+        ['職員名', staff.name],
+        [st.sumConfig.g1.label, fmtMin(g1)],
+        [st.sumConfig.g2.label, fmtMin(g2)],
+        ['全合計', fmtMin(all)],
+        [],
+        ['#','日付','服務区分','追加（日）','追加（時）','追加（分）','合計（分）']
+      ];
+      list.forEach((e,i)=>{
+        const t = getType(st, e.leaveTypeId||'annual').name;
+        aoa1.push([i+1, e.date||'', t, toInt(e.d), toInt(e.h), toInt(e.m), toInt(e.delta)]);
+      });
+
+      const aoa2 = [
+        ['年度', `${fy}年度`],
+        ['職員名', staff.name],
+        [],
+        ['月', ...cols.flatMap(t=>[`${t.name}（分）`, `${t.name}（表示）`]), `${st.sumConfig.g1.label}（分）`, `${st.sumConfig.g1.label}（表示）`, `${st.sumConfig.g2.label}（分）`, `${st.sumConfig.g2.label}（表示）`, '全合計（分）','全合計（表示）']
+      ];
+      fyMonthKeys(fy).forEach(mkey=>{
+        const parts = cols.map(t=> totalForMonthType(st, staffId, mkey, t.id));
+        const sumAll = parts.reduce((a,b)=>a+b,0);
+        const g1m = sumOfTypesForMonth(st, staffId, mkey, g1Ids);
+        const g2m = sumOfTypesForMonth(st, staffId, mkey, g2Ids);
+        const row = [mkey];
+        parts.forEach(v=> row.push(v, fmtMin(v)));
+        row.push(g1m, fmtMin(g1m), g2m, fmtMin(g2m), sumAll, fmtMin(sumAll));
+        aoa2.push(row);
+      });
+
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(aoa1), '個別_月内履歴');
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(aoa2), '個別_年度月別');
+      XLSX.writeFile(wb, `leave_time_${month}_${staff.name}.xlsx`);
+    }
+
+    function exportAllXlsx(){
+      if(!ensureXLSX()) return;
+      const st = loadState();
+      const month = normalizeMonthKey($('monthInputAll').value || $('monthInput').value || monthNowStr());
+      const cols = st.leaveTypes;
+      const g1Ids = groupTypeIds(st,'g1');
+      const g2Ids = groupTypeIds(st,'g2');
+
+      const aoa = [
+        ['月', month],
+        [],
+        ['#','職員名', ...cols.flatMap(t=>[`${t.name}（分）`, `${t.name}（表示）`]), `${st.sumConfig.g1.label}（分）`, `${st.sumConfig.g1.label}（表示）`, `${st.sumConfig.g2.label}（分）`, `${st.sumConfig.g2.label}（表示）`, '全合計（分）','全合計（表示）']
+      ];
+
+      staffList.forEach((s,i)=>{
+        const parts = cols.map(t=> totalForMonthType(st, s.id, month, t.id));
+        const sumAll = parts.reduce((a,b)=>a+b,0);
+        const g1 = sumOfTypesForMonth(st, s.id, month, g1Ids);
+        const g2 = sumOfTypesForMonth(st, s.id, month, g2Ids);
+        const row = [i+1, s.name];
+        parts.forEach(v=> row.push(v, fmtMin(v)));
+        row.push(g1, fmtMin(g1), g2, fmtMin(g2), sumAll, fmtMin(sumAll));
+        aoa.push(row);
+      });
+
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(aoa), '全職員_月一覧');
+      XLSX.writeFile(wb, `leave_time_all_${month}.xlsx`);
+    }
+
+    function exportFYXlsx(){
+      if(!ensureXLSX()) return;
+      const st = loadState();
+      const fy = Number($('fyInput2').value || yearNowStr());
+      const staffId = st.currentStaffId;
+      const staff = st.staff.find(s=>s.id===staffId) || {name:'unknown'};
+      const cols = st.leaveTypes;
+      const g1Ids = groupTypeIds(st,'g1');
+      const g2Ids = groupTypeIds(st,'g2');
+
+      const aoa1 = [
+        ['年度', `${fy}年度`],
+        [],
+        ['#','職員名', ...cols.flatMap(t=>[`${t.name}（分）`, `${t.name}（表示）`]), `${st.sumConfig.g1.label}（分）`, `${st.sumConfig.g1.label}（表示）`, `${st.sumConfig.g2.label}（分）`, `${st.sumConfig.g2.label}（表示）`, '全合計（分）','全合計（表示）']
+      ];
+      st.staff.forEach((s,i)=>{
+        const parts = cols.map(t=> totalForFYType(st, s.id, fy, t.id));
+        const sumAll = parts.reduce((a,b)=>a+b,0);
+        const g1 = sumOfTypesForFY(st, s.id, fy, g1Ids);
+        const g2 = sumOfTypesForFY(st, s.id, fy, g2Ids);
+        const row = [i+1, s.name];
+        parts.forEach(v=> row.push(v, fmtMin(v)));
+        row.push(g1, fmtMin(g1), g2, fmtMin(g2), sumAll, fmtMin(sumAll));
+        aoa1.push(row);
+      });
+
+      const aoa2 = [
+        ['年度', `${fy}年度`],
+        ['職員名', staff.name],
+        [],
+        ['月', ...cols.flatMap(t=>[`${t.name}（分）`, `${t.name}（表示）`]), `${st.sumConfig.g1.label}（分）`, `${st.sumConfig.g1.label}（表示）`, `${st.sumConfig.g2.label}（分）`, `${st.sumConfig.g2.label}（表示）`, '全合計（分）','全合計（表示）']
+      ];
+      fyMonthKeys(fy).forEach(mkey=>{
+        const parts = cols.map(t=> totalForMonthType(st, staffId, mkey, t.id));
+        const sumAll = parts.reduce((a,b)=>a+b,0);
+        const g1 = sumOfTypesForMonth(st, staffId, mkey, g1Ids);
+        const g2 = sumOfTypesForMonth(st, staffId, mkey, g2Ids);
+        const row = [mkey];
+        parts.forEach(v=> row.push(v, fmtMin(v)));
+        row.push(g1, fmtMin(g1), g2, fmtMin(g2), sumAll, fmtMin(sumAll));
+        aoa2.push(row);
+      });
+
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(aoa1), '全職員_年度合計');
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(aoa2), '選択職員_月別');
+      XLSX.writeFile(wb, `leave_time_fy_${fy}.xlsx`);
+    }
+
+    function exportStaffMonthlyXlsx(){
+      if(!ensureXLSX()) return;
+      const st = loadState();
+      const staffId = st.currentStaffId;
+      const staff = st.staff.find(s=>s.id===staffId) || {name:'unknown'};
+      const fy = fyFromMonthKey(($('monthInputSM') && $('monthInputSM').value) || st.currentMonth || monthNowStr());
+      const cols = st.leaveTypes;
+      const g1Ids = groupTypeIds(st,'g1');
+      const g2Ids = groupTypeIds(st,'g2');
+
+      const aoa = [
+        ['年度', `${fy}年度`],
+        ['職員名', staff.name],
+        [],
+        ['月', ...cols.flatMap(t=>[`${t.name}（分）`, `${t.name}（表示）`]), `${st.sumConfig.g1.label}（分）`, `${st.sumConfig.g1.label}（表示）`, `${st.sumConfig.g2.label}（分）`, `${st.sumConfig.g2.label}（表示）`, '全合計（分）','全合計（表示）']
+      ];
+      fyMonthKeys(fy).forEach(mkey=>{
+        const parts = cols.map(t=> totalForMonthType(st, staffId, mkey, t.id));
+        const sumAll = parts.reduce((a,b)=>a+b,0);
+        const g1 = sumOfTypesForMonth(st, staffId, mkey, g1Ids);
+        const g2 = sumOfTypesForMonth(st, staffId, mkey, g2Ids);
+        const row = [mkey];
+        parts.forEach(v=> row.push(v, fmtMin(v)));
+        row.push(g1, fmtMin(g1), g2, fmtMin(g2), sumAll, fmtMin(sumAll));
+        aoa.push(row);
+      });
+
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(aoa), '個別月別一覧');
+      XLSX.writeFile(wb, `leave_time_staff_monthly_${fy}_${staff.name}.xlsx`);
+    }
+
+    function exportMultiXlsx(){
+      if(!ensureXLSX()) return;
+      const st = loadState();
+      const multi = st.multi || {};
+      const fy = Number(multi.fy || st.currentFY);
+      const fyMonths = fyMonthKeys(fy);
+      const chosen = new Set((multi.months||[]).map(normalizeMonthKey));
+      const selectedMonths = fyMonths.filter(m=>chosen.has(m));
+      const targetId = multi.targetId || st.currentStaffId;
+
+      const targetName = (targetId==='__all__')
+        ? '全職員'
+        : (st.staff.find(s=>s.id===targetId)?.name || '（不明）');
+
+      const t = totalsForTargetMonths(st, targetId, selectedMonths);
+
+      const aoa = [
+        ['複数月集計'],
+        ['年度', `${fy}年度`],
+        ['対象', targetName],
+        ['選択月', selectedMonths.join(' / ') || '（未選択）'],
+        [],
+        ['服務区分','合計（分）','合計（表示）']
+      ];
+      st.leaveTypes.forEach(tp=>{
+        const v = t.byType.get(tp.id) || 0;
+        aoa.push([tp.name, v, fmtMin(v)]);
+      });
+      aoa.push([st.sumConfig.g1.label, t.g1, fmtMin(t.g1)]);
+      aoa.push([st.sumConfig.g2.label, t.g2, fmtMin(t.g2)]);
+      aoa.push(['全合計', t.totalAll, fmtMin(t.totalAll)]);
+
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(aoa), '複数月集計');
+      XLSX.writeFile(wb, `leave_time_multi_${fy}_${targetName}.xlsx`);
+    }
+
+    // ★追加：年度別一覧（FYマトリクス）のExcel
+    function exportFYMatrixXlsx(){
+      if(!ensureXLSX()) return;
+      const st = loadState();
+      const fy = Number($('fyInput').value || yearNowStr());
+      const cols = st.leaveTypes;
+      const g1Ids = groupTypeIds(st,'g1');
+      const g2Ids = groupTypeIds(st,'g2');
+
+      const aoa = [
+        ['年度', `${fy}年度`],
+        ['表示', '年度別一覧（職員×月）'],
+        [],
+        ['職員名','月', ...cols.flatMap(t=>[`${t.name}（分）`, `${t.name}（表示）`]),
+          `${st.sumConfig.g1.label}（分）`, `${st.sumConfig.g1.label}（表示）`,
+          `${st.sumConfig.g2.label}（分）`, `${st.sumConfig.g2.label}（表示）`,
+          '全合計（分）','全合計（表示）'
+        ]
+      ];
+
+      const months = fyMonthKeys(fy);
+      st.staff.forEach(s=>{
+        months.forEach(mkey=>{
+          const parts = cols.map(t=> totalForMonthType(st, s.id, mkey, t.id));
+          const sumAll = parts.reduce((a,b)=>a+b,0);
+          const g1 = sumOfTypesForMonth(st, s.id, mkey, g1Ids);
+          const g2 = sumOfTypesForMonth(st, s.id, mkey, g2Ids);
+          const row = [s.name, mkey];
+          parts.forEach(v=> row.push(v, fmtMin(v)));
+          row.push(g1, fmtMin(g1), g2, fmtMin(g2), sumAll, fmtMin(sumAll));
+          aoa.push(row);
+        });
+      });
+
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(aoa), '年度別一覧');
+      XLSX.writeFile(wb, `leave_time_fy_matrix_${fy}.xlsx`);
+    }
+
+    function exportJSON(){
+      const st = loadState();
+      const blob = new Blob([JSON.stringify(st, null, 2)], {type:'application/json'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `leave_time_backup_${todayStr()}.json`;
+      document.body.appendChild(a); a.click(); a.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    function importJSON(file){
+      const reader = new FileReader();
+      reader.onload = ()=>{
+        try{
+          const obj = JSON.parse(String(reader.result||''));
+          if(!obj || !Array.isArray(obj.staff) || !Array.isArray(obj.entries)){
+            alert('JSON形式が不正です（staff/entries が必要）');
+            return;
+          }
+          if(!confirm('JSONを復元します。現在の端末内データは置き換えられます。よろしいですか？')) return;
+
+          obj.version = VERSION;
+          if(!Array.isArray(obj.leaveTypes) || obj.leaveTypes.length===0) obj.leaveTypes = defaultTypes();
+          if(obj.leaveTypes.length>5) obj.leaveTypes = obj.leaveTypes.slice(0,5);
+
+          obj.entries = obj.entries.map(e=>({
+            ...e,
+            month: normalizeMonthKey(e.month || (e.date ? monthFromDate(e.date) : monthNowStr())),
+            leaveTypeId: e.leaveTypeId || obj.leaveTypes[0]?.id || 'annual',
+            delta: toInt(e.delta),
+            d: toInt(e.d),
+            h: toInt(e.h),
+            m: toInt(e.m),
+            createdAt: e.createdAt || Date.now()
+          }));
+
+          if(!obj.currentMonth) obj.currentMonth = monthNowStr();
+          obj.currentMonth = normalizeMonthKey(obj.currentMonth);
+          if(!obj.currentFY) obj.currentFY = Number(yearNowStr());
+          if(!obj.currentLeaveTypeId) obj.currentLeaveTypeId = obj.leaveTypes[0]?.id || 'annual';
+          if(!obj.currentTab) obj.currentTab = 'individual';
+
+          ensureSumConfig(obj);
+
+          saveState(obj);
+          render();
+          alert('復元しました。');
+        }catch(e){
+          alert('JSONの読み込みに失敗しました');
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    function wipeOnlyEntries(){
+      if(!confirm('履歴（入力データ）のみ全消去します。職員・服務区分設定は残します。よろしいですか？')) return;
+      const st = loadState();
+      st.entries = [];
+      saveState(st);
+      render();
+    }
+
+    // ===== 入力操作 =====
+    function addEntry(){
+      const st = loadState();
+      const staffId = $('staffSelect').value;
+
+      const date = $('dateInput').value || todayStr();
+      const month = normalizeMonthKey(monthFromDate(date) || ($('monthInput').value || monthNowStr()));
+      const leaveTypeId = $('leaveTypeSelect').value || st.leaveTypes[0]?.id || 'annual';
+
+      const d = toInt($('in_d').value);
+      const h = toInt($('in_h').value);
+      const m = toInt($('in_m').value);
+      const delta = totalMinutes(d,h,m);
+
+      if(delta===0){ alert('0は追加されません'); return; }
+
+      st.currentStaffId = staffId;
+      st.currentMonth = normalizeMonthKey($('monthInput').value || monthNowStr());
+      st.currentFY = Number($('fyInput').value || yearNowStr());
+      st.currentLeaveTypeId = leaveTypeId;
+
+      st.entries.push({
+        id: uuid(),
+        staffId,
+        date,
+        month,
+        leaveTypeId,
+        d,h,m,
+        delta,
+        createdAt: Date.now()
+      });
+
+      saveState(st);
+      clearInput(false);
+      render();
+    }
+
+    function undoLastForStaff(){
+      const st = loadState();
+      const staffId = $('staffSelect').value;
+      const idx = st.entries
+        .map((e,i)=>({e,i}))
+        .filter(x=>x.e.staffId===staffId)
+        .sort((a,b)=> (b.e.createdAt||0) - (a.e.createdAt||0))[0]?.i;
+      if(idx==null) return;
+      st.entries.splice(idx,1);
+      saveState(st);
+      render();
+    }
+
+    function duplicateLast(){
+      const st = loadState();
+      const staffId = $('staffSelect').value;
+      const last = st.entries
+        .filter(e=>e.staffId===staffId)
+        .sort((a,b)=> (b.createdAt||0) - (a.createdAt||0))[0];
+      if(!last) return;
+
+      $('dateInput').value = last.date || todayStr();
+      setMonthAndSync(last.month || monthFromDate(last.date || todayStr()));
+      $('leaveTypeSelect').value = last.leaveTypeId || (st.leaveTypes[0]?.id || 'annual');
+      $('in_d').value = String(toInt(last.d));
+      $('in_h').value = String(toInt(last.h));
+      $('in_m').value = String(toInt(last.m));
+      addEntry();
+    }
+
+    function deleteEntry(id){
+      const st = loadState();
+      const idx = st.entries.findIndex(e=>e.id===id);
+      if(idx<0) return;
+      st.entries.splice(idx, 1);
+      saveState(st);
+      render();
+    }
+
+    function clearInput(focus=true){
+      ['in_d','in_h','in_m'].forEach(id=> $(id).value='0');
+      if(focus) $('in_d').focus();
+    }
+
+    function resetAll(){
+      if(!confirm('全職員の履歴をすべて初期化します。よろしいですか？')) return;
+      const st = loadState();
+      st.entries = [];
+      saveState(st);
+      render();
+    }
+
+    function bulkDeleteMonthForStaff(staffId, month){
+      const st = loadState();
+      const mk = normalizeMonthKey(month);
+      const staff = st.staff.find(s=>s.id===staffId);
+      const name = staff ? staff.name : '（不明）';
+      if(!confirm(`【${name}】の【${mk}】データをまとめて削除します。よろしいですか？`)) return;
+      st.entries = st.entries.filter(e=> !(e.staffId===staffId && normalizeMonthKey(e.month)===mk));
+      saveState(st);
+      render();
+    }
+
+    function setPreset(d,h,m){
+      $('in_d').value = String(d);
+      $('in_h').value = String(h);
+      $('in_m').value = String(m);
+      $('in_h').focus();
+    }
+
+
+    // ★追加：指定した月入力（id）を前後移動（全タブの月UIで共通利用）
+    function shiftMonthInput(inputId, delta){
+      const el = document.getElementById(inputId);
+      if(!el) return;
+      const cur = normalizeMonthKey(el.value || monthNowStr());
+      const y = Number(cur.slice(0,4)), m = Number(cur.slice(5,7));
+      const d = new Date(y, m-1, 1);
+      d.setMonth(d.getMonth() + delta);
+      const next = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+      el.value = next;
+      setMonthAndSync(next);
+      render();
+    }
+
+    function addMonthsToMonthInput(delta){
+      const m = normalizeMonthKey($('monthInput').value || monthNowStr());
+      const y = Number(m.slice(0,4));
+      const mm = Number(m.slice(5,7));
+      const dt = new Date(y, mm-1, 1);
+      dt.setMonth(dt.getMonth() + delta);
+      const next = `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}`;
+      setMonthAndSync(next);
+      render();
+    }
+    function shiftFY(delta){
+      const fy = Number($('fyInput').value || yearNowStr()) + delta;
+      setFYAndSync(fy);
+      render();
+    }
+    function shiftFY2(delta){
+      const fy = Number($('fyInput2').value || yearNowStr()) + delta;
+      setFYAndSync(fy);
+      render();
+    }
+
+    // ★追加：複数月集計（multi）の年度送り（矢印が確実に動くように）
+    function shiftFYMulti(delta){
+      const st = loadState();
+      const cur = Number(document.getElementById('fyInputMulti')?.value || (st.multi?.fy) || st.currentFY || yearNowStr());
+      const next = cur + delta;
+
+      // 既存の選択月（同じ月番号）を維持して、新しい年度に付け替え
+      const prevMonths = (st.multi && Array.isArray(st.multi.months)) ? st.multi.months.slice() : [];
+      const monthNums = prevMonths.map(mk=> Number(String(mk).slice(5,7))).filter(n=> n>=1 && n<=12);
+      const uniqNums = Array.from(new Set(monthNums));
+      const nums = uniqNums.length ? uniqNums : [4,5,6,7,8,9,10,11,12,1,2,3];
+
+      st.multi = st.multi || {};
+      st.multi.fy = next;
+      st.multi.months = nums.map(m=>{
+        const y = (m>=4) ? next : (next + 1);
+        return `${y}-${String(m).padStart(2,'0')}`;
+      });
+
+      saveState(st);
+      setFYAndSync(next);
+      render();
+    }
+
+
+    // ===== 設定：職員 CRUD =====
+    function addStaff(){
+      const st = loadState();
+      const name = ($('newStaffName').value || '').trim();
+      if(!name){ alert('職員名を入力してください'); return; }
+      if(st.staff.length>=50){ alert('職員は最大50人です'); return; }
+
+      const id = uuid();
+      st.staff.push({id, name});
+      st.currentStaffId = id;
+      if(st.multi && st.multi.targetId !== '__all__') st.multi.targetId = id;
+      $('newStaffName').value = '';
+      saveState(st);
+      render();
+    }
+    function saveStaffName(id){
+      const st = loadState();
+      const input = document.querySelector(`input[data-staff-name="${CSS.escape(id)}"]`);
+      if(!input) return;
+      const name = (input.value || '').trim();
+      if(!name){ alert('職員名は空にできません'); return; }
+      const staff = st.staff.find(s=>s.id===id);
+      if(!staff) return;
+      staff.name = name;
+      saveState(st);
+      render();
+    }
+    function deleteStaff(id){
+      const st = loadState();
+      if(st.staff.length<=1){ alert('最低1人は必要です'); return; }
+      const staff = st.staff.find(s=>s.id===id);
+      if(!staff) return;
+
+      const used = st.entries.some(e=>e.staffId===id);
+      const msg = used
+        ? `「${staff.name}」を削除します。この職員の入力データもすべて削除されます。よろしいですか？`
+        : `「${staff.name}」を削除します。よろしいですか？`;
+      if(!confirm(msg)) return;
+
+      st.staff = st.staff.filter(s=>s.id!==id);
+      st.entries = st.entries.filter(e=>e.staffId!==id);
+
+      if(!st.staff.some(s=>s.id===st.currentStaffId)){
+        st.currentStaffId = st.staff[0].id;
+      }
+      if(st.multi && st.multi.targetId===id){
+        st.multi.targetId = st.currentStaffId;
+      }
+      saveState(st);
+      render();
+    }
+
+    // ===== 設定：服務区分 CRUD（最大5） =====
+    function addType(){
+      const st = loadState();
+      const name = ($('newTypeName').value || '').trim();
+      if(!name){ alert('服務区分名を入力してください'); return; }
+      if(st.leaveTypes.length>=5){
+        alert('服務区分は最大5つまでです。不要な服務区分を削除してから追加してください。');
+        return;
+      }
+      const id = 't_' + shortId();
+      st.leaveTypes.push({id, name});
+      st.currentLeaveTypeId = id;
+
+      ensureSumConfig(st);
+
+      $('newTypeName').value = '';
+      saveState(st);
+      render();
+    }
+    function saveTypeName(id){
+      const st = loadState();
+      const input = document.querySelector(`input[data-type-name="${CSS.escape(id)}"]`);
+      if(!input) return;
+      const name = (input.value || '').trim();
+      if(!name){ alert('服務区分名は空にできません'); return; }
+      const type = st.leaveTypes.find(t=>t.id===id);
+      if(!type) return;
+      type.name = name;
+      saveState(st);
+      render();
+    }
+    function deleteType(id){
+      const st = loadState();
+      const type = st.leaveTypes.find(t=>t.id===id);
+      if(!type) return;
+
+      const used = st.entries.some(e=> (e.leaveTypeId||'annual')===id);
+      const msg = used
+        ? `「${type.name}」を削除します。該当する記録は「不明」扱いになります（履歴は残ります）。よろしいですか？`
+        : `「${type.name}」を削除します。よろしいですか？`;
+      if(!confirm(msg)) return;
+
+      st.leaveTypes = st.leaveTypes.filter(t=>t.id!==id);
+      ensureSumConfig(st);
+
+      if(!st.leaveTypes.some(t=>t.id===st.currentLeaveTypeId)){
+        st.currentLeaveTypeId = st.leaveTypes[0]?.id || 'annual';
+      }
+      saveState(st);
+      render();
+    }
+
+    // ===== render =====
+    function render(){
+      const st = loadState();
+      ensureSumConfig(st);
+
+      const hasG1 = groupEnabled(st,'g1');
+      const hasG2 = groupEnabled(st,'g2');
+
+      if(!$('dateInput').value) $('dateInput').value = todayStr();
+      if(!$('monthInput').value) $('monthInput').value = st.currentMonth || monthNowStr();
+      if(!$('monthInputAll').value) $('monthInputAll').value = st.currentMonth || monthNowStr();
+      if(!$('fyInput').value) $('fyInput').value = st.currentFY || Number(yearNowStr());
+      if(!$('fyInput2').value) $('fyInput2').value = st.currentFY || Number(yearNowStr());
+      if(document.getElementById('monthInputSM') && !$('monthInputSM').value) $('monthInputSM').value = st.currentMonth || monthNowStr();
+      if(!$('fyInputMulti').value) $('fyInputMulti').value = (st.multi?.fy || st.currentFY || Number(yearNowStr()));
+
+      const month = normalizeMonthKey($('monthInput').value || monthNowStr());
+      $('monthInput').value = month;
+      $('monthInputAll').value = normalizeMonthKey($('monthInputAll').value || month);
+
+      const fy = Number($('fyInput').value || yearNowStr());
+      $('fyInput2').value = fy;
+      
+      st.currentMonth = month;
+      st.currentFY = fy;
+      saveState(st);
+
+      $('monthLabel').textContent = month;
+      $('fyLabel').textContent = `${fy}年度`;
+      $('fyTotalLabel').textContent = `${fy}年度`;
+      $('fyPanelFY').textContent = `${fy}年度`;
+
+      const _g1ind = $('g1Desc_ind'); if(_g1ind) _g1ind.textContent = getSumDesc(st,'g1');
+      const _g2ind = $('g2Desc_ind'); if(_g2ind) _g2ind.textContent = getSumDesc(st,'g2');
+      $('g1Desc_fy').textContent = getSumDesc(st,'g1');
+      $('g2Desc_fy').textContent = getSumDesc(st,'g2');
+
+      const togglePillBySpanId = (spanId, show)=>{
+        const sp = $(spanId);
+        const pill = sp ? sp.closest('.pill') : null;
+        if(pill) pill.style.display = show ? '' : 'none';
+      };
+      togglePillBySpanId('labelG1a', hasG1);
+      togglePillBySpanId('labelG2a', hasG2);
+      togglePillBySpanId('labelG1b', hasG1);
+      togglePillBySpanId('labelG2b', hasG2);
+      togglePillBySpanId('labelG1c', hasG1);
+      togglePillBySpanId('labelG2c', hasG2);
+      togglePillBySpanId('labelG1d', hasG1);
+      togglePillBySpanId('labelG2d', hasG2);
+
+      
+
+
+
+      fillStaffSelect($('staffSelect'), st, st.currentStaffId);
+      fillStaffSelect($('staffSelectAll'), st, st.currentStaffId);
+      fillStaffSelect($('staffSelectMonthly'), st, st.currentStaffId);
+
+      const staff = st.staff.find(x=>x.id===st.currentStaffId) || st.staff[0];
+      const staffId = staff.id;
+
+      $('chipStaffTop').textContent = staff.name;
+
+      $('leaveTypeSelect').innerHTML = '';
+      st.leaveTypes.forEach(t=>{
+        const opt = document.createElement('option');
+        opt.value = t.id;
+        opt.textContent = t.name;
+        $('leaveTypeSelect').appendChild(opt);
+      });
+      if(!st.leaveTypes.some(t=>t.id===st.currentLeaveTypeId)){
+        st.currentLeaveTypeId = st.leaveTypes[0]?.id || 'annual';
+        saveState(st);
+      }
+      $('leaveTypeSelect').value = st.currentLeaveTypeId;
+
+      $('chipMonth').textContent = month;
+      $('chipFY').textContent = `${fy}年度`;
+
+      $('indStaffName').textContent = staff.name;
+      $('indMonth').textContent = month;
+
+      const g1m = sumOfTypesForMonth(st, staffId, month, groupTypeIds(st,'g1'));
+      const g2m = sumOfTypesForMonth(st, staffId, month, groupTypeIds(st,'g2'));
+      const allm = totalForMonthAllTypes(st, staffId, month);
+
+      $('indMonthG1').textContent = fmtMin(g1m);
+      $('indMonthG2').textContent = fmtMin(g2m);
+      $('indMonthAll').textContent = fmtMin(allm);
+
+      renderKpiMyMonth(st, staffId, month);
+      renderIndividualHistory(st, staffId, month);
+
+      renderStaffMonthlyCards(st, staffId, fyFromMonthKey($('monthInputSM') ? $('monthInputSM').value : month));
+
+      const allG1 = totalAllStaffMonth(st, $('monthInputAll').value || month, (s, sid, mo)=> sumOfTypesForMonth(s, sid, mo, groupTypeIds(s,'g1')));
+      const allG2 = totalAllStaffMonth(st, $('monthInputAll').value || month, (s, sid, mo)=> sumOfTypesForMonth(s, sid, mo, groupTypeIds(s,'g2')));
+      const allAll = totalAllStaffMonth(st, $('monthInputAll').value || month, (s, sid, mo)=> totalForMonthAllTypes(s, sid, mo));
+
+      $('allMonthG1').textContent = fmtMin(allG1);
+      $('allMonthG2').textContent = fmtMin(allG2);
+      $('allMonthAll').textContent = fmtMin(allAll);
+
+      renderAllMonthCards(st, $('monthInputAll').value || month);
+
+      renderMulti(st);
+
+      renderFYMatrix(st, fy);
+
+      const fyG1 = totalAllStaffFY(st, fy, (s, sid, fyy)=> sumOfTypesForFY(s, sid, fyy, groupTypeIds(s,'g1')));
+      const fyG2 = totalAllStaffFY(st, fy, (s, sid, fyy)=> sumOfTypesForFY(s, sid, fyy, groupTypeIds(s,'g2')));
+      const fyAll = totalAllStaffFY(st, fy, (s, sid, fyy)=> totalForFYAllTypes(s, sid, fyy));
+
+      $('allFY_G1').textContent = fmtMin(fyG1);
+      $('allFY_G2').textContent = fmtMin(fyG2);
+      $('allFY_All').textContent = fmtMin(fyAll);
+
+      renderFYTotalCards(st, fy);
+
+      $('staffCount').textContent = `${st.staff.length} / 50`;
+      renderSettingsStaff(st);
+      renderSettingsTypes(st);
+      renderSumPosSelects(st);
+
+      $('undoBtn').disabled = !st.entries.some(e=>e.staffId===staffId);
+      $('duplicateBtn').disabled = !st.entries.some(e=>e.staffId===staffId);
+
+      setTab(st.currentTab || 'individual', false);
+    }
+
+    // ===== イベント =====
+    $('tabIndividual').addEventListener('click', ()=> setTab('individual'));
+    $('tabStaffMonthly').addEventListener('click', ()=> setTab('staffMonthly'));
+    $('tabAll').addEventListener('click', ()=> setTab('all'));
+    $('tabMulti').addEventListener('click', ()=> setTab('multi'));
+    $('tabFY').addEventListener('click', ()=> setTab('fy'));
+    $('tabFYTotal').addEventListener('click', ()=> setTab('fytotal'));
+    $('tabSettings').addEventListener('click', ()=> setTab('settings'));
+
+    // mobile tab dropdown
+    const tabSelEl = $('tabSelect');
+    if(tabSelEl){
+      tabSelEl.addEventListener('change', ()=> setTab(tabSelEl.value || 'individual'));
+    }
+
+    $('staffSelect').addEventListener('change', ()=>{
+      const st = loadState();
+      st.currentStaffId = $('staffSelect').value;
+      saveState(st);
+      render();
+    });
+    $('staffSelectAll').addEventListener('change', ()=>{
+      const sid = $('staffSelectAll').value;
+      const el = document.getElementById('allStaff_' + sid);
+      if(el){
+        el.scrollIntoView({behavior:'smooth', block:'start'});
+        el.classList.add('flashFocus');
+        setTimeout(()=> el.classList.remove('flashFocus'), 900);
+      }
+    });
+    $('staffSelectMonthly').addEventListener('change', ()=>{
+      const st = loadState();
+      st.currentStaffId = $('staffSelectMonthly').value;
+      saveState(st);
+      render();
+    });
+
+    $('leaveTypeSelect').addEventListener('change', ()=>{
+      const st = loadState();
+      st.currentLeaveTypeId = $('leaveTypeSelect').value || (st.leaveTypes[0]?.id || 'annual');
+      saveState(st);
+      render();
+    });
+
+    $('dateInput').addEventListener('change', ()=>{
+      const d = $('dateInput').value;
+      const m = normalizeMonthKey(monthFromDate(d));
+      if(m) setMonthAndSync(m);
+      render();
+    });
+
+    $('monthInput').addEventListener('change', ()=>{
+      setMonthAndSync($('monthInput').value || monthNowStr());
+      render();
+    });
+    $('monthInputAll').addEventListener('change', ()=>{
+      setMonthAndSync($('monthInputAll').value || monthNowStr());
+      render();
+    });
+
+    if(document.getElementById('monthInputSM')){
+      $('monthInputSM').addEventListener('change', ()=>{
+        setMonthAndSync($('monthInputSM').value || monthNowStr());
+        render();
+      });
+    }
+
+    $('fyInput').addEventListener('change', ()=>{
+      setFYAndSync($('fyInput').value || yearNowStr());
+      render();
+    });
+    $('fyInput2').addEventListener('change', ()=>{
+      setFYAndSync($('fyInput2').value || yearNowStr());
+      render();
+    });
+    $('fyInputMulti').addEventListener('change', ()=>{
+      const st = loadState();
+      st.multi = st.multi || {};
+      st.multi.fy = Number($('fyInputMulti').value || yearNowStr());
+      saveState(st);
+      setFYAndSync(st.multi.fy);
+      render();
+    });
+
+    $('monthPrevBtn').addEventListener('click', ()=> addMonthsToMonthInput(-1));
+    $('monthNextBtn').addEventListener('click', ()=> addMonthsToMonthInput(1));
+    $('monthPrevBtnAll').addEventListener('click', ()=> addMonthsToMonthInput(-1));
+    $('monthNextBtnAll').addEventListener('click', ()=> addMonthsToMonthInput(1));
+
+    // 個別月別一覧：月送り
+    const mpSM = document.getElementById('monthPrevBtnSM');
+    const mnSM = document.getElementById('monthNextBtnSM');
+    if(mpSM) mpSM.addEventListener('click', ()=> shiftMonthInput('monthInputSM', -1));
+    if(mnSM) mnSM.addEventListener('click', ()=> shiftMonthInput('monthInputSM', 1));
+
+    $('fyPrevBtn').addEventListener('click', ()=> shiftFY(-1));
+    $('fyNextBtn').addEventListener('click', ()=> shiftFY(1));
+    $('fyPrevBtn2').addEventListener('click', ()=> shiftFY2(-1));
+    $('fyNextBtn2').addEventListener('click', ()=> shiftFY2(1));
+    $('fyPrevBtnMulti').addEventListener('click', ()=> shiftFYMulti(-1));
+    $('fyNextBtnMulti').addEventListener('click', ()=> shiftFYMulti(1));
+
+    // 入力系ボタン
+    $('addBtn').addEventListener('click', addEntry);
+    $('undoBtn').addEventListener('click', undoLastForStaff);
+    $('duplicateBtn').addEventListener('click', duplicateLast);
+    $('clearInputBtn').addEventListener('click', ()=> clearInput(true));
+    $('resetAllBtn').addEventListener('click', resetAll);
+
+    $('preset1d').addEventListener('click', ()=> setPreset(1,0,0));
+    $('preset1h').addEventListener('click', ()=> setPreset(0,1,0));
+    $('preset2h').addEventListener('click', ()=> setPreset(0,2,0));
+    $('preset3h').addEventListener('click', ()=> setPreset(0,3,0));
+    $('preset4h').addEventListener('click', ()=> setPreset(0,4,0));
+    $('preset5h').addEventListener('click', ()=> setPreset(0,5,0));
+    $('preset6h').addEventListener('click', ()=> setPreset(0,6,0));
+    $('preset7h').addEventListener('click', ()=> setPreset(0,7,0));
+
+    // 個別：月一括削除
+    $('bulkDeleteMyMonthBtn').addEventListener('click', ()=>{
+      const st = loadState();
+      const staffId = st.currentStaffId;
+      const month = normalizeMonthKey($('monthInput').value || monthNowStr());
+      bulkDeleteMonthForStaff(staffId, month);
+    });
+
+    // 履歴の削除（委譲）
+    $('histBody').addEventListener('click', (ev)=>{
+      const btn = ev.target.closest('button');
+      if(!btn) return;
+      const act = btn.getAttribute('data-act');
+      const id = btn.getAttribute('data-id');
+      if(act==='delete' && id){
+        deleteEntry(id);
+      }
+    });
+
+    // Excel出力
+    $('exportIndividualXlsxBtn').addEventListener('click', exportIndividualXlsx);
+    $('exportAllXlsxBtn').addEventListener('click', exportAllXlsx);
+    $('exportFYXlsxBtn').addEventListener('click', exportFYXlsx);
+    $('exportStaffMonthlyXlsxBtn').addEventListener('click', exportStaffMonthlyXlsx);
+    $('exportMultiXlsxBtn').addEventListener('click', exportMultiXlsx);
+    $('exportFYMatrixXlsxBtn').addEventListener('click', exportFYMatrixXlsx);
+
+    // 複数月：対象変更・チェック変更
+    $('multiTargetSelect').addEventListener('change', ()=>{
+      const st = loadState();
+      st.multi = st.multi || {};
+      st.multi.targetId = $('multiTargetSelect').value || st.currentStaffId;
+      saveState(st);
+      render();
+    });
+    $('multiMonthChecks').addEventListener('change', (ev)=>{
+      const cb = ev.target;
+      if(!(cb && cb.matches('input[type="checkbox"][data-month]'))) return;
+      const m = normalizeMonthKey(cb.getAttribute('data-month'));
+      const st = loadState();
+      st.multi = st.multi || {};
+      const set = new Set((st.multi.months||[]).map(normalizeMonthKey));
+      if(cb.checked) set.add(m); else set.delete(m);
+      st.multi.months = Array.from(set);
+      saveState(st);
+      render();
+    });
+
+    $('multiSelectAllBtn').addEventListener('click', ()=>{
+      const st = loadState();
+      st.multi = st.multi || {};
+      const fy = Number(st.multi.fy || $('fyInputMulti').value || yearNowStr());
+      st.multi.fy = fy;
+      st.multi.months = fyMonthKeys(fy);
+      saveState(st);
+      render();
+    });
+    $('multiClearBtn').addEventListener('click', ()=>{
+      const st = loadState();
+      st.multi = st.multi || {};
+      st.multi.months = [];
+      saveState(st);
+      render();
+    });
+    $('multiUseCurrentBtn').addEventListener('click', ()=>{
+      const st = loadState();
+      st.multi = st.multi || {};
+      const fy = Number(st.multi.fy || $('fyInputMulti').value || yearNowStr());
+      st.multi.fy = fy;
+      const mk = normalizeMonthKey($('monthInput').value || monthNowStr());
+      const list = fyMonthKeys(fy);
+      st.multi.months = list.includes(mk) ? [mk] : [list[0]];
+      saveState(st);
+      render();
+    });
+
+    // 設定：職員/服務区分追加
+    $('addStaffBtn').addEventListener('click', addStaff);
+    $('addTypeBtn').addEventListener('click', addType);
+
+    // 設定：保存/削除（委譲）
+    $('staffBody').addEventListener('click', (ev)=>{
+      const btn = ev.target.closest('button');
+      if(!btn) return;
+      const act = btn.getAttribute('data-act');
+      const id = btn.getAttribute('data-id');
+      if(act==='savestaff') saveStaffName(id);
+      if(act==='delstaff') deleteStaff(id);
+    });
+    $('typeBody').addEventListener('click', (ev)=>{
+      const btn = ev.target.closest('button');
+      if(!btn) return;
+      const act = btn.getAttribute('data-act');
+      const id = btn.getAttribute('data-id');
+      if(act==='savetype') saveTypeName(id);
+      if(act==='deltype') deleteType(id);
+    });
+    $('typeBody').addEventListener('change', (ev)=>{
+      const sel = ev.target;
+      if(!(sel && sel.matches('select[data-act="setGroup"][data-id]'))) return;
+      const id = sel.getAttribute('data-id');
+      const v = sel.value || 'none';
+      const st = loadState();
+      setTypeGroup(st, id, v);
+      saveState(st);
+      render();
+    });
+
+    // 合算位置
+    $('sumPosG1').addEventListener('change', ()=>{
+      const st = loadState();
+      st.sumConfig.g1.pos = toInt($('sumPosG1').value);
+      ensureSumConfig(st);
+      saveState(st);
+      render();
+    });
+    $('sumPosG2').addEventListener('change', ()=>{
+      const st = loadState();
+      st.sumConfig.g2.pos = toInt($('sumPosG2').value);
+      ensureSumConfig(st);
+      saveState(st);
+      render();
+    });
+
+    // JSON
+    $('exportJsonBtn').addEventListener('click', exportJSON);
+    $('importJsonInput').addEventListener('change', (ev)=>{
+      const f = ev.target.files && ev.target.files[0];
+      if(f) importJSON(f);
+      ev.target.value = '';
+    });
+    $('wipeOnlyEntriesBtn').addEventListener('click', wipeOnlyEntries);
+
+    // Enterで追加（設定中は無効）
+    document.addEventListener('keydown', (e)=>{
+      if(e.key !== 'Enter') return;
+      if(document.body.classList.contains('settingsMode')) return;
+
+      const ae = document.activeElement;
+      if(ae){
+        const id = ae.id || '';
+        const isText = (ae.tagName==='INPUT' && (ae.type==='text' || ae.type==='search'));
+        const isSettingsText =
+          isText ||
+          ae.matches('input[data-staff-name], input[data-type-name]') ||
+          id==='newStaffName' || id==='newTypeName';
+        if(isSettingsText) return;
+      }
+
+      e.preventDefault();
+      addEntry();
+    });
+
+    // 初回
+    render();
+  </script>
+</body>
+</html>
