@@ -611,11 +611,11 @@
               <select id="staffSelect"></select>
             </div>
             <div class="field" style="min-width:240px; flex:1">
-              <label>休暇種別</label>
+              <label>服務区分</label>
               <select id="leaveTypeSelect"></select>
             </div>
             <div class="field" style="min-width:220px; flex:1">
-              <label>日付（この月に計上）</label>
+              <label>日付</label>
               <input type="date" id="dateInput" />
             </div>
           </div>
@@ -658,7 +658,7 @@
 
           <div class="bottom-bar">
             <div class="actions">
-              <button id="addBtn" class="full" type="button">追加（この職員に合算）</button>
+              <button id="addBtn" class="full" type="button">追加（合算）</button>
               <button class="secondary" id="undoBtn" type="button">元に戻す</button>
               <button class="secondary" id="duplicateBtn" type="button">直前を複製</button>
               <button class="secondary" id="clearInputBtn" type="button">入力クリア</button>
@@ -694,12 +694,12 @@
               <!-- ★位置統一：右端 -->
               <div class="actions right">
                 <button class="secondary" id="exportIndividualXlsxBtn" type="button">⬇ Excelエクスポート</button>
-                <button class="danger" id="bulkDeleteMyMonthBtn" type="button">この月を一括削除</button>
+                <button class="danger" id="bulkDeleteMyMonthBtn" type="button">表示月を一括削除</button>
               </div>
             </div>
 
             <div class="kpiCard" style="margin-top:10px">
-              <div class="t">この職員の月累計（種別別）</div>
+              <div class="t">月累計（服務区分別）</div>
               <div id="myMonthList" class="kpiList"></div>
             </div>
 
@@ -808,7 +808,7 @@
             </div>
 
             <div class="kpiCard" style="margin-top:10px">
-              <div class="t">累計（種別別）</div>
+              <div class="t">累計（服務区分別）</div>
               <div id="multiTotals" class="kpiList"></div>
             </div>
 
@@ -894,7 +894,7 @@
   <div style="margin-top:10px; font-weight:900">基本の使い方</div>
   <div style="line-height:1.65">
     1) 「職員の登録」「服務区分の登録」で名前と服務区分を整えます（必要なら合算①/②も設定）。<br>
-    2) 「個別（履歴）」で、日付・種別・時間を入れて <b>追加</b>。<br>
+    2) 「個別（履歴）」で、日付・服務区分・時間を入れて <b>追加</b>。<br>
     3) 集計は <b>個別月別一覧</b>／<b>月別一覧</b>／<b>複数月集計</b>／<b>年度別一覧</b>／<b>年度合計</b> で確認。<br>
     4) Excel出力やバックアップは、この画面のボタンから行えます。
   </div>
@@ -903,7 +903,7 @@
   <div style="line-height:1.65">
     ・<b>JSON出力</b>：端末のデータを保存（バックアップ）できます。<br>
     ・<b>JSON復元</b>：保存したJSONからデータを戻せます（端末内データは上書き）。<br>
-    ・<b>履歴のみ全消去</b>：職員・種別設定は残して、入力履歴だけリセットします。
+    ・<b>履歴のみ全消去</b>：職員・服務区分設定は残して、入力履歴だけリセットします。
   </div>
 </div>
 
@@ -936,13 +936,13 @@
               </div>
 
               <div style="flex:1; min-width:320px">
-                <div class="small" style="color:var(--muted); font-weight:950; margin-bottom:8px">休暇種別の管理（最大5）</div>
+                <div class="small" style="color:var(--muted); font-weight:950; margin-bottom:8px">服務区分別の管理（最大5）</div>
                 <div class="row" style="align-items:flex-end; padding:10px 12px; border:1px solid var(--line); background:#fff; border-radius:16px">
                   <div class="field" style="flex:1; min-width:260px">
-                    <label>追加する種別名</label>
-                    <input type="text" id="newTypeName" placeholder="例）介護休暇 / 病気休暇 など" maxlength="40" />
+                    <label>追加する服務区分名</label>
+                    <input type="text" id="newTypeName" placeholder="例）職免 / 研修 など" maxlength="40" />
                   </div>
-                  <button class="ok" id="addTypeBtn" type="button" style="min-width:160px">種別を追加</button>
+                  <button class="ok" id="addTypeBtn" type="button" style="min-width:160px">服務区分を追加</button>
                 </div>
 
                 <div class="list" style="margin-top:10px">
